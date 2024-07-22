@@ -1,4 +1,3 @@
 package com.flab.ticketing.user.dto
 
-class UserEmailRegisterDto {
-}
+data class UserEmailRegisterDto(val email : String)
