@@ -5,7 +5,7 @@ import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
 import com.flab.ticketing.user.exception.DuplicatedEmailException
-import com.flab.ticketing.user.exception.InvalidEmailCodeException
+import com.flab.ticketing.user.exception.NotFoundEmailCodeException
 import com.flab.ticketing.user.exception.UserExceptionMessages
 import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
@@ -152,7 +152,7 @@ class UserControllerTest : BehaviorSpec() {
 
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every{ userService.verifyEmailCode(email, code) } throws InvalidEmailCodeException()
+                every{ userService.verifyEmailCode(email, code) } throws NotFoundEmailCodeException()
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -168,9 +168,12 @@ class UserControllerTest : BehaviorSpec() {
 
 
                     mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_VERIFYCODE_INVALID.message
+                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_VERIFYCODE_NOT_FOUND.message
                 }
             }
+
+
         }
+
     }
 }

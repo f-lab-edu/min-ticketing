@@ -1,6 +1,6 @@
 package com.flab.ticketing.user.service
 
-import com.flab.ticketing.user.exception.InvalidEmailCodeException
+import com.flab.ticketing.user.exception.NotFoundEmailCodeException
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
@@ -67,7 +67,7 @@ class UserServiceTest : BehaviorSpec(){
                 every { emailRepository.getCode(email) } returns null
 
                 then("InvalidEmailCodeException을 반환한다."){
-                    shouldThrow<InvalidEmailCodeException> {
+                    shouldThrow<NotFoundEmailCodeException> {
                         userService.verifyEmailCode(email, code)
                     }
                 }
