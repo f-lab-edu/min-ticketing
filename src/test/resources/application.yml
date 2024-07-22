@@ -20,3 +20,9 @@ spring:
     port: 123
     username : minturtle
     password : pw
+
+server:
+  servlet:
+    encoding:
+      force-response: true
+      charset: UTF-8

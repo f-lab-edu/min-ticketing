@@ -1,13 +1,18 @@
 package com.flab.ticketing.user.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
+import com.flab.ticketing.user.exception.DuplicatedEmailException
+import com.flab.ticketing.user.exception.UserExceptionMessages
 import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -66,6 +71,8 @@ class UserControllerTest : BehaviorSpec() {
 
                 val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
 
+                every { userService.sendEmailVerifyCode(email) } throws DuplicatedEmailException()
+
                 val mvcResult = mockMvc.perform(
                     post(uri)
                         .content(dto)
@@ -75,9 +82,14 @@ class UserControllerTest : BehaviorSpec() {
                     .andReturn()
 
                 `then`("409 오류를 리턴한다."){
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
                     mvcResult.response.status shouldBeExactly 409
+                    responseBody.message shouldBeEqual UserExceptionMessages.DUPLICATED_EMAIL.message
                 }
             }
+
 
         }
     }

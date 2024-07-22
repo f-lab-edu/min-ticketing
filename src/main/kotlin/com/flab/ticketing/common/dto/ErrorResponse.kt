@@ -1,4 +1,5 @@
 package com.flab.ticketing.common.dto
 
-class ErrorResponse {
-}
+data class ErrorResponse(
+    val message : String
+)
