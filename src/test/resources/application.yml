@@ -14,3 +14,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         show_sql: true
+  mail:
+    sender: noreply@minticketing.com
+    host: smtp.test.com
+    port: 123
+    username : minturtle
+    password : pw
