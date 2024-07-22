@@ -7,14 +7,14 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class EmailService(
+class UserService(
     private val emailCodeGenerator: EmailCodeGenerator,
     private val emailSender: EmailSender,
     private val emailRepository: EmailRepository
 ) {
 
 
-    fun sendEmail(email : String){
+    fun sendEmailVerifyCode(email : String){
         val code = emailCodeGenerator.createEmailCode()
         emailRepository.saveCode(email = email, code=code)
         emailSender.sendEmail(email, "Min-Ticketing 인증 이메일","MinTicketing 이메일 인증 코드는 $code 입니다.")

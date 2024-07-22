@@ -8,7 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 
-class EmailServiceTest : BehaviorSpec(){
+class UserServiceTest : BehaviorSpec(){
 
 
     private val emailCodeGenerator: EmailCodeGenerator = mockk()
@@ -17,7 +17,7 @@ class EmailServiceTest : BehaviorSpec(){
 
     private val emailRepository : EmailRepository = mockk()
 
-    private val emailService: EmailService = EmailService(emailCodeGenerator, emailSender, emailRepository)
+    private val userService: UserService = UserService(emailCodeGenerator, emailSender, emailRepository)
 
     init {
 
@@ -30,7 +30,7 @@ class EmailServiceTest : BehaviorSpec(){
                 every {emailCodeGenerator.createEmailCode() } returns code
                 every {emailSender.sendEmail(any(), any(), any())} returns Unit
                 every { emailRepository.saveCode(any(), any()) } returns Unit
-                emailService.sendEmail(email)
+                userService.sendEmailVerifyCode(email)
 
                 `then`("이메일을 전송할 수 있다."){
                     verify { emailSender.sendEmail(email, "Min-Ticketing 인증 이메일", "MinTicketing 이메일 인증 코드는 $code 입니다.") }

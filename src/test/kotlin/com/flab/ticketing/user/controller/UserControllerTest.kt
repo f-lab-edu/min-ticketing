@@ -2,7 +2,7 @@ package com.flab.ticketing.user.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
-import com.flab.ticketing.user.service.EmailService
+import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
@@ -32,7 +32,7 @@ class UserControllerTest : BehaviorSpec() {
     private lateinit var objectMapper: ObjectMapper
 
     @MockkBean
-    private lateinit var emailService: EmailService
+    private lateinit var userService: UserService
 
 
     init {
@@ -43,7 +43,7 @@ class UserControllerTest : BehaviorSpec() {
                 val email = "noSaved@email.com"
 
                 val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
-                every { emailService.sendEmail(email) } returns Unit
+                every { userService.sendEmailVerifyCode(email) } returns Unit
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -56,9 +56,27 @@ class UserControllerTest : BehaviorSpec() {
 
                 `then`("200 코드를 반환하고 해당 이메일로 인증 코드를 전송한다.") {
                     mvcResult.response.status shouldBeExactly 200
-                    verify { emailService.sendEmail(email) }
+                    verify { userService.sendEmailVerifyCode(email) }
                 }
 
+            }
+
+            `when`("이미 회원가입 되어있는 이메일이라면"){
+                val email = "saved@email.com"
+
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                `then`("409 오류를 리턴한다."){
+                    mvcResult.response.status shouldBeExactly 409
+                }
             }
 
         }
