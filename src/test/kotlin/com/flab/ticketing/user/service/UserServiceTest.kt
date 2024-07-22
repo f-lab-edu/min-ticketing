@@ -4,6 +4,7 @@ import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
+import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
 import io.mockk.mockk
@@ -42,7 +43,21 @@ class UserServiceTest : BehaviorSpec(){
 
         }
 
+        given("이메일 인증 코드 검증 요청 시"){
 
+            `when`("이메일 Repository에 이메일 코드가 존재하고, 사용자의 요청과 일치한다면"){
+                val email = "email@email.com"
+                val code = "123abc"
+
+                every { emailRepository.getCode(email) } returns code
+
+                then("오류를 반환하지 않는다."){
+                    shouldNotThrow<Exception> {
+                        userService.verifyEmailCode(email, code)
+                    }
+                }
+            }
+        }
 
     }
 

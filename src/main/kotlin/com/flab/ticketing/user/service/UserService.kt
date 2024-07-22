@@ -32,7 +32,14 @@ class UserService(
     }
 
     fun verifyEmailCode(email : String, code : String){
-        TODO()
+
+        val savedCode = emailRepository.getCode(email)
+
+
+        if(!savedCode.equals(code)){
+            TODO()
+        }
+
     }
 
 }
