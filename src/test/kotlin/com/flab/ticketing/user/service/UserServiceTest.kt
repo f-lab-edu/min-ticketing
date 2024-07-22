@@ -36,6 +36,7 @@ class UserServiceTest : BehaviorSpec(){
                 every {emailCodeGenerator.createEmailCode() } returns code
                 every {emailSender.sendEmail(any(), any(), any())} returns Unit
                 every { emailRepository.saveCode(any(), any()) } returns Unit
+                every {userRepository.findByEmail(any())} returns null
                 userService.sendEmailVerifyCode(email)
 
                 `then`("이메일을 전송할 수 있다."){
