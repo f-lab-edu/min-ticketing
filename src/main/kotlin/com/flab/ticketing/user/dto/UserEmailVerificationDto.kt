@@ -5,6 +5,6 @@ import jakarta.validation.constraints.Pattern
 
 data class UserEmailVerificationDto(
     @field:Email val email: String,
-    @field:Pattern(regexp = "\"^(?=.*[A-Z])(?=.*\\\\d)[A-Z\\\\d]{6}\\\$\"") val code : String
+    @field:Pattern(regexp = "^[A-Z0-9]{6}\$") val code : String
 
 )

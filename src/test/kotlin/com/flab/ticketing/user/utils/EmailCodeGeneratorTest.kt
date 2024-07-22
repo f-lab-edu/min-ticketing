@@ -15,7 +15,7 @@ class EmailCodeGeneratorTest : BehaviorSpec(){
                 val actual = emailCodeGenerator.createEmailCode()
 
                 `then`("랜덤한 6자리의 영문(대문자)과 숫자를 포함한 문자열을 생성할 수 있다."){
-                    actual shouldMatch "^(?=.*[A-Z])(?=.*\\d)[A-Z\\d]{6}\$"
+                    actual shouldMatch "^[A-Z0-9]{6}\$"
                 }
             }
         }
