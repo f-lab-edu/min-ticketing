@@ -37,6 +37,9 @@ class UserService(
 
         val savedCode = emailRepository.getCode(email)
 
+        if(savedCode == null){
+            throw InvalidEmailCodeException()
+        }
 
         if(!savedCode.equals(code)){
             TODO()

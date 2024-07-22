@@ -1,10 +1,12 @@
 package com.flab.ticketing.user.service
 
+import com.flab.ticketing.user.exception.InvalidEmailCodeException
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
 import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
 import io.mockk.every
 import io.mockk.mockk
@@ -57,7 +59,21 @@ class UserServiceTest : BehaviorSpec(){
                     }
                 }
             }
+
+            `when`("이메일 Repository에 이메일 코드가 존재하지 않는다면"){
+                val email = "email@email.com"
+                val code = "123abc"
+
+                every { emailRepository.getCode(email) } returns null
+
+                then("InvalidEmailCodeException을 반환한다."){
+                    shouldThrow<InvalidEmailCodeException> {
+                        userService.verifyEmailCode(email, code)
+                    }
+                }
+            }
         }
+
 
     }
 
