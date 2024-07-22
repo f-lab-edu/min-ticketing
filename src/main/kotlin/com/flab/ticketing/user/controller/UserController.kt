@@ -32,6 +32,10 @@ class UserController(
 
     @PostMapping("/new/email/verify")
     fun verifyEmailCode(@Validated @RequestBody verifyInfo : UserEmailVerificationDto, bindingResult: BindingResult){
+        if(bindingResult.hasFieldErrors("email")){
+            throw InvalidEmailException()
+        }
+
 
         userService.verifyEmailCode(verifyInfo.email, verifyInfo.code)
     }
