@@ -1,3 +1,7 @@
 package com.flab.ticketing.user.dto
 
-data class UserEmailRegisterDto(val email : String)
+import jakarta.validation.constraints.Email
+
+data class UserEmailRegisterDto(
+    @field:Email val email : String
+)

@@ -90,6 +90,31 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
+            `when`("이메일 형식이 올바르지 않다면"){
+                val email = "s213"
+
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
+
+                every { userService.sendEmailVerifyCode(email) } throws DuplicatedEmailException()
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                `then`("400 Bad Request를 반환한다."){
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBeExactly 400
+                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_EXPRESSION_INVALID.message
+
+                }
+
+            }
 
         }
     }
