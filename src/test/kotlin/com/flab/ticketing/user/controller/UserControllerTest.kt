@@ -3,6 +3,7 @@ package com.flab.ticketing.user.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
+import com.flab.ticketing.user.dto.UserEmailVerificationDto
 import com.flab.ticketing.user.exception.DuplicatedEmailException
 import com.flab.ticketing.user.exception.UserExceptionMessages
 import com.flab.ticketing.user.service.UserService
@@ -116,6 +117,34 @@ class UserControllerTest : BehaviorSpec() {
 
             }
 
+        }
+
+        given("이메일 인증 코드 검증 요청 시"){
+            val uri = "/api/user/new/email/verify"
+
+            `when`("1시간 전에 인증 코드를 보냈던 이메일이라면"){
+                val email = "noSaved@email.com"
+                val code = "123ABC"
+
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+
+                every{ userService.verifyEmailCode(email, code) } returns Unit
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+
+
+                then("200 OK를 반환한다."){
+                    mvcResult.response.status shouldBeExactly 200
+                    verify { userService.verifyEmailCode(email, code) }
+                }
+            }
         }
     }
 }

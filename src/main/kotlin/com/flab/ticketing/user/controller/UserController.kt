@@ -1,6 +1,7 @@
 package com.flab.ticketing.user.controller
 
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
+import com.flab.ticketing.user.dto.UserEmailVerificationDto
 import com.flab.ticketing.user.exception.InvalidEmailException
 import com.flab.ticketing.user.service.UserService
 import org.springframework.validation.BindingResult
@@ -29,6 +30,11 @@ class UserController(
     }
 
 
+    @PostMapping("/new/email/verify")
+    fun verifyEmailCode(@Validated @RequestBody verifyInfo : UserEmailVerificationDto, bindingResult: BindingResult){
+
+        userService.verifyEmailCode(verifyInfo.email, verifyInfo.code)
+    }
 
 
 }

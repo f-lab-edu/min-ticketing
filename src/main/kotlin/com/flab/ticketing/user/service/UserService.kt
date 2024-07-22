@@ -31,4 +31,8 @@ class UserService(
 
     }
 
+    fun verifyEmailCode(email : String, code : String){
+        TODO()
+    }
+
 }
