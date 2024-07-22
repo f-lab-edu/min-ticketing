@@ -1,6 +1,7 @@
 package com.flab.ticketing.user.service
 
 import com.flab.ticketing.user.repository.EmailRepository
+import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
 import io.kotest.core.spec.style.BehaviorSpec
@@ -17,7 +18,8 @@ class UserServiceTest : BehaviorSpec(){
 
     private val emailRepository : EmailRepository = mockk()
 
-    private val userService: UserService = UserService(emailCodeGenerator, emailSender, emailRepository)
+    private val userRepository : UserRepository = mockk()
+    private val userService: UserService = UserService(emailCodeGenerator, emailSender, emailRepository, userRepository)
 
     init {
 
