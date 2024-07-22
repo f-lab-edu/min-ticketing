@@ -5,6 +5,7 @@ import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
 import com.flab.ticketing.user.exception.DuplicatedEmailException
+import com.flab.ticketing.user.exception.InvalidEmailCodeException
 import com.flab.ticketing.user.exception.UserExceptionMessages
 import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
@@ -13,7 +14,6 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -143,6 +143,32 @@ class UserControllerTest : BehaviorSpec() {
                 then("200 OK를 반환한다."){
                     mvcResult.response.status shouldBeExactly 200
                     verify { userService.verifyEmailCode(email, code) }
+                }
+            }
+
+            `when`("1시간이 지났거나 잘못된 코드인 경우"){
+                val email = "noSaved@email.com"
+                val code = "123ABC"
+
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+
+                every{ userService.verifyEmailCode(email, code) } throws InvalidEmailCodeException()
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                then("400 Bad Request를 반환한다."){
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+
+                    mvcResult.response.status shouldBeExactly 400
+                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_VERIFYCODE_INVALID.message
                 }
             }
         }

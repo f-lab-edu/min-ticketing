@@ -1,6 +1,7 @@
 package com.flab.ticketing.user.service
 
 import com.flab.ticketing.user.exception.DuplicatedEmailException
+import com.flab.ticketing.user.exception.InvalidEmailCodeException
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
@@ -31,6 +32,7 @@ class UserService(
 
     }
 
+    @Throws(InvalidEmailCodeException::class)
     fun verifyEmailCode(email : String, code : String){
 
         val savedCode = emailRepository.getCode(email)
