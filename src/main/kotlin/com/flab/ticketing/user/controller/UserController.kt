@@ -14,9 +14,12 @@ class UserController(
     private val emailService: EmailService
 ){
 
-    @PostMapping("/new")
-    fun register(@RequestBody emailInfo : UserEmailRegisterDto){
+    @PostMapping("/new/email")
+    fun emailSend(@RequestBody emailInfo : UserEmailRegisterDto){
         emailService.sendEmail(emailInfo.email)
     }
+
+
+
 
 }

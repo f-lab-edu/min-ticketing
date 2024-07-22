@@ -36,9 +36,8 @@ class UserControllerTest : BehaviorSpec() {
 
 
     init {
-        given("회원가입 시도시") {
-            val uri = "/api/user/new"
-
+        given("이메일 인증 코드 전송 시도시") {
+            val uri = "/api/user/new/email"
 
             `when`("이메일이 저장되어 있지 않다면") {
                 val email = "noSaved@email.com"
