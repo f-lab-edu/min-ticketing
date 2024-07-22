@@ -1,10 +1,7 @@
 package com.flab.ticketing.user.controller
 
 import com.flab.ticketing.common.dto.ErrorResponse
-import com.flab.ticketing.user.exception.DuplicatedEmailException
-import com.flab.ticketing.user.exception.NotFoundEmailCodeException
-import com.flab.ticketing.user.exception.InvalidEmailException
-import com.flab.ticketing.user.exception.UserExceptionMessages
+import com.flab.ticketing.user.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 
@@ -28,7 +25,13 @@ class UserControllerAdvice {
     }
 
     @ExceptionHandler(NotFoundEmailCodeException::class)
-    fun invalidEmailVerifyCode() : ResponseEntity<ErrorResponse>{
+    fun notFoundEmailVerifyCode() : ResponseEntity<ErrorResponse>{
         return ResponseEntity(ErrorResponse(UserExceptionMessages.EMAIL_VERIFYCODE_NOT_FOUND.message), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(InvalidEmailCodeException::class)
+    fun invalidEmailVerifyCode() : ResponseEntity<ErrorResponse>{
+        return ResponseEntity(ErrorResponse(UserExceptionMessages.EMAIL_VERIFYCODE_INVALID.message), HttpStatus.BAD_REQUEST)
+    }
+
 }

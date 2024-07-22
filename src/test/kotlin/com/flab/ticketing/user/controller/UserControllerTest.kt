@@ -5,6 +5,7 @@ import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
 import com.flab.ticketing.user.exception.DuplicatedEmailException
+import com.flab.ticketing.user.exception.InvalidEmailCodeException
 import com.flab.ticketing.user.exception.NotFoundEmailCodeException
 import com.flab.ticketing.user.exception.UserExceptionMessages
 import com.flab.ticketing.user.service.UserService
@@ -67,7 +68,7 @@ class UserControllerTest : BehaviorSpec() {
 
             }
 
-            `when`("이미 회원가입 되어있는 이메일이라면"){
+            `when`("이미 회원가입 되어있는 이메일이라면") {
                 val email = "saved@email.com"
 
                 val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
@@ -82,7 +83,7 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                `then`("409 오류를 리턴한다."){
+                `then`("409 오류를 리턴한다.") {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
@@ -91,7 +92,7 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
-            `when`("이메일 형식이 올바르지 않다면"){
+            `when`("이메일 형식이 올바르지 않다면") {
                 val email = "s213"
 
                 val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
@@ -106,7 +107,7 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                `then`("400 Bad Request를 반환한다."){
+                `then`("400 Bad Request를 반환한다.") {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
@@ -119,16 +120,16 @@ class UserControllerTest : BehaviorSpec() {
 
         }
 
-        given("이메일 인증 코드 검증 요청 시"){
+        given("이메일 인증 코드 검증 요청 시") {
             val uri = "/api/user/new/email/verify"
 
-            `when`("1시간 전에 인증 코드를 보냈던 이메일이라면"){
+            `when`("1시간 전에 인증 코드를 보냈던 이메일이라면") {
                 val email = "noSaved@email.com"
                 val code = "123ABC"
 
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every{ userService.verifyEmailCode(email, code) } returns Unit
+                every { userService.verifyEmailCode(email, code) } returns Unit
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -140,19 +141,19 @@ class UserControllerTest : BehaviorSpec() {
 
 
 
-                then("200 OK를 반환한다."){
+                then("200 OK를 반환한다.") {
                     mvcResult.response.status shouldBeExactly 200
                     verify { userService.verifyEmailCode(email, code) }
                 }
             }
 
-            `when`("1시간이 지났거나 잘못된 코드인 경우"){
+            `when`("1시간이 지났거나 잘못된 코드인 경우") {
                 val email = "noSaved@email.com"
                 val code = "123ABC"
 
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every{ userService.verifyEmailCode(email, code) } throws NotFoundEmailCodeException()
+                every { userService.verifyEmailCode(email, code) } throws NotFoundEmailCodeException()
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -162,7 +163,7 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                then("400 Bad Request를 반환한다."){
+                then("400 Bad Request를 반환한다.") {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
@@ -172,7 +173,31 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
+            `when`("사용자의 요청과 저장된 코드 정보가 다르다면") {
 
+                val email = "noSaved@email.com"
+                val code = "123ABC"
+
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+
+                every { userService.verifyEmailCode(email, code) } throws InvalidEmailCodeException()
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                then("400 BadRequest를 반환한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBeExactly 400
+                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_VERIFYCODE_INVALID.message
+                }
+            }
         }
 
     }
