@@ -1,5 +1,6 @@
 package com.flab.ticketing.user.service
 
+import com.flab.ticketing.user.exception.InvalidEmailCodeException
 import com.flab.ticketing.user.exception.NotFoundEmailCodeException
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
@@ -66,12 +67,27 @@ class UserServiceTest : BehaviorSpec(){
 
                 every { emailRepository.getCode(email) } returns null
 
-                then("InvalidEmailCodeException을 반환한다."){
+                then("NotFoundEmailCodeException을 반환한다."){
                     shouldThrow<NotFoundEmailCodeException> {
                         userService.verifyEmailCode(email, code)
                     }
                 }
             }
+
+            `when`("파라미터의 code와 조회된 코드가 다르다면"){
+                val email = "email@email.com"
+                val code = "123abc"
+                val savedCode = "abc123"
+
+                every { emailRepository.getCode(email)} returns savedCode
+
+                then("InvalidEmailCodeException을 반환한다."){
+                    shouldThrow<InvalidEmailCodeException> {
+                        userService.verifyEmailCode(email, code)
+                    }
+                }
+            }
+
         }
 
 
