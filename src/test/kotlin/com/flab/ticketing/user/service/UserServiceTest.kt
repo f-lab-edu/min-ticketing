@@ -14,21 +14,15 @@ import io.mockk.mockk
 import io.mockk.verify
 
 class UserServiceTest : BehaviorSpec(){
-
-
     private val emailCodeGenerator: EmailCodeGenerator = mockk()
-
     private val emailSender: EmailSender = mockk()
-
     private val emailRepository : EmailRepository = mockk()
-
     private val userRepository : UserRepository = mockk()
     private val userService: UserService = UserService(emailCodeGenerator, emailSender, emailRepository, userRepository)
 
     init {
 
         given("이메일 인증 코드 요청시"){
-
             `when`("알맞은 이메일 양식이 오면"){
                 val email = "email@email.com"
                 val code = "123abc"
@@ -48,7 +42,6 @@ class UserServiceTest : BehaviorSpec(){
         }
 
         given("이메일 인증 코드 검증 요청 시"){
-
             `when`("이메일 Repository에 이메일 코드가 존재하고, 사용자의 요청과 일치한다면"){
                 val email = "email@email.com"
                 val code = "123abc"

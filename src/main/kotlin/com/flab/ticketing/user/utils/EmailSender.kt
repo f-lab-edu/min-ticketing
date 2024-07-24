@@ -11,17 +11,12 @@ class EmailSender(
     private val mailSender : JavaMailSender
 ) {
 
-
     fun sendEmail(email : String, subject : String, content : String){
-
         val message = SimpleMailMessage()
         message.from = senderEmail
         message.setTo(email)
         message.text = content
 
-
-
         mailSender.send(message)
     }
-
 }

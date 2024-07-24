@@ -18,7 +18,6 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
-
     @Throws(DuplicatedEmailException::class)
     fun sendEmailVerifyCode(email : String){
         val user = userRepository.findByEmail(email)
@@ -35,7 +34,6 @@ class UserService(
 
     @Throws(NotFoundEmailCodeException::class, InvalidEmailCodeException::class)
     fun verifyEmailCode(email : String, code : String){
-
         val savedCode = emailRepository.getCode(email)
 
         if(savedCode == null){

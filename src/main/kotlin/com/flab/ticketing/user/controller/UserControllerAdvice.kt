@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 @RestControllerAdvice
 class UserControllerAdvice {
 
-
     @ExceptionHandler(DuplicatedEmailException::class)
     fun duplicatedEmail() : ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse(UserExceptionMessages.DUPLICATED_EMAIL.message), HttpStatus.CONFLICT)

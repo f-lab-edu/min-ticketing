@@ -4,11 +4,9 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.string.shouldMatch
 
 class EmailCodeGeneratorTest : BehaviorSpec(){
-
     val emailCodeGenerator : EmailCodeGenerator = EmailCodeGenerator()
 
     init {
-
         given("이메일 코드 생성 요청 시"){
 
             `when`("이메일 생성 코드를 호출하면"){

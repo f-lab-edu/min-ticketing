@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController
 class UserController(
     private val userService: UserService
 ){
-
-    @Throws(InvalidEmailException::class)
     @PostMapping("/new/email")
     fun emailSend(@Validated @RequestBody emailInfo : UserEmailRegisterDto, bindingResult: BindingResult){
         if(bindingResult.hasFieldErrors("email")){
@@ -35,7 +33,6 @@ class UserController(
         if(bindingResult.hasFieldErrors("email")){
             throw InvalidEmailException()
         }
-
 
         userService.verifyEmailCode(verifyInfo.email, verifyInfo.code)
     }
