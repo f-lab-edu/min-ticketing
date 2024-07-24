@@ -1,8 +1,9 @@
 package com.flab.ticketing.user.service
 
-import com.flab.ticketing.user.exception.DuplicatedEmailException
-import com.flab.ticketing.user.exception.InvalidEmailCodeException
-import com.flab.ticketing.user.exception.NotFoundEmailCodeException
+import com.flab.ticketing.common.exception.DuplicatedException
+import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
@@ -18,12 +19,11 @@ class UserService(
     private val userRepository: UserRepository
 ) {
 
-    @Throws(DuplicatedEmailException::class)
     fun sendEmailVerifyCode(email : String){
         val user = userRepository.findByEmail(email)
 
         if(user != null){
-            throw DuplicatedEmailException()
+            throw DuplicatedException(UserErrorInfos.DUPLICATED_EMAIL)
         }
 
         val code = emailCodeGenerator.createEmailCode()
@@ -32,16 +32,15 @@ class UserService(
 
     }
 
-    @Throws(NotFoundEmailCodeException::class, InvalidEmailCodeException::class)
     fun verifyEmailCode(email : String, code : String){
         val savedCode = emailRepository.getCode(email)
 
         if(savedCode == null){
-            throw NotFoundEmailCodeException()
+            throw NotFoundException(UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND)
         }
 
         if(!savedCode.equals(code)){
-            throw InvalidEmailCodeException()
+            throw InvalidValueException(UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
         }
 
     }

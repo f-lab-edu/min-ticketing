@@ -2,12 +2,12 @@ package com.flab.ticketing.user.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.exception.DuplicatedException
+import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
-import com.flab.ticketing.user.exception.DuplicatedEmailException
-import com.flab.ticketing.user.exception.InvalidEmailCodeException
-import com.flab.ticketing.user.exception.NotFoundEmailCodeException
-import com.flab.ticketing.user.exception.UserExceptionMessages
+import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
@@ -15,6 +15,7 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -60,7 +61,7 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                `then`("200 코드를 반환하고 해당 이메일로 인증 코드를 전송한다.") {
+                then("200 코드를 반환하고 해당 이메일로 인증 코드를 전송한다.") {
                     mvcResult.response.status shouldBeExactly 200
                     verify { userService.sendEmailVerifyCode(email) }
                 }
@@ -71,7 +72,7 @@ class UserControllerTest : BehaviorSpec() {
                 val email = "saved@email.com"
                 val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
 
-                every { userService.sendEmailVerifyCode(email) } throws DuplicatedEmailException()
+                every { userService.sendEmailVerifyCode(email) } throws DuplicatedException(UserErrorInfos.DUPLICATED_EMAIL)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -86,15 +87,14 @@ class UserControllerTest : BehaviorSpec() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly 409
-                    responseBody.message shouldBeEqual UserExceptionMessages.DUPLICATED_EMAIL.message
+                    responseBody.message shouldBeEqual UserErrorInfos.DUPLICATED_EMAIL.message
+                    responseBody.code shouldBeEqual UserErrorInfos.DUPLICATED_EMAIL.code
                 }
             }
 
             `when`("이메일 형식이 올바르지 않다면") {
                 val email = "s213"
                 val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
-
-                every { userService.sendEmailVerifyCode(email) } throws DuplicatedEmailException()
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -109,8 +109,8 @@ class UserControllerTest : BehaviorSpec() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_EXPRESSION_INVALID.message
-
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.code
                 }
 
             }
@@ -145,10 +145,9 @@ class UserControllerTest : BehaviorSpec() {
             `when`("1시간이 지났거나 잘못된 코드인 경우") {
                 val email = "noSaved@email.com"
                 val code = "123ABC"
-
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every { userService.verifyEmailCode(email, code) } throws NotFoundEmailCodeException()
+                every { userService.verifyEmailCode(email, code) } throws NotFoundException(UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -158,13 +157,14 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                then("400 Bad Request를 반환한다.") {
+                then("404 Not Found를 반환한다.") {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
 
-                    mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_VERIFYCODE_NOT_FOUND.message
+                    mvcResult.response.status shouldBeExactly 404
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.code
                 }
             }
 
@@ -173,7 +173,7 @@ class UserControllerTest : BehaviorSpec() {
                 val code = "123ABC"
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every { userService.verifyEmailCode(email, code) } throws InvalidEmailCodeException()
+                every { userService.verifyEmailCode(email, code) } throws InvalidValueException(UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -188,7 +188,8 @@ class UserControllerTest : BehaviorSpec() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_VERIFYCODE_INVALID.message
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.code
                 }
             }
 
@@ -210,7 +211,8 @@ class UserControllerTest : BehaviorSpec() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserExceptionMessages.EMAIL_EXPRESSION_INVALID.message
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.message
                 }
             }
 

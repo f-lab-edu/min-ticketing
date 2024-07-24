@@ -1,7 +1,8 @@
 package com.flab.ticketing.user.service
 
-import com.flab.ticketing.user.exception.InvalidEmailCodeException
-import com.flab.ticketing.user.exception.NotFoundEmailCodeException
+import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
@@ -9,6 +10,7 @@ import com.flab.ticketing.user.utils.EmailSender
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -61,10 +63,12 @@ class UserServiceTest : BehaviorSpec(){
 
                 every { emailRepository.getCode(email) } returns null
 
-                then("NotFoundEmailCodeException을 반환한다."){
-                    shouldThrow<NotFoundEmailCodeException> {
+                then("NotFoundException과 알맞은 메시지를 반환한다."){
+                    val exception = shouldThrow<NotFoundException> {
                         userService.verifyEmailCode(email, code)
                     }
+
+                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
                 }
             }
 
@@ -75,10 +79,12 @@ class UserServiceTest : BehaviorSpec(){
 
                 every { emailRepository.getCode(email)} returns savedCode
 
-                then("InvalidEmailCodeException을 반환한다."){
-                    shouldThrow<InvalidEmailCodeException> {
+                then("InvalidValueException을 반환한다."){
+                    val exception = shouldThrow<InvalidValueException> {
                         userService.verifyEmailCode(email, code)
                     }
+
+                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.message
                 }
             }
 

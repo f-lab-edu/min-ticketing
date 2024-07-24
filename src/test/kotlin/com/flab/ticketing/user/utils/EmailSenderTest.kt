@@ -26,7 +26,7 @@ class EmailSenderTest : BehaviorSpec(){
                 every { javaEmailSender.send(ofType<SimpleMailMessage>()) } returns Unit
                 emailSender.sendEmail(email, subject, content)
 
-                `then`("이메일을 전송할 수 있다."){
+                then("이메일을 전송할 수 있다."){
                     verify { javaEmailSender.send(ofType<SimpleMailMessage>()) }
                 }
             }
