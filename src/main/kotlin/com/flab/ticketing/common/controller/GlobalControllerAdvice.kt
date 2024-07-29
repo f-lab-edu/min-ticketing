@@ -16,17 +16,17 @@ class GlobalControllerAdvice {
 
     @ExceptionHandler(DuplicatedException::class)
     fun duplicatedEmail(e: DuplicatedException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(ErrorResponse(e.info), HttpStatus.CONFLICT)
+        return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.CONFLICT)
     }
 
     @ExceptionHandler(InvalidValueException::class)
     fun invalidEmail(e: InvalidValueException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(ErrorResponse(e.info), HttpStatus.BAD_REQUEST)
+        return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(NotFoundException::class)
     fun notFoundEmailVerifyCode(e: NotFoundException): ResponseEntity<ErrorResponse> {
-        return ResponseEntity(ErrorResponse(e.info), HttpStatus.NOT_FOUND)
+        return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.NOT_FOUND)
     }
 
 

@@ -7,7 +7,12 @@ data class ErrorResponse(
     val code: String
 ) {
 
-    constructor(errorInfo: ErrorInfo)
-            : this(message = errorInfo.message, code = errorInfo.code)
+    companion object {
+        fun of(errorInfo: ErrorInfo): ErrorResponse {
+            return ErrorResponse(message = errorInfo.message, code = errorInfo.code)
+
+        }
+
+    }
 
 }
