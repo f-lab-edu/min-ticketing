@@ -2,6 +2,7 @@ package com.flab.ticketing.user.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
@@ -107,9 +108,11 @@ class UserControllerTest : BehaviorSpec() {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
+                    val expectedMessage = "email 필드의 값이 올바르지 않습니다."
+
                     mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.code
+                    responseBody.message shouldBeEqual expectedMessage
+                    responseBody.code shouldBeEqual CommonErrorInfos.INVALID_FIELD.code
                 }
 
             }
@@ -219,9 +222,11 @@ class UserControllerTest : BehaviorSpec() {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
+                    val expectedMessage = "email 필드의 값이 올바르지 않습니다."
+
                     mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_EXPRESSION_INVALID.message
+                    responseBody.message shouldBeEqual expectedMessage
+                    responseBody.code shouldBeEqual CommonErrorInfos.INVALID_FIELD.code
                 }
             }
 
