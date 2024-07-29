@@ -15,7 +15,6 @@ import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
-import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,8 +23,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 
 @WebMvcTest
 @AutoConfigureMockMvc
@@ -147,7 +146,12 @@ class UserControllerTest : BehaviorSpec() {
                 val code = "123ABC"
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every { userService.verifyEmailCode(email, code) } throws NotFoundException(UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND)
+                every {
+                    userService.verifyEmailCode(
+                        email,
+                        code
+                    )
+                } throws NotFoundException(UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -173,7 +177,12 @@ class UserControllerTest : BehaviorSpec() {
                 val code = "123ABC"
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
-                every { userService.verifyEmailCode(email, code) } throws InvalidValueException(UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
+                every {
+                    userService.verifyEmailCode(
+                        email,
+                        code
+                    )
+                } throws InvalidValueException(UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -193,7 +202,7 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
-            `when`("이메일 형식이 올바르지 않다면"){
+            `when`("이메일 형식이 올바르지 않다면") {
                 val email = "asdasd"
                 val code = "123ABC"
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
@@ -206,7 +215,7 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                then("400 Bad Request를 반환한다."){
+                then("400 Bad Request를 반환한다.") {
                     val responseBody =
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 

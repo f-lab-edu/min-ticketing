@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class EmailSender(
-    @Value("\${spring.mail.sender}") private val senderEmail : String,
-    private val mailSender : JavaMailSender
+    @Value("\${spring.mail.sender}") private val senderEmail: String,
+    private val mailSender: JavaMailSender
 ) {
 
-    fun sendEmail(email : String, subject : String, content : String){
+    fun sendEmail(email: String, subject: String, content: String) {
         val message = SimpleMailMessage()
         message.from = senderEmail
         message.setTo(email)

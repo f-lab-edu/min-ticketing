@@ -9,20 +9,19 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-
 @RestController
 @RequestMapping("/api/user")
 class UserController(
     private val userService: UserService
-){
+) {
     @PostMapping("/new/email")
-    fun emailSend(@Validated @RequestBody emailInfo : UserEmailRegisterDto){
+    fun emailSend(@Validated @RequestBody emailInfo: UserEmailRegisterDto) {
         userService.sendEmailVerifyCode(emailInfo.email)
     }
 
 
     @PostMapping("/new/email/verify")
-    fun verifyEmailCode(@Validated @RequestBody verifyInfo : UserEmailVerificationDto){
+    fun verifyEmailCode(@Validated @RequestBody verifyInfo: UserEmailVerificationDto) {
         userService.verifyEmailCode(verifyInfo.email, verifyInfo.code)
     }
 
