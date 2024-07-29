@@ -14,6 +14,6 @@ class EmailRepository(
     }
 
     fun getCode(email: String): String? {
-        TODO()
+        return redisTemplate.opsForValue().get(email)
     }
 }

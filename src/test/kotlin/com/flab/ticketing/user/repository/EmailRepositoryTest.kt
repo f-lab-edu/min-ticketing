@@ -1,6 +1,8 @@
 package com.flab.ticketing.user.repository
 
+import io.kotest.assertions.fail
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -34,6 +36,23 @@ class EmailRepositoryTest : BehaviorSpec() {
                 }
             }
 
+        }
+
+        given("이메일이 주어져 있고, 이메일 인증 코드가 저장되어 있을 때") {
+            val email = "email@Email.com"
+            val expectedCode = "code12"
+            every { redisTemplate.opsForValue().get(email) } returns expectedCode
+
+            `when`("인증코드를 조회하면") {
+                val actualCode = emailRepository.getCode(email)
+
+                then("저장된 이메일을 반환받을 수 있다.") {
+                    if (actualCode == null) {
+                        fail("인증 코드는 저장된 결과가 나와야한다.")
+                    }
+                    actualCode shouldBeEqual expectedCode
+                }
+            }
         }
     }
 
