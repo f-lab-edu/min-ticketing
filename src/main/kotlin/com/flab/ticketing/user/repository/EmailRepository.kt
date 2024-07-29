@@ -1,7 +1,19 @@
 package com.flab.ticketing.user.repository
 
-interface EmailRepository {
-    fun saveCode(email: String, code: String)
+import org.springframework.data.redis.core.RedisTemplate
+import java.time.Duration
+import java.time.temporal.ChronoUnit
 
-    fun getCode(email: String): String?
+class EmailRepository(
+    private val redisTemplate: RedisTemplate<String, String>
+) {
+
+
+    fun saveCode(email: String, code: String) {
+        redisTemplate.opsForValue().set(email, code, Duration.of(1, ChronoUnit.HOURS))
+    }
+
+    fun getCode(email: String): String? {
+        TODO()
+    }
 }
