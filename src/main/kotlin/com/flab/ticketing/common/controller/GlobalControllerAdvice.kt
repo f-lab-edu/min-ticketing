@@ -17,22 +17,22 @@ import java.util.*
 class GlobalControllerAdvice {
 
     @ExceptionHandler(DuplicatedException::class)
-    fun duplicatedEmail(e: DuplicatedException): ResponseEntity<ErrorResponse> {
+    fun handleDuplicatedException(e: DuplicatedException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.CONFLICT)
     }
 
     @ExceptionHandler(InvalidValueException::class)
-    fun invalidEmail(e: InvalidValueException): ResponseEntity<ErrorResponse> {
+    fun handleInvalidValueException(e: InvalidValueException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(NotFoundException::class)
-    fun notFoundEmailVerifyCode(e: NotFoundException): ResponseEntity<ErrorResponse> {
+    fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.NOT_FOUND)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun springValidatorException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
+    fun handleSpringValidatorException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val sj = StringJoiner(",")
 
         e.fieldErrors.stream().forEach { s -> sj.add(s.field) }
