@@ -5,6 +5,7 @@ import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.extensions.Extension
+import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
 import jakarta.annotation.PostConstruct
@@ -40,15 +41,16 @@ abstract class BehaviorIntegrationTest : BehaviorSpec() {
             GreenMailConfiguration
                 .aConfig()
                 .withUser("foo@localhost", "foo", "foo-pwd")
+
         )
 
-    @PostConstruct
-    fun setUp() {
+    override suspend fun beforeSpec(spec: Spec) {
+        super.beforeSpec(spec)
         greenMail.start()
     }
 
-    @PreDestroy
-    fun tearDown() {
+    override suspend fun afterSpec(spec: Spec) {
+        super.afterSpec(spec)
         greenMail.stop()
     }
 
