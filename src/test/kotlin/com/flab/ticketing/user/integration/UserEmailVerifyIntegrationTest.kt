@@ -122,13 +122,12 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
         given("올바른 형식의 이메일이고, 인증코드가 유효할 때") {
             val email = "foo@localhost"
             val code = "1234AB"
-            val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
-
 
             emailRepository.save(EmailVerifyInfo(email, code))
 
-            `when`("인증 코드를 검증 시도하면") {
+            `when`("올바른 인증 코드를 가지고 검증 시도할 시") {
                 val uri = "/api/user/new/email/verify"
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -147,7 +146,28 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
 
                 }
             }
+            `when`("잘못된 인증 코드를 가지고 검증 시도할 시") {
+                val invalidCode = "AB1234"
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, invalidCode))
+                val uri = "/api/user/new/email/verify"
 
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태코드와 알맞은 메시지를 반환한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBeExactly 400
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.code
+                }
+            }
         }
         given("인증 코드를 보낸적 없는 이메일이거나 만료된 인증 코드일 때") {
             val email = "noSaved@email.com"
@@ -178,7 +198,8 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
             }
         }
 
-        afterEach {
+
+        afterSpec {
             greenMail.reset()
             emailRepository.deleteAll()
         }
