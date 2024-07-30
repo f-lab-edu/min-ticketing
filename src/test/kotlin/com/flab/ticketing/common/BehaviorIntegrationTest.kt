@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.transaction.annotation.Transactional
 import redis.embedded.RedisServer
 
 
@@ -25,6 +26,7 @@ import redis.embedded.RedisServer
 @Import(EmbeddedRedisServerConfig::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 abstract class BehaviorIntegrationTest : BehaviorSpec() {
 
     override fun extensions(): List<Extension> = listOf(SpringExtension)

@@ -5,10 +5,6 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "users")
 data class User(
-    @Id
-    @GeneratedValue
-    val id: Long,
-
     @Column(nullable = false, unique = true)
     val uid: String,
 
@@ -19,5 +15,9 @@ data class User(
     val password: String,
 
     @Column(nullable = false)
-    val nickname: String
+    val nickname: String,
+
+    @Id
+    @GeneratedValue
+    val id: Long? = null
 )
