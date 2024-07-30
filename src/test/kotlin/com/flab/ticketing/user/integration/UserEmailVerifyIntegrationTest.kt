@@ -149,6 +149,34 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
             }
 
         }
+        given("인증 코드를 보낸적 없는 이메일이거나 만료된 인증 코드일 때") {
+            val email = "noSaved@email.com"
+            val code = "123ABC"
+            val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+
+
+            `when`("인증 코드를 검증 시도하면") {
+                val uri = "/api/user/new/email/verify"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                then("404 상태코드와 관련 메시지를 반환한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBeExactly 404
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.code
+                }
+            }
+        }
 
         afterEach {
             greenMail.reset()
