@@ -122,7 +122,7 @@ class UserControllerTest : BehaviorSpec() {
         given("이메일 인증 코드 검증 요청 시") {
             val uri = "/api/user/new/email/verify"
 
-            `when`("1시간 전에 인증 코드를 보냈던 이메일이라면") {
+            `when`("유효기간 이내에 인증코드를 보냈던 이메일이라면") {
                 val email = "noSaved@email.com"
                 val code = "123ABC"
 
