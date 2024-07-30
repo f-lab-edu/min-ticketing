@@ -15,10 +15,10 @@ spring:
         show_sql: true
   mail:
     sender: noreply@minticketing.com
-    host: smtp.test.com
-    port: 123
-    username: minturtle
-    password: pw
+    host: 127.0.0.1
+    port: 3025
+    username: foo
+    password: foo-pwd
   data:
     redis:
       host: localhost

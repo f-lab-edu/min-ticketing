@@ -36,6 +36,8 @@ dependencies {
     testImplementation 'com.h2database:h2:2.3.230'
     testImplementation 'io.mockk:mockk:1.13.12'
     testImplementation 'com.ninja-squad:springmockk:4.0.2'
+    testImplementation 'com.github.codemonstur:embedded-redis:1.4.3'
+    testImplementation 'com.icegreen:greenmail:2.0.1'
 
 }
 
