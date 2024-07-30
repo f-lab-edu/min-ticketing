@@ -4,8 +4,11 @@ import com.flab.ticketing.common.BehaviorIntegrationTest
 import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
+import com.flab.ticketing.user.dto.UserEmailVerificationDto
+import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.exception.UserErrorInfos
+import com.flab.ticketing.user.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
@@ -20,6 +23,9 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
 
     @Autowired
     private lateinit var userRepository: UserRepository
+
+    @Autowired
+    private lateinit var emailRepository: EmailVerifyInfoRepository
 
     init {
         given("올바른 형식의 이메일이 주어졌을 때") {
@@ -56,7 +62,6 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
                     }
                 }
             }
-
 
         }
         given("잘못된 형식의 이메일이 주어졌을 때") {
@@ -114,7 +119,41 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
 
         }
 
-        afterEach { greenMail.reset() }
+        given("올바른 형식의 이메일이고, 인증코드가 유효할 때") {
+            val email = "foo@localhost"
+            val code = "1234AB"
+            val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+
+
+            emailRepository.save(EmailVerifyInfo(email, code))
+
+            `when`("인증 코드를 검증 시도하면") {
+                val uri = "/api/user/new/email/verify"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                `then`("검증이 완료되어 200 코드를 반환한다.") {
+                    val actual = emailRepository.findById(email).get()
+
+                    mvcResult.response.status shouldBeExactly 200
+                    actual.isVerified shouldBeEqual true
+
+                }
+            }
+
+        }
+
+        afterEach {
+            greenMail.reset()
+            emailRepository.deleteAll()
+        }
     }
 
 

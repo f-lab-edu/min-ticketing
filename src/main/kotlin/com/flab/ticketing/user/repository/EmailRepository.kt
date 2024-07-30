@@ -21,9 +21,11 @@ class EmailRepository(
     }
 
     fun setVerifySuccess(email: String) {
-        val verifyInfoOptional = getVerifyCodeEntity(email) ?: return
-        
-        verifyInfoOptional.isVerified = true
+        val verifyInfo = getVerifyCodeEntity(email) ?: return
+
+        verifyInfo.isVerified = true
+        emailVerifyInfoRepository.save(verifyInfo)
+
 
     }
 
