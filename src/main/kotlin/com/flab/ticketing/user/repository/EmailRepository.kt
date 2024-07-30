@@ -2,6 +2,7 @@ package com.flab.ticketing.user.repository
 
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import org.springframework.stereotype.Component
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 class EmailRepository(
@@ -14,11 +15,21 @@ class EmailRepository(
     }
 
     fun getCode(email: String): String? {
-        val verifyInfoOptional = emailVerifyInfoRepository.findById(email)
-        if (verifyInfoOptional.isEmpty) {
-            return null
-        }
+        val verifyInfoOptional = getVerifyCodeEntity(email) ?: return null
 
-        return verifyInfoOptional.get().code
+        return verifyInfoOptional.code
+    }
+
+    fun setVerifySuccess(email: String) {
+        val verifyInfoOptional = getVerifyCodeEntity(email) ?: return
+        
+        verifyInfoOptional.isVerified = true
+
+    }
+
+    private fun getVerifyCodeEntity(email: String): EmailVerifyInfo? {
+        val verifyInfoOptional = emailVerifyInfoRepository.findById(email)
+
+        return verifyInfoOptional.getOrNull()
     }
 }

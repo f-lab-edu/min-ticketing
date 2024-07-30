@@ -9,5 +9,5 @@ class EmailVerifyInfo(
     @Id
     val email: String,
     val code: String,
-    val isVerified: Boolean = false
+    var isVerified: Boolean = false
 )

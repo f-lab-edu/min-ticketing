@@ -43,6 +43,7 @@ class UserService(
             throw InvalidValueException(UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
         }
 
+        emailRepository.setVerifySuccess(email)
     }
 
 }

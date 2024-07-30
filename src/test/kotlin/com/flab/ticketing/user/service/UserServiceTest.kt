@@ -55,11 +55,12 @@ class UserServiceTest : BehaviorSpec() {
                 val code = "123abc"
 
                 every { emailRepository.getCode(email) } returns code
-
+                every { emailRepository.setVerifySuccess(email) } returns Unit
                 then("오류를 반환하지 않는다.") {
                     shouldNotThrow<Exception> {
                         userService.verifyEmailCode(email, code)
                     }
+                    verify { emailRepository.setVerifySuccess(email) }
                 }
             }
 
