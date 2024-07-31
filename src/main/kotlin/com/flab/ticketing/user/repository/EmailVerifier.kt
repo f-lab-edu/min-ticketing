@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-class EmailRepository(
+class EmailVerifier(
     private val emailVerifyInfoRepository: EmailVerifyInfoRepository
 ) {
 
