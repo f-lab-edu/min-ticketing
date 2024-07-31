@@ -239,19 +239,21 @@ class UserControllerTest : BehaviorSpec() {
         given("이메일 인증 코드 인증이 완료된 사용자의 경우") {
             val uri = "/api/user/new/info"
             val email = "email@email.com"
-            val password = "abc1234!"
-            val passwordConfirm = "abc1234!"
-            val nickname = "minturtle"
-            val dto = UserRegisterDto(
-                email,
-                password,
-                passwordConfirm,
-                nickname
-            )
 
-            every { userService.saveVerifiedUserInfo(dto) } returns Unit
 
             `when`("추가 개인 정보를 입력하여 회원가입을 완료할 시") {
+
+                val password = "abc1234!"
+                val passwordConfirm = "abc1234!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    password,
+                    passwordConfirm,
+                    nickname
+                )
+
+                every { userService.saveVerifiedUserInfo(dto) } returns Unit
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -266,24 +268,18 @@ class UserControllerTest : BehaviorSpec() {
                     verify { userService.saveVerifiedUserInfo(dto) }
                 }
             }
-        }
-        given("이메일 인증 코드 인증은 완료했으나, Password와 PasswordConfirm이 다른 경우") {
-            val uri = "/api/user/new/info"
-            val email = "email@email.com"
-            val password = "abc1234!"
-            val passwordConfirm = "abc1234!"
-            val nickname = "minturtle"
-            val dto = UserRegisterDto(
-                email,
-                password,
-                passwordConfirm,
-                nickname
-            )
 
-            every { userService.saveVerifiedUserInfo(dto) } throws InvalidValueException(UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+            `when`("다른 Password와 PasswordConfirm을 입력하여 회원가입을 완료할 시") {
+                val password = "abc1234!"
+                val passwordConfirm = "1234abc!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    password,
+                    passwordConfirm,
+                    nickname
+                )
 
-
-            `when`("추가 개인 정보를 입력하여 회원가입을 완료할 시") {
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -306,6 +302,9 @@ class UserControllerTest : BehaviorSpec() {
                     responseBody.code shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.code
                 }
             }
+
+
         }
+
     }
 }
