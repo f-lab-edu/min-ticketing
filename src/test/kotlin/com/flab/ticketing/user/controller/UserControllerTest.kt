@@ -15,6 +15,8 @@ import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
@@ -280,6 +282,7 @@ class UserControllerTest : BehaviorSpec() {
                     nickname
                 )
 
+                every { userService.saveVerifiedUserInfo(dto) } throws InvalidValueException(UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -303,6 +306,45 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
+            forAll(
+                row("Short1!", "Short1!"),
+                row("NoNumbers!", "NoNumbers!"),
+                row("12345678", "12345678"),
+                row("!@#$%^&*", "!@#$%^&*"),
+                row("NoSpecial123", "NoSpecial123"),
+                row("NoNumber!", "NoNumber!"),
+                row("1234!@#$", "1234!@#$")
+            ) { password, passwordConfirm ->
+                `when`("Password가 조건을 만족하지 못하는 경우") {
+                    val nickname = "minturtle"
+                    val dto = UserRegisterDto(
+                        email,
+                        password,
+                        passwordConfirm,
+                        nickname
+                    )
+
+                    val mvcResult = mockMvc.perform(
+                        post(uri)
+                            .content(objectMapper.writeValueAsString(dto))
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andDo(print())
+                        .andReturn()
+
+                    then("400 상태 코드와 적절한 오류 정보를 반환한다.") {
+                        mvcResult.response.status shouldBeExactly 400
+
+                        val responseBody = objectMapper.readValue(
+                            mvcResult.response.contentAsString,
+                            ErrorResponse::class.java
+                        )
+
+                        responseBody.code shouldBeEqual CommonErrorInfos.INVALID_FIELD.code
+                        responseBody.message shouldBeEqual "password" + CommonErrorInfos.INVALID_FIELD.message
+                    }
+                }
+            }
 
         }
 
