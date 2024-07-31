@@ -34,4 +34,8 @@ class EmailVerifier(
 
         return verifyInfoOptional.getOrNull()
     }
+
+    fun checkVerified(email: String) {
+        TODO()
+    }
 }
