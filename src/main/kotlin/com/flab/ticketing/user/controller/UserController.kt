@@ -2,6 +2,7 @@ package com.flab.ticketing.user.controller
 
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
+import com.flab.ticketing.user.dto.UserRegisterDto
 import com.flab.ticketing.user.service.UserService
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,5 +26,10 @@ class UserController(
         userService.verifyEmailCode(verifyInfo.email, verifyInfo.code)
     }
 
+
+    @PostMapping("/new/info")
+    fun saveVerifiedUserInfo(@Validated @RequestBody registerInfo: UserRegisterDto) {
+        userService.saveVerifiedUserInfo(registerInfo)
+    }
 
 }

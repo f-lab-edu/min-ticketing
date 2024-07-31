@@ -3,6 +3,7 @@ package com.flab.ticketing.user.service
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.user.dto.UserRegisterDto
 import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
@@ -44,6 +45,10 @@ class UserService(
         }
 
         emailRepository.setVerifySuccess(email)
+    }
+
+    fun saveVerifiedUserInfo(registerInfo: UserRegisterDto) {
+        TODO()
     }
 
 }

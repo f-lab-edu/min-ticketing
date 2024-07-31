@@ -8,6 +8,7 @@ import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
+import com.flab.ticketing.user.dto.UserRegisterDto
 import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.service.UserService
 import com.ninjasquad.springmockk.MockkBean
@@ -230,6 +231,38 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
+        }
+
+        given("이메일 인증 코드 인증이 완료된 사용자의 경우") {
+            val uri = "/api/user/new/info"
+            val email = "email@email.com"
+            val password = "abc1234!"
+            val passwordConfirm = "abc1234!"
+            val nickname = "minturtle"
+            val dto = UserRegisterDto(
+                email,
+                password,
+                passwordConfirm,
+                nickname
+            )
+
+            every { userService.saveVerifiedUserInfo(dto) } returns Unit
+
+            `when`("추가 개인 정보를 입력하여 회원가입을 완료할 시") {
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                then("정상 처리되어 200 OK 상태 코드를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 200
+                    verify { userService.saveVerifiedUserInfo(dto) }
+                }
+            }
         }
 
     }
