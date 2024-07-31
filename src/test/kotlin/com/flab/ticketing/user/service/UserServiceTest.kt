@@ -106,33 +106,56 @@ class UserServiceTest : BehaviorSpec() {
 
         given("이메일 인증 코드 검증이 완료된 사용자의 경우") {
             val email = "email@email.com"
-            val password = "abc1234!"
-            val passwordConfirm = "abc1234!"
-            val nickname = "minturtle"
-
-            val encryptedPassword = "asldll321lslafas231412@3@!Ffa"
-            val uid = "123asf"
-
-            val dto = UserRegisterDto(
-                email,
-                password,
-                passwordConfirm,
-                nickname
-            )
-            val expectedUser = User(uid, email, encryptedPassword, nickname)
 
             every { emailVerifier.checkVerified(email) } returns Unit
-            every { passwordEncoder.encode(password) } returns encryptedPassword
-            every { nanoIdGenerator.createNanoId() } returns uid
-            every { userRepository.save(any()) } returns expectedUser
 
             `when`("정상적인 추가 개인 정보를 입력하여 회원가입을 완료할 시") {
+                val password = "abc1234!"
+                val passwordConfirm = "abc1234!"
+                val nickname = "minturtle"
+
+                val encryptedPassword = "asldll321lslafas231412@3@!Ffa"
+                val uid = "123asf"
+
+                val dto = UserRegisterDto(
+                    email,
+                    password,
+                    passwordConfirm,
+                    nickname
+                )
+
+                val expectedUser = User(uid, email, encryptedPassword, nickname)
+
+                every { passwordEncoder.encode(password) } returns encryptedPassword
+                every { nanoIdGenerator.createNanoId() } returns uid
+                every { userRepository.save(any()) } returns expectedUser
+
+
+
                 userService.saveVerifiedUserInfo(dto)
 
                 then("DB에 회원 정보를 추가해 저장할 수 있다.") {
                     verify { userRepository.save(expectedUser) }
                 }
             }
+            `when`("Password와 Password Confirm을 잘못입력하여 회원가입을 완료할 시") {
+                val password = "abc1234!"
+                val passwordConfirm = "123123abc!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    password,
+                    passwordConfirm,
+                    nickname
+                )
+
+                then("InvalidValueException과 그에 맞는 오류 정보를 담아 throw한다.") {
+                    val e = shouldThrow<InvalidValueException> { userService.saveVerifiedUserInfo(dto) }
+                    e.info shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS
+
+                }
+            }
+
         }
 
     }

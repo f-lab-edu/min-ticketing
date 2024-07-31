@@ -55,6 +55,10 @@ class UserService(
     fun saveVerifiedUserInfo(registerInfo: UserRegisterDto) {
         emailVerifier.checkVerified(registerInfo.email)
 
+        if (!registerInfo.password.equals(registerInfo.passwordConfirm)) {
+            throw InvalidValueException(UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+        }
+
         val uid = nanoIdGenerator.createNanoId()
         val encodedPassword = passwordEncoder.encode(registerInfo.password)
 

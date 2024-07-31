@@ -1,6 +1,7 @@
 package com.flab.ticketing.user.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.common.config.SecurityConfig
 import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
@@ -22,6 +23,7 @@ import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -31,6 +33,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 @WebMvcTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Import(SecurityConfig::class)
 class UserControllerTest : BehaviorSpec() {
     override fun extensions(): List<Extension> = listOf(SpringExtension)
 
@@ -264,6 +267,45 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
         }
+        given("이메일 인증 코드 인증은 완료했으나, Password와 PasswordConfirm이 다른 경우") {
+            val uri = "/api/user/new/info"
+            val email = "email@email.com"
+            val password = "abc1234!"
+            val passwordConfirm = "abc1234!"
+            val nickname = "minturtle"
+            val dto = UserRegisterDto(
+                email,
+                password,
+                passwordConfirm,
+                nickname
+            )
 
+            every { userService.saveVerifiedUserInfo(dto) } throws InvalidValueException(UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+
+
+            `when`("추가 개인 정보를 입력하여 회원가입을 완료할 시") {
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                then("400 상태코드와 알맞은 메시지를 출력한다.") {
+                    mvcResult.response.status shouldBeExactly 400
+
+                    val responseBody = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        ErrorResponse::class.java
+                    )
+
+
+                    responseBody.message shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.message
+                    responseBody.code shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.code
+                }
+            }
+        }
     }
 }
