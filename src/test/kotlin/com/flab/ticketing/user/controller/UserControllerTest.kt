@@ -3,10 +3,7 @@ package com.flab.ticketing.user.controller
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.config.SecurityConfig
 import com.flab.ticketing.common.dto.ErrorResponse
-import com.flab.ticketing.common.exception.CommonErrorInfos
-import com.flab.ticketing.common.exception.DuplicatedException
-import com.flab.ticketing.common.exception.InvalidValueException
-import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.common.exception.*
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
 import com.flab.ticketing.user.dto.UserRegisterDto
@@ -346,6 +343,45 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
+        }
+
+        given("이메일 인증 시도를 하지 않았거나 가입 유효시간이 지난 사용자의 경우") {
+            val email = "noSaved@email.com"
+            val uri = "/api/user/new/info"
+
+            `when`("추가 개인 정보를 입력하여 회원가입을 시도할 시") {
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    userPW,
+                    userPWConfirm,
+                    nickname
+                )
+
+                every { userService.saveVerifiedUserInfo(dto) } throws ForbiddenException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
+
+                val mvcResult = mockMvc.perform(
+                    post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(print())
+                    .andReturn()
+
+                then("403 상태코드와 알맞은 메시지를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 403
+
+                    val responseBody = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        ErrorResponse::class.java
+                    )
+
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
+                }
+            }
         }
 
     }

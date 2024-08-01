@@ -1,10 +1,7 @@
 package com.flab.ticketing.common.controller
 
 import com.flab.ticketing.common.dto.ErrorResponse
-import com.flab.ticketing.common.exception.CommonErrorInfos
-import com.flab.ticketing.common.exception.DuplicatedException
-import com.flab.ticketing.common.exception.InvalidValueException
-import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.common.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -41,4 +38,8 @@ class GlobalControllerAdvice {
         return ResponseEntity(ErrorResponse(sj.toString() + errorInfo.message, errorInfo.code), HttpStatus.BAD_REQUEST)
     }
 
+    @ExceptionHandler(ForbiddenException::class)
+    fun handleForbiddenException(e: ForbiddenException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.FORBIDDEN)
+    }
 }
