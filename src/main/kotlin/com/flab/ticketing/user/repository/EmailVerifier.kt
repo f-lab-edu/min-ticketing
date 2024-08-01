@@ -1,7 +1,6 @@
 package com.flab.ticketing.user.repository
 
 import com.flab.ticketing.common.exception.ForbiddenException
-import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.exception.UserErrorInfos
 import org.springframework.stereotype.Component
@@ -45,7 +44,7 @@ class EmailVerifier(
             throw ForbiddenException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
         }
         if (!verifyCodeInfo.isVerified) {
-            throw InvalidValueException(UserErrorInfos.EMAIL_NOT_VERIFIED)
+            throw ForbiddenException(UserErrorInfos.EMAIL_NOT_VERIFIED)
         }
     }
 }

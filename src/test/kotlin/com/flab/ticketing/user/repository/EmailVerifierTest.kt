@@ -2,7 +2,8 @@ package com.flab.ticketing.user.repository
 
 import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
-import com.flab.ticketing.user.exception.UserErrorInfos
+import com.flab.ticketing.user.exception.UserErrorInfos.EMAIL_NOT_VERIFIED
+import com.flab.ticketing.user.exception.UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -14,7 +15,7 @@ import java.util.*
 class EmailVerifierTest : BehaviorSpec() {
     private val emailVerifyInfoRepository: EmailVerifyInfoRepository = mockk()
     private val emailVerifier: EmailVerifier = EmailVerifier(emailVerifyInfoRepository)
-    
+
     init {
         given("이메일 인증이 완료된 사용자가 존재할 때") {
             val email = "email@email.com"
@@ -42,8 +43,23 @@ class EmailVerifierTest : BehaviorSpec() {
                         emailVerifier.checkVerified(email)
                     }
 
-                    e.info.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
-                    e.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
+                    e.info.code shouldBeEqual EMAIL_VERIFY_INFO_NOT_FOUND.code
+                    e.info.message shouldBeEqual EMAIL_VERIFY_INFO_NOT_FOUND.message
+                }
+            }
+        }
+        given("이메일 인증이 완료되지 않았을 때") {
+            val email = "notVerified@email.com"
+
+            every { emailVerifyInfoRepository.findById(email) } returns Optional.of(EmailVerifyInfo(email, "1234ab"))
+
+            `when`("해당 사용자가 이메일 검증을 시도할 때") {
+                then("ForbiddenException과 적절한 ErrorInfo를 throw한다") {
+                    val e = shouldThrow<ForbiddenException> {
+                        emailVerifier.checkVerified(email)
+                    }
+
+                    e.info shouldBeEqual EMAIL_NOT_VERIFIED
                 }
             }
         }
