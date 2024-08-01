@@ -157,7 +157,7 @@ class UserControllerTest : BehaviorSpec() {
                         email,
                         code
                     )
-                } throws NotFoundException(UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND)
+                } throws NotFoundException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -173,8 +173,8 @@ class UserControllerTest : BehaviorSpec() {
 
 
                     mvcResult.response.status shouldBeExactly 404
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.code
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
                 }
             }
 

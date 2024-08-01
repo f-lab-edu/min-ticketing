@@ -42,7 +42,7 @@ class UserService(
         val savedCode = emailVerifier.getCode(email)
 
         if (savedCode == null) {
-            throw NotFoundException(UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND)
+            throw NotFoundException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
         }
 
         if (!savedCode.equals(code)) {

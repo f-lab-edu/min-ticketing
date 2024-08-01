@@ -82,7 +82,7 @@ class UserServiceTest : BehaviorSpec() {
                         userService.verifyEmailCode(email, code)
                     }
 
-                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
+                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
                 }
             }
 

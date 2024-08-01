@@ -192,8 +192,8 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly 404
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.code
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
                 }
             }
         }
