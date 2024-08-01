@@ -402,7 +402,7 @@ class UserControllerTest : BehaviorSpec() {
                     nickname
                 )
 
-                every { userService.saveVerifiedUserInfo(dto) } throws ForbiddenException(EMAIL_VERIFY_NOT_COMPLETED)
+                every { userService.saveVerifiedUserInfo(dto) } throws ForbiddenException(EMAIL_NOT_VERIFIED)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -420,8 +420,8 @@ class UserControllerTest : BehaviorSpec() {
                         ErrorResponse::class.java
                     )
 
-                    responseBody.code shouldBeEqual EMAIL_VERIFY_NOT_COMPLETED.code
-                    responseBody.message shouldBeEqual EMAIL_VERIFY_NOT_COMPLETED.message
+                    responseBody.code shouldBeEqual EMAIL_NOT_VERIFIED.code
+                    responseBody.message shouldBeEqual EMAIL_NOT_VERIFIED.message
                 }
             }
         }
