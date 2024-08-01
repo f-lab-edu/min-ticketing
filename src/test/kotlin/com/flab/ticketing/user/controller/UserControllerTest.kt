@@ -245,13 +245,13 @@ class UserControllerTest : BehaviorSpec() {
 
             `when`("추가 개인 정보를 입력하여 회원가입을 완료할 시") {
 
-                val password = "abc1234!"
-                val passwordConfirm = "abc1234!"
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
                 val nickname = "minturtle"
                 val dto = UserRegisterDto(
                     email,
-                    password,
-                    passwordConfirm,
+                    userPW,
+                    userPWConfirm,
                     nickname
                 )
 
@@ -271,14 +271,14 @@ class UserControllerTest : BehaviorSpec() {
                 }
             }
 
-            `when`("다른 Password와 PasswordConfirm을 입력하여 회원가입을 완료할 시") {
-                val password = "abc1234!"
-                val passwordConfirm = "1234abc!"
+            `when`("다른 userPW와 userPWConfirm을 입력하여 회원가입을 완료할 시") {
+                val userPW = "abc1234!"
+                val userPWConfirm = "1234abc!"
                 val nickname = "minturtle"
                 val dto = UserRegisterDto(
                     email,
-                    password,
-                    passwordConfirm,
+                    userPW,
+                    userPWConfirm,
                     nickname
                 )
 
@@ -314,13 +314,13 @@ class UserControllerTest : BehaviorSpec() {
                 row("NoSpecial123", "NoSpecial123"),
                 row("NoNumber!", "NoNumber!"),
                 row("1234!@#$", "1234!@#$")
-            ) { password, passwordConfirm ->
+            ) { userPW, userPWConfirm ->
                 `when`("Password가 조건을 만족하지 못하는 경우") {
                     val nickname = "minturtle"
                     val dto = UserRegisterDto(
                         email,
-                        password,
-                        passwordConfirm,
+                        userPW,
+                        userPWConfirm,
                         nickname
                     )
 
