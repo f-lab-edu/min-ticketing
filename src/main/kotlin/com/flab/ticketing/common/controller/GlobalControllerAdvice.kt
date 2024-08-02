@@ -14,17 +14,17 @@ import java.util.*
 class GlobalControllerAdvice {
 
     @ExceptionHandler(DuplicatedException::class)
-    fun handleDuplicatedException(e: DuplicatedException): ResponseEntity<ErrorResponse> {
+    fun handleDuplicatedException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.CONFLICT)
     }
 
-    @ExceptionHandler(InvalidValueException::class)
-    fun handleInvalidValueException(e: InvalidValueException): ResponseEntity<ErrorResponse> {
+    @ExceptionHandler(InvalidValueException::class, BusinessIllegalStateException::class)
+    fun handleBadRequestException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.BAD_REQUEST)
     }
 
     @ExceptionHandler(NotFoundException::class)
-    fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse> {
+    fun handleNotFoundException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.NOT_FOUND)
     }
 
@@ -39,7 +39,7 @@ class GlobalControllerAdvice {
     }
 
     @ExceptionHandler(ForbiddenException::class)
-    fun handleForbiddenException(e: ForbiddenException): ResponseEntity<ErrorResponse> {
+    fun handleForbiddenException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.FORBIDDEN)
     }
 }

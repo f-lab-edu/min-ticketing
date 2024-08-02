@@ -1,6 +1,6 @@
 package com.flab.ticketing.user.utils
 
-import com.flab.ticketing.common.exception.ForbiddenException
+import com.flab.ticketing.common.exception.BusinessIllegalStateException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.exception.UserErrorInfos.EMAIL_NOT_VERIFIED
 import com.flab.ticketing.user.exception.UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND
@@ -40,7 +40,7 @@ class EmailVerifierTest : BehaviorSpec() {
 
             `when`("저장되지 않은 사용자가 이메일 검증을 요청했을 시") {
                 then("Forbidden 오류와 이에 맞는 ErrorInfo를 throw한다.") {
-                    val e = shouldThrow<ForbiddenException> {
+                    val e = shouldThrow<BusinessIllegalStateException> {
                         emailVerifier.checkVerified(email)
                     }
 
@@ -56,7 +56,7 @@ class EmailVerifierTest : BehaviorSpec() {
 
             `when`("해당 사용자가 이메일 검증을 시도할 때") {
                 then("ForbiddenException과 적절한 ErrorInfo를 throw한다") {
-                    val e = shouldThrow<ForbiddenException> {
+                    val e = shouldThrow<BusinessIllegalStateException> {
                         emailVerifier.checkVerified(email)
                     }
 

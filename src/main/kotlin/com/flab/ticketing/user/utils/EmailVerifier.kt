@@ -1,6 +1,6 @@
 package com.flab.ticketing.user.utils
 
-import com.flab.ticketing.common.exception.ForbiddenException
+import com.flab.ticketing.common.exception.BusinessIllegalStateException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.repository.EmailVerifyInfoRepository
@@ -42,10 +42,10 @@ class EmailVerifier(
         val verifyCodeInfo = getVerifyCodeEntity(email)
 
         if (verifyCodeInfo == null) {
-            throw ForbiddenException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
+            throw BusinessIllegalStateException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
         }
         if (!verifyCodeInfo.isVerified) {
-            throw ForbiddenException(UserErrorInfos.EMAIL_NOT_VERIFIED)
+            throw BusinessIllegalStateException(UserErrorInfos.EMAIL_NOT_VERIFIED)
         }
     }
 }

@@ -362,7 +362,9 @@ class UserControllerTest : BehaviorSpec() {
                     nickname
                 )
 
-                every { userService.saveVerifiedUserInfo(dto) } throws ForbiddenException(EMAIL_VERIFY_INFO_NOT_FOUND)
+                every { userService.saveVerifiedUserInfo(dto) } throws BusinessIllegalStateException(
+                    EMAIL_VERIFY_INFO_NOT_FOUND
+                )
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -372,8 +374,8 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                then("403 상태코드와 알맞은 메시지를 반환한다.") {
-                    mvcResult.response.status shouldBeExactly 403
+                then("400 상태코드와 알맞은 메시지를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 400
 
                     val responseBody = objectMapper.readValue(
                         mvcResult.response.contentAsString,
@@ -402,7 +404,7 @@ class UserControllerTest : BehaviorSpec() {
                     nickname
                 )
 
-                every { userService.saveVerifiedUserInfo(dto) } throws ForbiddenException(EMAIL_NOT_VERIFIED)
+                every { userService.saveVerifiedUserInfo(dto) } throws BusinessIllegalStateException(EMAIL_NOT_VERIFIED)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -412,8 +414,8 @@ class UserControllerTest : BehaviorSpec() {
                     .andDo(print())
                     .andReturn()
 
-                then("403 상태코드와 적절한 상태 메시지를 반환한다.") {
-                    mvcResult.response.status shouldBeExactly 403
+                then("400 상태코드와 적절한 상태 메시지를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 400
 
                     val responseBody = objectMapper.readValue(
                         mvcResult.response.contentAsString,
