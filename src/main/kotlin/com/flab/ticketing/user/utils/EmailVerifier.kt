@@ -1,8 +1,9 @@
-package com.flab.ticketing.user.repository
+package com.flab.ticketing.user.utils
 
 import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.exception.UserErrorInfos
+import com.flab.ticketing.user.repository.EmailVerifyInfoRepository
 import org.springframework.stereotype.Component
 import kotlin.jvm.optionals.getOrNull
 

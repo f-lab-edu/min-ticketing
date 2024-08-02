@@ -6,10 +6,10 @@ import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.dto.UserRegisterDto
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.exception.UserErrorInfos
-import com.flab.ticketing.user.repository.EmailVerifier
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
+import com.flab.ticketing.user.utils.EmailVerifier
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec

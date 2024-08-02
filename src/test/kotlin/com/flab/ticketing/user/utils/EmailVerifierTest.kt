@@ -1,9 +1,10 @@
-package com.flab.ticketing.user.repository
+package com.flab.ticketing.user.utils
 
 import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.exception.UserErrorInfos.EMAIL_NOT_VERIFIED
 import com.flab.ticketing.user.exception.UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND
+import com.flab.ticketing.user.repository.EmailVerifyInfoRepository
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
