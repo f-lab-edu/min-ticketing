@@ -21,8 +21,8 @@
 
 - `kotlin`
 - `Spring Boot`, `Spring Data JPA`
-- `MySQL`
-
+- `MySQL`, `Redis`
+- `koTest`, `mockk`
 ## 🏘️ 프로젝트 아키텍쳐
 
 ---
