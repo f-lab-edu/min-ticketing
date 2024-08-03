@@ -13,6 +13,7 @@ import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 
 @Service
@@ -25,6 +26,7 @@ class UserService(
     private val nanoIdGenerator: NanoIdGenerator
 ) {
 
+    @Transactional(readOnly = true)
     fun sendEmailVerifyCode(email: String) {
         val user = userRepository.findByEmail(email)
 
@@ -52,12 +54,10 @@ class UserService(
         emailVerifier.setVerifySuccess(email)
     }
 
+
+    @Transactional
     fun saveVerifiedUserInfo(registerInfo: UserRegisterDto) {
         emailVerifier.checkVerified(registerInfo.email)
-
-        if (!registerInfo.password.equals(registerInfo.passwordConfirm)) {
-            throw InvalidValueException(UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
-        }
 
         val uid = nanoIdGenerator.createNanoId()
         val encodedPassword = passwordEncoder.encode(registerInfo.password)
