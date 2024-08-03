@@ -6,10 +6,10 @@ import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.dto.UserRegisterDto
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.exception.UserErrorInfos
-import com.flab.ticketing.user.repository.EmailVerifier
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
+import com.flab.ticketing.user.utils.EmailVerifier
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -24,10 +24,10 @@ class UserServiceTest : BehaviorSpec() {
     private val emailSender: EmailSender = mockk()
     private val emailVerifier: EmailVerifier = mockk()
     private val userRepository: UserRepository = mockk()
-    private val passwordEncoder: PasswordEncoder = mockk()
+    private val userPWEncoder: PasswordEncoder = mockk()
     private val nanoIdGenerator: NanoIdGenerator = mockk()
     private val userService: UserService =
-        UserService(emailCodeGenerator, emailSender, emailVerifier, userRepository, passwordEncoder, nanoIdGenerator)
+        UserService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
 
     init {
 
@@ -82,7 +82,7 @@ class UserServiceTest : BehaviorSpec() {
                         userService.verifyEmailCode(email, code)
                     }
 
-                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
+                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
                 }
             }
 
@@ -110,23 +110,23 @@ class UserServiceTest : BehaviorSpec() {
             every { emailVerifier.checkVerified(email) } returns Unit
 
             `when`("정상적인 추가 개인 정보를 입력하여 회원가입을 완료할 시") {
-                val password = "abc1234!"
-                val passwordConfirm = "abc1234!"
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
                 val nickname = "minturtle"
 
-                val encryptedPassword = "asldll321lslafas231412@3@!Ffa"
+                val encrypteduserPW = "asldll321lslafas231412@3@!Ffa"
                 val uid = "123asf"
 
                 val dto = UserRegisterDto(
                     email,
-                    password,
-                    passwordConfirm,
+                    userPW,
+                    userPWConfirm,
                     nickname
                 )
 
-                val expectedUser = User(uid, email, encryptedPassword, nickname)
+                val expectedUser = User(uid, email, encrypteduserPW, nickname)
 
-                every { passwordEncoder.encode(password) } returns encryptedPassword
+                every { userPWEncoder.encode(userPW) } returns encrypteduserPW
                 every { nanoIdGenerator.createNanoId() } returns uid
                 every { userRepository.save(any()) } returns expectedUser
 
@@ -138,14 +138,14 @@ class UserServiceTest : BehaviorSpec() {
                     verify { userRepository.save(expectedUser) }
                 }
             }
-            `when`("Password와 Password Confirm을 잘못입력하여 회원가입을 완료할 시") {
-                val password = "abc1234!"
-                val passwordConfirm = "123123abc!"
+            `when`("userPW와 userPW Confirm을 잘못입력하여 회원가입을 완료할 시") {
+                val userPW = "abc1234!"
+                val userPWConfirm = "123123abc!"
                 val nickname = "minturtle"
                 val dto = UserRegisterDto(
                     email,
-                    password,
-                    passwordConfirm,
+                    userPW,
+                    userPWConfirm,
                     nickname
                 )
 
