@@ -138,23 +138,6 @@ class UserServiceTest : BehaviorSpec() {
                     verify { userRepository.save(expectedUser) }
                 }
             }
-            `when`("userPW와 userPW Confirm을 잘못입력하여 회원가입을 완료할 시") {
-                val userPW = "abc1234!"
-                val userPWConfirm = "123123abc!"
-                val nickname = "minturtle"
-                val dto = UserRegisterDto(
-                    email,
-                    userPW,
-                    userPWConfirm,
-                    nickname
-                )
-
-                then("InvalidValueException과 그에 맞는 오류 정보를 담아 throw한다.") {
-                    val e = shouldThrow<InvalidValueException> { userService.saveVerifiedUserInfo(dto) }
-                    e.info shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS
-
-                }
-            }
 
         }
 

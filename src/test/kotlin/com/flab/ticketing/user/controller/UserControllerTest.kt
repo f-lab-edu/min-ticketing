@@ -279,8 +279,6 @@ class UserControllerTest : BehaviorSpec() {
                     nickname
                 )
 
-                every { userService.saveVerifiedUserInfo(dto) } throws InvalidValueException(PASSWORD_CONFIRM_NOT_EQUALS)
-
                 val mvcResult = mockMvc.perform(
                     post(uri)
                         .content(objectMapper.writeValueAsString(dto))
