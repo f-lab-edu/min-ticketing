@@ -4,6 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.24'
     id 'org.jetbrains.kotlin.jvm' version '1.9.24'
     id 'org.jetbrains.kotlin.plugin.spring' version '1.9.24'
+    id 'jacoco'
 }
 
 group = 'com.flab'
@@ -49,4 +50,54 @@ kotlin {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+jacocoTestReport {
+    reports {
+        html.required.set true
+        xml.required.set false
+        csv.required.set false
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "com/flab/ticketing/**/TicketingApplication.*",
+                    "com/flab/ticketing/**/TicketingApplicationKt.*",
+                    "com/flab/ticketing/**/dto/*",
+                    "**/config/*"
+            ])
+        }))
+    }
+
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.75
+            }
+        }
+    }
+}
+
+task testCoverage(type: Test) {
+    group 'verification'
+    description 'Runs the unit tests with coverage'
+
+    dependsOn(':test',
+            ':jacocoTestReport',
+            ':jacocoTestCoverageVerification')
+
+    tasks['jacocoTestReport'].mustRunAfter(tasks['test'])
+    tasks['jacocoTestCoverageVerification'].mustRunAfter(tasks['jacocoTestReport'])
 }
