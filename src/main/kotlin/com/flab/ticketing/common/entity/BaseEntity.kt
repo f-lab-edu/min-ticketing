@@ -1,8 +1,7 @@
 package com.flab.ticketing.common.entity
 
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
-import jakarta.persistence.MappedSuperclass
+import jakarta.persistence.*
+import java.time.ZonedDateTime
 import java.util.*
 
 
@@ -13,6 +12,10 @@ abstract class BaseEntity {
     var id: Long = 0L
         protected set
 
+    @Column(updatable = false)
+    var createdAt: ZonedDateTime = ZonedDateTime.now()
+
+    var updatedAt: ZonedDateTime = ZonedDateTime.now()
 
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is BaseEntity) {
@@ -24,6 +27,17 @@ abstract class BaseEntity {
 
     override fun hashCode(): Int {
         return Objects.hash(id)
+    }
+
+    @PrePersist
+    fun prePersist() {
+        createdAt = ZonedDateTime.now()
+        updatedAt = ZonedDateTime.now()
+    }
+
+    @PreUpdate
+    fun preUpdate() {
+        updatedAt = ZonedDateTime.now()
     }
 
 }
