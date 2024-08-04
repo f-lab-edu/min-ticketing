@@ -55,7 +55,7 @@ class EmailVerifierTest : BehaviorSpec() {
             every { emailVerifyInfoRepository.findById(email) } returns Optional.of(EmailVerifyInfo(email, "1234ab"))
 
             `when`("해당 사용자가 이메일 검증을 시도할 때") {
-                then("ForbiddenException과 적절한 ErrorInfo를 throw한다") {
+                then("BusinessIllegalStateException과 적절한 ErrorInfo를 throw한다") {
                     val e = shouldThrow<BusinessIllegalStateException> {
                         emailVerifier.checkVerified(email)
                     }
