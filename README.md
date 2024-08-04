@@ -42,7 +42,7 @@
 ## 💡 Technical Issues
 
 ---
-
+- [테스트 코드 개선하기, TDD와 BDD의 관계](https://flannel-dill-7dc.notion.site/0d997311ea344437b6cae3cb63487d76?pvs=4)
 
 
 ## 📖 WIKI
