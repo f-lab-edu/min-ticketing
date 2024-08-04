@@ -7,7 +7,8 @@ import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.extensions.spring.SpringExtension
+import io.kotest.extensions.spring.SpringTestExtension
+import io.kotest.extensions.spring.SpringTestLifecycleMode
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,7 +19,6 @@ import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.transaction.annotation.Transactional
 import redis.embedded.RedisServer
 
 
@@ -26,10 +26,8 @@ import redis.embedded.RedisServer
 @Import(EmbeddedRedisServerConfig::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Transactional
 abstract class BehaviorIntegrationTest : BehaviorSpec() {
-
-    override fun extensions(): List<Extension> = listOf(SpringExtension)
+    override fun extensions(): List<Extension> = listOf(SpringTestExtension(SpringTestLifecycleMode.Root))
 
     @Autowired
     lateinit var mockMvc: MockMvc
