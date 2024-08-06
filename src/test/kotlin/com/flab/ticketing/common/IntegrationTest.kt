@@ -5,10 +5,8 @@ import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.extensions.Extension
-import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.extensions.spring.SpringTestExtension
-import io.kotest.extensions.spring.SpringTestLifecycleMode
+import io.kotest.extensions.spring.SpringExtension
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,8 +24,8 @@ import redis.embedded.RedisServer
 @Import(EmbeddedRedisServerConfig::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-abstract class BehaviorIntegrationTest : BehaviorSpec() {
-    override fun extensions(): List<Extension> = listOf(SpringTestExtension(SpringTestLifecycleMode.Root))
+abstract class IntegrationTest : BehaviorSpec() {
+    override fun extensions(): List<Extension> = listOf(SpringExtension)
 
     @Autowired
     lateinit var mockMvc: MockMvc
@@ -44,15 +42,6 @@ abstract class BehaviorIntegrationTest : BehaviorSpec() {
 
         )
 
-    override suspend fun beforeSpec(spec: Spec) {
-        super.beforeSpec(spec)
-        greenMail.start()
-    }
-
-    override suspend fun afterSpec(spec: Spec) {
-        super.afterSpec(spec)
-        greenMail.stop()
-    }
 
 }
 
