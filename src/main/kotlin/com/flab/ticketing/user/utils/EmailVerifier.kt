@@ -1,11 +1,14 @@
-package com.flab.ticketing.user.repository
+package com.flab.ticketing.user.utils
 
+import com.flab.ticketing.common.exception.BusinessIllegalStateException
 import com.flab.ticketing.user.entity.EmailVerifyInfo
+import com.flab.ticketing.user.exception.UserErrorInfos
+import com.flab.ticketing.user.repository.EmailVerifyInfoRepository
 import org.springframework.stereotype.Component
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-class EmailRepository(
+class EmailVerifier(
     private val emailVerifyInfoRepository: EmailVerifyInfoRepository
 ) {
 
@@ -33,5 +36,16 @@ class EmailRepository(
         val verifyInfoOptional = emailVerifyInfoRepository.findById(email)
 
         return verifyInfoOptional.getOrNull()
+    }
+
+    fun checkVerified(email: String) {
+        val verifyCodeInfo = getVerifyCodeEntity(email)
+
+        if (verifyCodeInfo == null) {
+            throw BusinessIllegalStateException(UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
+        }
+        if (!verifyCodeInfo.isVerified) {
+            throw BusinessIllegalStateException(UserErrorInfos.EMAIL_NOT_VERIFIED)
+        }
     }
 }
