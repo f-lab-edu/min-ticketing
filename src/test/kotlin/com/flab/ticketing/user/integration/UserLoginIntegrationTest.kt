@@ -1,6 +1,6 @@
 package com.flab.ticketing.user.integration
 
-import com.flab.ticketing.common.BehaviorIntegrationTest
+import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.user.dto.UserLoginDto
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import java.util.*
 import java.util.regex.Pattern
 
-class UserLoginIntegrationTest : BehaviorIntegrationTest() {
+class UserLoginIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var passwordEncoder: PasswordEncoder
@@ -45,7 +45,7 @@ class UserLoginIntegrationTest : BehaviorIntegrationTest() {
 
 
                 then("200 Success와 함께 JWT Token을 반환한다.") {
-                    val actualJwt = mvcResult.response.getHeaderValue(HttpHeaders.AUTHORIZATION)
+                    val actualJwt = mvcResult.response.getHeaderValue(HttpHeaders.AUTHORIZATION) as String
 
                     mvcResult.response.status shouldBeExactly 200
                     isJwt(actualJwt) shouldBe true
@@ -65,10 +65,7 @@ class UserLoginIntegrationTest : BehaviorIntegrationTest() {
         return User(uid, email, passwordEncoder.encode(password), nickname)
     }
 
-    private fun isJwt(token: Any?): Boolean {
-        if (token == null || token !is String) {
-            return false
-        }
+    private fun isJwt(token: String): Boolean {
         val parts = token.split(".")
         if (parts.size != 3) {
             return false

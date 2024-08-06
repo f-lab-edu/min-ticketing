@@ -5,11 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.user.dto.UserLoginDto
 import com.flab.ticketing.user.exception.UserErrorInfos
+import org.springframework.stereotype.Component
 import org.springframework.util.StreamUtils
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset
 
+
+@Component
 class UserLoginInfoConverter(
     private val objectMapper: ObjectMapper
 ) {
