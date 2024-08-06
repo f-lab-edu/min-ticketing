@@ -35,11 +35,13 @@ class UserRegisterIntegrationTest : IntegrationTest() {
     init {
         given("올바른 형식의 이메일이 주어졌을 때") {
 
-            val from = "foo@localhost"
-            val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(from))
+            val email = "foo@localhost"
 
             `when`("이메일 인증 코드를 요청 시") {
                 val uri = "/api/user/new/email"
+
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
+
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -50,10 +52,9 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("200 코드를 반환하고 해당 이메일로 인증 코드를 전송한다.") {
-                    greenMail.waitForIncomingEmail(1)
-
                     mvcResult.response.status shouldBeExactly 200
 
+                    greenMail.waitForIncomingEmail(1)
                     greenMail.imap.createStore().use { store ->
                         run {
                             store.connect("foo", "foo-pwd")
@@ -71,9 +72,11 @@ class UserRegisterIntegrationTest : IntegrationTest() {
         }
         given("잘못된 형식의 이메일이 주어졌을 때") {
             val from = "wrong"
-            val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(from))
+
             `when`("이메일 인증 코드를 요청 시") {
                 val uri = "/api/user/new/email"
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(from))
+
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -98,11 +101,13 @@ class UserRegisterIntegrationTest : IntegrationTest() {
         }
         given("이미 가입된 이메일이 주어졌을 때") {
             val savedEmail = "test@email.com"
+
             userRepository.save(createUser(savedEmail))
-            val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(savedEmail))
 
             `when`("이메일 인증 코드를 요청 시") {
                 val uri = "/api/user/new/email"
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(savedEmail))
+
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -124,7 +129,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
         }
 
-        given("올바른 형식의 이메일이고, 인증코드가 유효할 때") {
+        given("올바른 형식의 이메일이고, 인증코드가 유효할 때 - 정상 인증") {
             val email = "foo@localhost"
             val code = "1234AB"
 
@@ -143,7 +148,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
 
-                `then`("검증이 완료되어 200 코드를 반환한다.") {
+                then("검증을 완료상태로 변경하고 200 코드를 반환한다.") {
                     val actual = emailRepository.findById(email).get()
 
                     mvcResult.response.status shouldBeExactly 200
@@ -151,6 +156,14 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
                 }
             }
+
+        }
+        given("올바른 형식의 이메일이고, 인증코드가 유효할 때 - 인증 코드 불일치") {
+            val email = "foo@localhost"
+            val code = "1234AB"
+
+            emailRepository.save(EmailVerifyInfo(email, code))
+
             `when`("잘못된 인증 코드를 가지고 검증 시도할 시") {
                 val invalidCode = "AB1234"
                 val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, invalidCode))
@@ -174,14 +187,14 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                 }
             }
         }
+
         given("인증 코드를 보낸적 없는 이메일이거나 만료된 인증 코드일 때") {
             val email = "noSaved@email.com"
             val code = "123ABC"
-            val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
-
 
             `when`("인증 코드를 검증 시도하면") {
                 val uri = "/api/user/new/email/verify"
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -203,10 +216,9 @@ class UserRegisterIntegrationTest : IntegrationTest() {
             }
         }
 
-        given("이메일 인증 코드 인증이 완료된 사용자의 경우") {
+        given("이메일 인증 코드 인증이 완료된 사용자의 경우 - 정상 회원가입") {
             val email = "email@email.com"
             emailRepository.save(EmailVerifyInfo(email, "noUsed", true))
-
 
             `when`("영문, 숫자, 특수문자를 1글자씩 포함한 8자 이상의 비밀번호와, 동일한 비밀번호 확인, 닉네임을 입력해 회원가입을 완료할 시") {
                 val uri = "/api/user/new/info"
@@ -234,6 +246,10 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     userRepository.findByEmail(email) shouldNotBe null
                 }
             }
+        }
+        given("이메일 인증 코드 인증이 완료된 사용자의 경우 - 비밀번호 불일치") {
+            val email = "email@email.com"
+            emailRepository.save(EmailVerifyInfo(email, "noUsed", true))
 
             `when`("다른 비밀번호화 비밀번호 확인을 입력하여 회원가입을 완료할 시") {
                 val uri = "/api/user/new/info"
@@ -269,6 +285,11 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     userRepository.findByEmail(email) shouldBe null
                 }
             }
+
+        }
+        given("이메일 인증 코드 인증이 완료된 사용자의 경우 - 비밀번호 조건 불만족") {
+            val email = "email@email.com"
+            emailRepository.save(EmailVerifyInfo(email, "noUsed", true))
 
             forAll(
                 row("Short1!", "Short1!"),
@@ -311,8 +332,8 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     }
                 }
             }
-
         }
+
         given("이메일 인증 시도를 하지 않았거나 가입 유효시간이 지난 사용자의 경우") {
             val email = "noSaved@email.com"
 
@@ -392,14 +413,19 @@ class UserRegisterIntegrationTest : IntegrationTest() {
             }
         }
 
-        afterSpec {
-            greenMail.reset()
-            emailRepository.deleteAll()
+        beforeSpec {
+            greenMail.start()
         }
 
-        afterEach {
+        afterContainer {
+            greenMail.reset()
             userRepository.deleteAll()
         }
+
+        afterSpec {
+            greenMail.stop()
+        }
+
     }
 
 
