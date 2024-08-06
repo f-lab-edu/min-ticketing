@@ -130,7 +130,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
         }
 
         given("올바른 형식의 이메일이고, 인증코드가 유효할 때 - 정상 인증") {
-            val email = "foo@localhost"
+            val email = "good@email.com"
             val code = "1234AB"
 
             emailRepository.save(EmailVerifyInfo(email, code))
@@ -159,7 +159,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
         }
         given("올바른 형식의 이메일이고, 인증코드가 유효할 때 - 인증 코드 불일치") {
-            val email = "foo@localhost"
+            val email = "good@email.com"
             val code = "1234AB"
 
             emailRepository.save(EmailVerifyInfo(email, code))
