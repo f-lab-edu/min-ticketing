@@ -1,6 +1,6 @@
 package com.flab.ticketing.user.integration
 
-import com.flab.ticketing.common.BehaviorIntegrationTest
+import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
@@ -24,7 +24,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 
-class UserRegisterIntegrationTest : BehaviorIntegrationTest() {
+class UserRegisterIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var userRepository: UserRepository

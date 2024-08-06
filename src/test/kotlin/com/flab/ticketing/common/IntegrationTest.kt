@@ -26,7 +26,7 @@ import redis.embedded.RedisServer
 @Import(EmbeddedRedisServerConfig::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-abstract class BehaviorIntegrationTest : BehaviorSpec() {
+abstract class IntegrationTest : BehaviorSpec() {
     override fun extensions(): List<Extension> = listOf(SpringTestExtension(SpringTestLifecycleMode.Root))
 
     @Autowired
