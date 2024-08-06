@@ -1,7 +1,9 @@
 package com.flab.ticketing.user.filter
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.user.dto.UserLoginDto
+import com.flab.ticketing.user.utils.JwtTokenProvider
 import com.flab.ticketing.user.utils.UserLoginInfoConverter
 import io.kotest.assertions.throwables.shouldThrow
 import io.mockk.every
@@ -17,7 +19,10 @@ import java.nio.charset.StandardCharsets
 class CustomUsernamePasswordAuthFilterTest : UnitTest() {
     private val authManager: AuthenticationManager = mockk()
     private val userLoginInfoConverter: UserLoginInfoConverter = mockk()
-    private val usernamePasswordAuthFilter = CustomUsernamePasswordAuthFilter(authManager, userLoginInfoConverter)
+    private val jwtTokenProvider: JwtTokenProvider = mockk()
+    private val objectMapper: ObjectMapper = mockk()
+    private val usernamePasswordAuthFilter =
+        CustomUsernamePasswordAuthFilter(authManager, userLoginInfoConverter, jwtTokenProvider, objectMapper)
 
     init {
         "Request Body로 부터 사용자의 id와 password를 파싱하고 Authentication 토큰을 넘겨줄 수 있다." {
