@@ -1,10 +1,13 @@
 package com.flab.ticketing.user.entity
 
-import jakarta.persistence.*
+import com.flab.ticketing.common.entity.BaseEntity
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Table
 
 @Entity
 @Table(name = "users")
-data class User(
+class User(
     @Column(nullable = false, unique = true)
     val uid: String,
 
@@ -12,12 +15,9 @@ data class User(
     val email: String,
 
     @Column(nullable = true)
-    val password: String,
+    var password: String,
 
     @Column(nullable = false)
-    val nickname: String,
+    var nickname: String,
 
-    @Id
-    @GeneratedValue
-    val id: Long? = null
-)
+    ) : BaseEntity()

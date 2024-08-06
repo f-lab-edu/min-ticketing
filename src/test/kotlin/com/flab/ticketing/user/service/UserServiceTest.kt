@@ -2,11 +2,14 @@ package com.flab.ticketing.user.service
 
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.common.utils.NanoIdGenerator
+import com.flab.ticketing.user.dto.UserRegisterDto
+import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.exception.UserErrorInfos
-import com.flab.ticketing.user.repository.EmailRepository
 import com.flab.ticketing.user.repository.UserRepository
 import com.flab.ticketing.user.utils.EmailCodeGenerator
 import com.flab.ticketing.user.utils.EmailSender
+import com.flab.ticketing.user.utils.EmailVerifier
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.BehaviorSpec
@@ -14,13 +17,17 @@ import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.springframework.security.crypto.password.PasswordEncoder
 
 class UserServiceTest : BehaviorSpec() {
     private val emailCodeGenerator: EmailCodeGenerator = mockk()
     private val emailSender: EmailSender = mockk()
-    private val emailRepository: EmailRepository = mockk()
+    private val emailVerifier: EmailVerifier = mockk()
     private val userRepository: UserRepository = mockk()
-    private val userService: UserService = UserService(emailCodeGenerator, emailSender, emailRepository, userRepository)
+    private val userPWEncoder: PasswordEncoder = mockk()
+    private val nanoIdGenerator: NanoIdGenerator = mockk()
+    private val userService: UserService =
+        UserService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
 
     init {
 
@@ -31,7 +38,7 @@ class UserServiceTest : BehaviorSpec() {
 
                 every { emailCodeGenerator.createEmailCode() } returns code
                 every { emailSender.sendEmail(any(), any(), any()) } returns Unit
-                every { emailRepository.saveCode(any(), any()) } returns Unit
+                every { emailVerifier.saveCode(any(), any()) } returns Unit
                 every { userRepository.findByEmail(any()) } returns null
                 userService.sendEmailVerifyCode(email)
 
@@ -43,7 +50,7 @@ class UserServiceTest : BehaviorSpec() {
                             "MinTicketing 이메일 인증 코드는 $code 입니다."
                         )
                     }
-                    verify { emailRepository.saveCode(email, code) }
+                    verify { emailVerifier.saveCode(email, code) }
                 }
             }
 
@@ -54,13 +61,13 @@ class UserServiceTest : BehaviorSpec() {
                 val email = "email@email.com"
                 val code = "123abc"
 
-                every { emailRepository.getCode(email) } returns code
-                every { emailRepository.setVerifySuccess(email) } returns Unit
+                every { emailVerifier.getCode(email) } returns code
+                every { emailVerifier.setVerifySuccess(email) } returns Unit
                 then("오류를 반환하지 않는다.") {
                     shouldNotThrow<Exception> {
                         userService.verifyEmailCode(email, code)
                     }
-                    verify { emailRepository.setVerifySuccess(email) }
+                    verify { emailVerifier.setVerifySuccess(email) }
                 }
             }
 
@@ -68,14 +75,14 @@ class UserServiceTest : BehaviorSpec() {
                 val email = "email@email.com"
                 val code = "123abc"
 
-                every { emailRepository.getCode(email) } returns null
+                every { emailVerifier.getCode(email) } returns null
 
                 then("NotFoundException과 알맞은 메시지를 반환한다.") {
                     val exception = shouldThrow<NotFoundException> {
                         userService.verifyEmailCode(email, code)
                     }
 
-                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
+                    exception.info.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
                 }
             }
 
@@ -84,7 +91,7 @@ class UserServiceTest : BehaviorSpec() {
                 val code = "123abc"
                 val savedCode = "abc123"
 
-                every { emailRepository.getCode(email) } returns savedCode
+                every { emailVerifier.getCode(email) } returns savedCode
 
                 then("InvalidValueException을 반환한다.") {
                     val exception = shouldThrow<InvalidValueException> {
@@ -97,6 +104,42 @@ class UserServiceTest : BehaviorSpec() {
 
         }
 
+        given("이메일 인증 코드 검증이 완료된 사용자의 경우") {
+            val email = "email@email.com"
+
+            every { emailVerifier.checkVerified(email) } returns Unit
+
+            `when`("정상적인 추가 개인 정보를 입력하여 회원가입을 완료할 시") {
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
+                val nickname = "minturtle"
+
+                val encrypteduserPW = "asldll321lslafas231412@3@!Ffa"
+                val uid = "123asf"
+
+                val dto = UserRegisterDto(
+                    email,
+                    userPW,
+                    userPWConfirm,
+                    nickname
+                )
+
+                val expectedUser = User(uid, email, encrypteduserPW, nickname)
+
+                every { userPWEncoder.encode(userPW) } returns encrypteduserPW
+                every { nanoIdGenerator.createNanoId() } returns uid
+                every { userRepository.save(any()) } returns expectedUser
+
+
+
+                userService.saveVerifiedUserInfo(dto)
+
+                then("DB에 회원 정보를 추가해 저장할 수 있다.") {
+                    verify { userRepository.save(expectedUser) }
+                }
+            }
+
+        }
 
     }
 

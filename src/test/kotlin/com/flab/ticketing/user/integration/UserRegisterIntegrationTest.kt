@@ -5,13 +5,18 @@ import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.dto.UserEmailRegisterDto
 import com.flab.ticketing.user.dto.UserEmailVerificationDto
+import com.flab.ticketing.user.dto.UserRegisterDto
 import com.flab.ticketing.user.entity.EmailVerifyInfo
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.user.repository.UserRepository
+import io.kotest.data.forAll
+import io.kotest.data.row
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldMatch
 import jakarta.mail.Folder
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +24,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 
-class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
+class UserRegisterIntegrationTest : BehaviorIntegrationTest() {
 
     @Autowired
     private lateinit var userRepository: UserRepository
@@ -192,16 +197,208 @@ class UserEmailVerifyIntegrationTest : BehaviorIntegrationTest() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly 404
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_NOT_FOUND.code
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
                 }
             }
         }
 
+        given("이메일 인증 코드 인증이 완료된 사용자의 경우") {
+            val email = "email@email.com"
+            emailRepository.save(EmailVerifyInfo(email, "noUsed", true))
+
+
+            `when`("영문, 숫자, 특수문자를 1글자씩 포함한 8자 이상의 비밀번호와, 동일한 비밀번호 확인, 닉네임을 입력해 회원가입을 완료할 시") {
+                val uri = "/api/user/new/info"
+
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    userPW,
+                    userPWConfirm,
+                    nickname
+                )
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("정상 처리되어 200 OK 상태 코드를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 200
+                    userRepository.findByEmail(email) shouldNotBe null
+                }
+            }
+
+            `when`("다른 비밀번호화 비밀번호 확인을 입력하여 회원가입을 완료할 시") {
+                val uri = "/api/user/new/info"
+
+                val userPW = "abc1234!"
+                val userPWConfirm = "1234abc!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    userPW,
+                    userPWConfirm,
+                    nickname
+                )
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태코드와 알맞은 메시지를 출력한다.") {
+                    mvcResult.response.status shouldBeExactly 400
+
+                    val responseBody = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        ErrorResponse::class.java
+                    )
+
+                    responseBody.message shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.message
+                    responseBody.code shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.code
+                    userRepository.findByEmail(email) shouldBe null
+                }
+            }
+
+            forAll(
+                row("Short1!", "Short1!"),
+                row("OnlyEnglish", "OnlyEnglish"),
+                row("12345678", "12345678"),
+                row("!@#$%^&*", "!@#$%^&*"),
+                row("NoSpecial123", "NoSpecial123"),
+                row("NoNumber!", "NoNumber!"),
+                row("1234!@#$", "1234!@#$")
+            ) { userPW, userPWConfirm ->
+                `when`("Password가 조건을 만족하지 못하는 경우") {
+                    val uri = "/api/user/new/info"
+
+                    val nickname = "minturtle"
+                    val dto = UserRegisterDto(
+                        email,
+                        userPW,
+                        userPWConfirm,
+                        nickname
+                    )
+
+                    val mvcResult = mockMvc.perform(
+                        MockMvcRequestBuilders.post(uri)
+                            .content(objectMapper.writeValueAsString(dto))
+                            .contentType(MediaType.APPLICATION_JSON)
+                    )
+                        .andDo(MockMvcResultHandlers.print())
+                        .andReturn()
+
+                    then("400 상태 코드와 적절한 오류 정보를 반환한다.") {
+                        mvcResult.response.status shouldBeExactly 400
+
+                        val responseBody = objectMapper.readValue(
+                            mvcResult.response.contentAsString,
+                            ErrorResponse::class.java
+                        )
+
+                        responseBody.code shouldBeEqual CommonErrorInfos.INVALID_FIELD.code
+                        responseBody.message shouldBeEqual "password" + CommonErrorInfos.INVALID_FIELD.message
+                    }
+                }
+            }
+
+        }
+        given("이메일 인증 시도를 하지 않았거나 가입 유효시간이 지난 사용자의 경우") {
+            val email = "noSaved@email.com"
+
+            `when`("추가 개인 정보를 입력하여 회원가입을 시도할 시") {
+                val uri = "/api/user/new/info"
+
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    userPW,
+                    userPWConfirm,
+                    nickname
+                )
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태코드와 알맞은 메시지를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 400
+
+                    val responseBody = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        ErrorResponse::class.java
+                    )
+
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
+                    userRepository.findByEmail(email) shouldBe null
+                }
+            }
+        }
+        given("이메일 인증 메일은 전송하였으나, 메일 인증을 완료하지 않은 사용자의 경우") {
+            val email = "notVerified@email.com"
+
+            emailRepository.save(EmailVerifyInfo(email, "noUsed"))
+
+            `when`("추가 개인 정보를 입력하여 회원가입을 시도할 시") {
+                val uri = "/api/user/new/info"
+
+                val userPW = "abc1234!"
+                val userPWConfirm = "abc1234!"
+                val nickname = "minturtle"
+                val dto = UserRegisterDto(
+                    email,
+                    userPW,
+                    userPWConfirm,
+                    nickname
+                )
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(objectMapper.writeValueAsString(dto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태코드와 적절한 상태 메시지를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 400
+
+                    val responseBody = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        ErrorResponse::class.java
+                    )
+
+                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_NOT_VERIFIED.code
+                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_NOT_VERIFIED.message
+                    userRepository.findByEmail(email) shouldBe null
+                }
+            }
+        }
 
         afterSpec {
             greenMail.reset()
             emailRepository.deleteAll()
+        }
+
+        afterEach {
+            userRepository.deleteAll()
         }
     }
 
