@@ -35,5 +35,5 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 75
           min-coverage-changed-files: 75
-          update-comment: true
+          update-comment: false
 
