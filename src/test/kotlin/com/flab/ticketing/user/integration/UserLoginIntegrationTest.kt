@@ -1,13 +1,17 @@
 package com.flab.ticketing.user.integration
 
 import com.flab.ticketing.common.IntegrationTest
+import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.dto.UserLoginDto
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -54,6 +58,37 @@ class UserLoginIntegrationTest : IntegrationTest() {
             }
 
         }
+
+        given("로그인 API가 POST로 설정되어 있을 때") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            `when`("로그인 HTTP 메서드를 POST가 아닌 다른 메서드를 호출해 로그인을 시도한다면") {
+                val uri = "/api/user/login"
+
+                val dto = objectMapper.writeValueAsString(UserLoginDto(email, userPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+
+                then("400 상태 코드와 적절한 오류를 리턴한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBe HttpStatus.BAD_REQUEST.value()
+                    responseBody.code shouldBeEqual CommonErrorInfos.INVALID_METHOD.code
+                    responseBody.message shouldBeEqual CommonErrorInfos.INVALID_METHOD.message
+                }
+            }
+        }
+
     }
 
     private fun createUser(

@@ -1,5 +1,6 @@
 package com.flab.ticketing.user.config
 
+import com.flab.ticketing.common.filter.ExceptionHandlerFilter
 import com.flab.ticketing.user.filter.CustomUsernamePasswordAuthFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -22,7 +23,8 @@ class SecurityConfig {
     @Bean
     fun filterChain(
         http: HttpSecurity,
-        usernamePasswordAuthFilter: CustomUsernamePasswordAuthFilter
+        usernamePasswordAuthFilter: CustomUsernamePasswordAuthFilter,
+        exceptionHandlerFilter: ExceptionHandlerFilter
     ): SecurityFilterChain {
         http
             .csrf { csrfConfig -> csrfConfig.disable() }
@@ -33,6 +35,7 @@ class SecurityConfig {
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
             .addFilterAt(usernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }
