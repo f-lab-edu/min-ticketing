@@ -40,6 +40,10 @@ class ExceptionHandlerFilter(private val objectMapper: ObjectMapper) : OncePerRe
     }
 
     private fun sendUnknownError(response: HttpServletResponse) {
-        TODO()
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
+        response.contentType = MediaType.APPLICATION_JSON_VALUE
+        response.characterEncoding = Charsets.UTF_8.name()
+        val errorResponse = ErrorResponse.of(CommonErrorInfos.SERVICE_ERROR)
+        response.writer.write(objectMapper.writeValueAsString(errorResponse))
     }
 }
