@@ -2,6 +2,7 @@ package com.flab.ticketing.user.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.user.dto.UserLoginDto
 import com.flab.ticketing.user.utils.JwtTokenProvider
 import com.flab.ticketing.user.utils.UserLoginInfoConverter
@@ -12,7 +13,6 @@ import io.mockk.verify
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.web.HttpRequestMethodNotSupportedException
 import java.nio.charset.StandardCharsets
 
 
@@ -52,13 +52,13 @@ class CustomUsernamePasswordAuthFilterTest : UnitTest() {
 
         }
 
-        "사용자가 POST가 아닌 method를 입력할 시 HttpRequestMethodNotSupportedException를 throw 한다." {
+        "사용자가 POST가 아닌 method를 입력할 시 BadRequestException을 throw 한다." {
             val request: HttpServletRequest = mockk()
             val response: HttpServletResponse = mockk()
 
             every { request.method } returns "GET"
 
-            shouldThrow<HttpRequestMethodNotSupportedException> {
+            shouldThrow<BadRequestException> {
                 usernamePasswordAuthFilter.attemptAuthentication(request, response)
             }
 
