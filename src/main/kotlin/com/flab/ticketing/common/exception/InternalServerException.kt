@@ -1,4 +1,3 @@
 package com.flab.ticketing.common.exception
 
-class InternalServerException {
-}
+class InternalServerException(errorInfos: CommonErrorInfos) : BusinessException(errorInfos)
