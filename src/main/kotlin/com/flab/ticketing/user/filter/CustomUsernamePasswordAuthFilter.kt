@@ -3,8 +3,6 @@ package com.flab.ticketing.user.filter
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
-import com.flab.ticketing.common.exception.ErrorInfo
-import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.utils.JwtTokenProvider
 import com.flab.ticketing.user.utils.UserLoginInfoConverter
 import jakarta.servlet.FilterChain
@@ -57,23 +55,21 @@ class CustomUsernamePasswordAuthFilter(
         chain: FilterChain,
         authResult: Authentication
     ) {
-        try {
-            val userDetails = authResult.principal as? UserDetails
-                ?: return sendError(response, CommonErrorInfos.SERVICE_ERROR, HttpStatus.INTERNAL_SERVER_ERROR)
-
+        runCatching {
+            val userDetails = authResult.principal as UserDetails
             val jwt = jwtTokenProvider.sign(userDetails.username, userDetails.authorities)
 
             response.status = HttpServletResponse.SC_OK
             response.addHeader(HttpHeaders.AUTHORIZATION, jwt)
-        } catch (e: Exception) {
-            sendError(response, UserErrorInfos.LOGIN_FAILED, HttpStatus.UNAUTHORIZED)
+        }.onFailure {
+            sendError(response)
         }
     }
 
-    private fun sendError(response: HttpServletResponse, errorInfo: ErrorInfo, status: HttpStatus) {
-        response.status = status.value()
+    private fun sendError(response: HttpServletResponse) {
+        response.status = HttpStatus.INTERNAL_SERVER_ERROR.value()
         response.contentType = MediaType.APPLICATION_JSON_VALUE
 
-        response.writer.write(objectMapper.writeValueAsString(ErrorResponse.of(errorInfo)))
+        response.writer.write(objectMapper.writeValueAsString(ErrorResponse.of(CommonErrorInfos.SERVICE_ERROR)))
     }
 }
