@@ -18,21 +18,21 @@ class CustomUserDetailServiceTest : UnitTest() {
     init {
         "사용자의 Email 정보를 읽어서 UserDetail을 반환할 수 있다." {
             val email = "email@email.com"
-            val password = "asdasf09120312@$@!$@$14"
+            val userPW = "asdasf09120312@$@!$@$14"
 
-            every { userRepository.findByEmail(email) } returns createUser(email, password)
+            every { userRepository.findByEmail(email) } returns createUser(email, userPW)
 
             val userDetails = userDetailService.loadUserByUsername(email)
 
             userDetails.username shouldBe email
-            userDetails.password shouldBe password
+            userDetails.password shouldBe userPW
         }
 
         "사용자의 Email 정보를 읽을 수 없으면 UnAuthorizedException을 반환한다." {
             val email = "email@email.com"
 
             every { userRepository.findByEmail(email) } returns null
-            
+
             shouldThrow<UsernameNotFoundException> {
                 userDetailService.loadUserByUsername(email)
             }

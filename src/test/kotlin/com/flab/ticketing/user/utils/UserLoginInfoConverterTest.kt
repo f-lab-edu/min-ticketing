@@ -23,10 +23,10 @@ class UserLoginInfoConverterTest : UnitTest() {
 
         "UserLoginDTO에 맞는 json 문자열과 이에 맞는 Charset이 들어올 경우 정상적으로 객체를 변환할 수 있다." {
             val email = "email@email.com"
-            val password = "abc1234!"
+            val userPW = "abc1234!"
             val charSet = StandardCharsets.UTF_8
 
-            val inputStream = """{email : "$email", password : "$password"}""".byteInputStream(charSet)
+            val inputStream = """{email : "$email", password : "$userPW"}""".byteInputStream(charSet)
             every { objectMapper.readValue(any<String>(), UserLoginDto::class.java) } returns mockk()
 
             userLoginInfoConverter.convert(inputStream, charSet)

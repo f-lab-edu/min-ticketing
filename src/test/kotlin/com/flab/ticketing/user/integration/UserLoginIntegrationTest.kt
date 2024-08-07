@@ -27,13 +27,13 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         given("회원 가입이 완료된 사용자가") {
             val email = "email@email.com"
-            val password = "abc1234!"
-            userRepository.save(createUser(email, password))
+            val userPW = "abc1234!"
+            userRepository.save(createUser(email, userPW))
 
             `when`("알맞은 Email과 Password를 입력하여 로그인을 시도할 시") {
                 val uri = "/api/user/login"
 
-                val dto = objectMapper.writeValueAsString(UserLoginDto(email, password))
+                val dto = objectMapper.writeValueAsString(UserLoginDto(email, userPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)

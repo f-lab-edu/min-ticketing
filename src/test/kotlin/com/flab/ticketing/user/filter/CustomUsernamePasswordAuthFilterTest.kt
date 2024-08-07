@@ -27,7 +27,7 @@ class CustomUsernamePasswordAuthFilterTest : UnitTest() {
     init {
         "Request Body로 부터 사용자의 id와 password를 파싱하고 Authentication 토큰을 넘겨줄 수 있다." {
             val email = "email@email.com"
-            val password = "abc1234!@"
+            val userPW = "abc1234!@"
 
             val request: HttpServletRequest = mockk()
             val response: HttpServletResponse = mockk()
@@ -38,7 +38,7 @@ class CustomUsernamePasswordAuthFilterTest : UnitTest() {
             every { request.characterEncoding } returns StandardCharsets.UTF_8.name()
             every { userLoginInfoConverter.convert(any(), StandardCharsets.UTF_8) } returns UserLoginDto(
                 email,
-                password
+                userPW
             )
             every { authManager.authenticate(any()) } returns mockk()
 
@@ -46,7 +46,7 @@ class CustomUsernamePasswordAuthFilterTest : UnitTest() {
 
             verify {
                 authManager.authenticate(match {
-                    it.principal.equals(email) && it.credentials.equals(password)
+                    it.principal.equals(email) && it.credentials.equals(userPW)
                 })
             }
 
