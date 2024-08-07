@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.InternalServerException
+import com.flab.ticketing.common.exception.UnAuthorizedException
+import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.utils.JwtTokenProvider
 import com.flab.ticketing.user.utils.UserLoginInfoConverter
 import jakarta.servlet.FilterChain
@@ -14,6 +16,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.stereotype.Component
@@ -64,4 +67,11 @@ class CustomUsernamePasswordAuthFilter(
         }
     }
 
+    override fun unsuccessfulAuthentication(
+        request: HttpServletRequest?,
+        response: HttpServletResponse?,
+        failed: AuthenticationException?
+    ) {
+        throw UnAuthorizedException(UserErrorInfos.LOGIN_FAILED)
+    }
 }

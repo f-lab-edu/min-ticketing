@@ -5,6 +5,7 @@ import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.dto.UserLoginDto
 import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.user.exception.UserErrorInfos
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
@@ -29,7 +30,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
     init {
 
-        given("회원 가입이 완료된 사용자가") {
+        given("유저 정보가 DB에 저장되어 있을 때 - 정상 처리") {
             val email = "email@email.com"
             val userPW = "abc1234!"
             userRepository.save(createUser(email, userPW))
@@ -89,6 +90,34 @@ class UserLoginIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("유저 정보가 DB에 저장되어 있을 때 - 비밀번호 입력 오류") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+            userRepository.save(createUser(email, userPW))
+
+            `when`("비밀번호를 잘못 입력한 경우") {
+                val uri = "/api/user/login"
+                val invalidPW = "abcd1234!"
+                val dto = objectMapper.writeValueAsString(UserLoginDto(email, invalidPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+                then("401 상태 코드와 적절한 메시지를 출력한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+
+                    mvcResult.response.status shouldBe 401
+                    responseBody.code shouldBeEqual UserErrorInfos.LOGIN_FAILED.code
+                    responseBody.message shouldBeEqual UserErrorInfos.LOGIN_FAILED.message
+                }
+            }
+        }
     }
 
     private fun createUser(
