@@ -11,6 +11,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.AuthenticationManager
@@ -38,7 +39,7 @@ class CustomUsernamePasswordAuthFilter(
 
 
     override fun attemptAuthentication(request: HttpServletRequest?, response: HttpServletResponse?): Authentication {
-        if (!request!!.method.equals("POST")) {
+        if (!request!!.method.equals(HttpMethod.POST.name())) {
             throw HttpRequestMethodNotSupportedException("로그인은 POST로 호출되어야 합니다.")
         }
 
