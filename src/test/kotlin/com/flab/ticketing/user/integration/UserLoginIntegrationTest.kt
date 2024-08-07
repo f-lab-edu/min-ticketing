@@ -118,7 +118,42 @@ class UserLoginIntegrationTest : IntegrationTest() {
                 }
             }
         }
+
+        given("유저 정보가 DB에 저장되어 있지 않을 때 - 이메일 조회 불가") {
+
+
+            `when`("비밀번호를 잘못 입력한 경우") {
+                val uri = "/api/user/login"
+                val email = "invalid@email.com"
+                val password = "invalid1234!"
+
+                val dto = objectMapper.writeValueAsString(UserLoginDto(email, password))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+                then("401 상태 코드와 적절한 메시지를 출력한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+
+                    mvcResult.response.status shouldBe 401
+                    responseBody.code shouldBeEqual UserErrorInfos.LOGIN_FAILED.code
+                    responseBody.message shouldBeEqual UserErrorInfos.LOGIN_FAILED.message
+                }
+            }
+        }
+
+
+        afterEach {
+            userRepository.deleteAll()
+        }
     }
+
 
     private fun createUser(
         email: String,
