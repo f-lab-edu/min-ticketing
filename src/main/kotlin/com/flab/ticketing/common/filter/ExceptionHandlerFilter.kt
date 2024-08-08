@@ -2,7 +2,10 @@ package com.flab.ticketing.common.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.ErrorResponse
-import com.flab.ticketing.common.exception.*
+import com.flab.ticketing.common.exception.BadRequestException
+import com.flab.ticketing.common.exception.CommonErrorInfos
+import com.flab.ticketing.common.exception.ErrorInfo
+import com.flab.ticketing.common.exception.UnAuthorizedException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -24,9 +27,9 @@ class ExceptionHandlerFilter(private val objectMapper: ObjectMapper) : OncePerRe
             filterChain.doFilter(request, response)
         }.onFailure { e ->
             when (e) {
-                !is BusinessException, is InternalServerException -> sendUnknownError(response)
                 is BadRequestException -> sendBusinessError(response, e.info, HttpStatus.BAD_REQUEST)
                 is UnAuthorizedException -> sendBusinessError(response, e.info, HttpStatus.UNAUTHORIZED)
+                else -> sendUnknownError(response)
             }
         }
     }
