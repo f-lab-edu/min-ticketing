@@ -193,12 +193,36 @@ class UserLoginIntegrationTest : IntegrationTest() {
                         objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
                     mvcResult.response.status shouldBeExactly HttpStatus.UNAUTHORIZED.value()
-                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_NOT_FOUND.code
-                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_NOT_FOUND.message
+                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.code
+                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.message
                 }
             }
         }
 
+        given("잘못된 AccessToken을 가진 사용자가") {
+            val invalidToken =
+                "eyJhbGciOiJIUz42AVJ9.eyJzdWIiOiJlbASSSFGASFSA5jb20iLCJhdXRoIjoiIiwiZXhwIjoxNzIzMTAwNjAwfQ.uaSN-VfV4A7ASDASDA23qKA4vB_i8f0Q2HFEmjzvmCCntpYFiCs71ioqJVlJ4ioTdJY"
+
+            `when`("인증이 필요한 API 접근시") {
+                val uri = "/api/health-check"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $invalidToken")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("401 오류와 적절한 메시지를 반환한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBe HttpStatus.UNAUTHORIZED.value()
+                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.code
+                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.message
+                }
+            }
+        }
 
         afterEach {
             userRepository.deleteAll()

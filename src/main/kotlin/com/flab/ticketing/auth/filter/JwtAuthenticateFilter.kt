@@ -5,6 +5,7 @@ import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.InternalServerException
 import com.flab.ticketing.common.exception.UnAuthorizedException
+import io.jsonwebtoken.JwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -35,7 +36,7 @@ class JwtAuthenticateFilter(
             filterChain.doFilter(request, response)
         }.onFailure { e ->
             when (e) {
-                is NullPointerException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_NOT_FOUND)
+                is NullPointerException, is JwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
                 else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
             }
         }
