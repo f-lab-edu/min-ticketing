@@ -31,6 +31,11 @@ class JwtAuthenticateFilter(
 
             val token = getAccessToken(request)
 
+            if (token == null) {
+                filterChain.doFilter(request, response)
+                return
+            }
+
             val authentication = jwtTokenProvider.getAuthentication(token)
 
             SecurityContextHolder.getContext().authentication = authentication
@@ -39,7 +44,7 @@ class JwtAuthenticateFilter(
         }.onFailure { e ->
             when (e) {
                 is ExpiredJwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_EXPIRED)
-                is NullPointerException, is JwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
+                is JwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
                 is BusinessException -> throw e
                 else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
             }
@@ -47,13 +52,12 @@ class JwtAuthenticateFilter(
 
     }
 
-    private fun getAccessToken(request: HttpServletRequest): String {
+    private fun getAccessToken(request: HttpServletRequest): String? {
         val accessToken = request.getHeader(HttpHeaders.AUTHORIZATION)
 
-        if (!accessToken.startsWith("Bearer ")) {
-            throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
+        if (accessToken == null || !accessToken.startsWith("Bearer ")) {
+            return null
         }
-
 
         return accessToken.split("Bearer ")[1]
     }
