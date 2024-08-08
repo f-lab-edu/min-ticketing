@@ -1,8 +1,13 @@
 package com.flab.ticketing.auth.utils
 
+import com.flab.ticketing.auth.dto.CustomUserDetails
 import com.flab.ticketing.common.UnitTest
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
 import java.util.*
 import java.util.regex.Pattern
 
@@ -25,6 +30,21 @@ class JwtTokenProviderTest : UnitTest() {
 
             isJwt(jwt) shouldBe true
 
+        }
+
+        "생성한 JWT 토큰을 resolve해 Authentication 객체로 생성할 수 있다." {
+            val email = "email@email.com"
+            val role = SimpleGrantedAuthority("ROLE_USER")
+            val authorities = mutableListOf<GrantedAuthority>(role)
+            val jwt = jwtTokenProvider.sign(email, authorities)
+
+            val authentication = jwtTokenProvider.getAuthentication(jwt)
+
+            val principal = authentication.principal
+
+            principal.shouldBeInstanceOf<CustomUserDetails>()
+            principal.username shouldBeEqual email
+            authentication.authorities shouldContainExactly listOf(role)
         }
     }
 
