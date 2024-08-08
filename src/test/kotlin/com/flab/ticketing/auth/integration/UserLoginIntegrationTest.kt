@@ -1,12 +1,13 @@
 package com.flab.ticketing.auth.integration
 
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.dto.ErrorResponse
-import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.auth.dto.UserLoginDto
 import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.exception.UserErrorInfos
 import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.auth.utils.JwtTokenProvider
+import com.flab.ticketing.common.IntegrationTest
+import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.exception.CommonErrorInfos
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
@@ -27,6 +28,9 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var userRepository: UserRepository
+
+    @Autowired
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     init {
 
@@ -147,6 +151,33 @@ class UserLoginIntegrationTest : IntegrationTest() {
                 }
             }
         }
+
+        given("AccessToken을 가지고 있는 사용자가") {
+            val email = "email@email.com"
+            val password = "abc1234!"
+
+            userRepository.save(createUser(email, password))
+
+            val givenToken = jwtTokenProvider.sign(email, mutableListOf())
+
+            `when`("인증 권한이 필요한 API 접근 시") {
+                val uri = "/api/health-check"
+                
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("인증되어 해당 API에 접근할 수 있다.") {
+                    mvcResult.response.status shouldBe 200
+                }
+            }
+
+        }
+
+
 
 
         afterEach {

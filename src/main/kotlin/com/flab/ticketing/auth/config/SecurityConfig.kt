@@ -1,7 +1,8 @@
 package com.flab.ticketing.auth.config
 
-import com.flab.ticketing.common.filter.ExceptionHandlerFilter
 import com.flab.ticketing.auth.filter.CustomUsernamePasswordAuthFilter
+import com.flab.ticketing.auth.filter.JwtAuthenticateFilter
+import com.flab.ticketing.common.filter.ExceptionHandlerFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -24,18 +25,20 @@ class SecurityConfig {
     fun filterChain(
         http: HttpSecurity,
         usernamePasswordAuthFilter: CustomUsernamePasswordAuthFilter,
-        exceptionHandlerFilter: ExceptionHandlerFilter
+        exceptionHandlerFilter: ExceptionHandlerFilter,
+        jwtAuthenticateFilter: JwtAuthenticateFilter
     ): SecurityFilterChain {
         http
             .csrf { csrfConfig -> csrfConfig.disable() }
             .authorizeHttpRequests { authorizedRequests ->
                 authorizedRequests
                     .requestMatchers("/api/user/new/**").permitAll()
-                    .requestMatchers("/api/uers/login").permitAll()
+                    .requestMatchers("/api/users/login").permitAll()
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
             .addFilterAt(usernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .addFilterBefore(exceptionHandlerFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtAuthenticateFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(exceptionHandlerFilter, JwtAuthenticateFilter::class.java)
 
         return http.build()
     }
