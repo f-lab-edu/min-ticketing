@@ -162,7 +162,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
-                
+
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
@@ -177,7 +177,27 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         }
 
+        given("AccessToken을 가지지 않은 사용자가") {
 
+            `when`("인증이 필요한 API 접근시") {
+                val uri = "/api/health-check"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("401 상태 코드와 적절한 오류 메시지를 반환한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBeExactly HttpStatus.UNAUTHORIZED.value()
+                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_NOT_FOUND.code
+                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_NOT_FOUND.message
+                }
+            }
+        }
 
 
         afterEach {
