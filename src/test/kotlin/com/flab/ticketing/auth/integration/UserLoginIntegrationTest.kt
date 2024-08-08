@@ -224,6 +224,36 @@ class UserLoginIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("올바른 AccessToken을 가진 사용자가 - 인증타입 Bearer 미사용") {
+            val email = "email@email.com"
+            val password = "abc1234!"
+
+            userRepository.save(createUser(email, password))
+
+            val givenToken = jwtTokenProvider.sign(email, mutableListOf())
+
+            `when`("인증 권한이 필요한 API 접근 시") {
+                val uri = "/api/health-check"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Basic $givenToken")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("401 오류와 적절한 메시지를 출력한다.") {
+                    val responseBody =
+                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+                    mvcResult.response.status shouldBe HttpStatus.UNAUTHORIZED.value()
+                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.code
+                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.message
+
+                }
+            }
+        }
+
         afterEach {
             userRepository.deleteAll()
         }

@@ -2,6 +2,7 @@ package com.flab.ticketing.auth.filter
 
 import com.flab.ticketing.auth.exception.UserErrorInfos
 import com.flab.ticketing.auth.utils.JwtTokenProvider
+import com.flab.ticketing.common.exception.BusinessException
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.InternalServerException
 import com.flab.ticketing.common.exception.UnAuthorizedException
@@ -37,6 +38,7 @@ class JwtAuthenticateFilter(
         }.onFailure { e ->
             when (e) {
                 is NullPointerException, is JwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
+                is BusinessException -> throw e
                 else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
             }
         }
@@ -45,6 +47,11 @@ class JwtAuthenticateFilter(
 
     private fun getAccessToken(request: HttpServletRequest): String {
         val accessToken = request.getHeader(HttpHeaders.AUTHORIZATION)
+
+        if (!accessToken.startsWith("Bearer ")) {
+            throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
+        }
+
 
         return accessToken.split("Bearer ")[1]
     }
