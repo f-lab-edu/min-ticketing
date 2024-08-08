@@ -114,9 +114,9 @@ class UserLoginIntegrationTest : IntegrationTest() {
             `when`("비밀번호를 잘못 입력한 경우") {
                 val uri = "/api/user/login"
                 val email = "invalid@email.com"
-                val password = "invalid1234!"
+                val userPW = "invalid1234!"
 
-                val dto = objectMapper.writeValueAsString(UserLoginDto(email, password))
+                val dto = objectMapper.writeValueAsString(UserLoginDto(email, userPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -133,9 +133,9 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         given("AccessToken을 가지고 있는 사용자가") {
             val email = "email@email.com"
-            val password = "abc1234!"
+            val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, password))
+            userRepository.save(createUser(email, userPW))
 
             val givenToken = jwtTokenProvider.sign(email, mutableListOf())
 
@@ -195,9 +195,9 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         given("올바른 AccessToken을 가진 사용자가 - 인증타입 Bearer 미사용") {
             val email = "email@email.com"
-            val password = "abc1234!"
+            val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, password))
+            userRepository.save(createUser(email, userPW))
 
             val givenToken = jwtTokenProvider.sign(email, mutableListOf())
 
@@ -220,9 +220,9 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         given("만료된 AccessToken을 가진 사용자가") {
             val email = "email@email.com"
-            val password = "abc1234!"
+            val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, password))
+            userRepository.save(createUser(email, userPW))
 
             val givenToken = jwtTokenProvider.sign(email, mutableListOf(), Date(0))
             `when`("인증이 필요한 API 접근 시") {
