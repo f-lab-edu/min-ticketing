@@ -1,8 +1,5 @@
 package com.flab.ticketing.auth.integration
 
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.dto.ErrorResponse
-import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.auth.dto.UserEmailRegisterDto
 import com.flab.ticketing.auth.dto.UserEmailVerificationDto
 import com.flab.ticketing.auth.dto.UserRegisterDto
@@ -11,6 +8,8 @@ import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.exception.UserErrorInfos
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.common.IntegrationTest
+import com.flab.ticketing.common.exception.CommonErrorInfos
 import io.kotest.data.forAll
 import io.kotest.data.row
 import io.kotest.matchers.equals.shouldBeEqual
@@ -20,6 +19,7 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldMatch
 import jakarta.mail.Folder
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
@@ -87,14 +87,12 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 Bad Request와 알맞은 메시지를 출력한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-                    val expectedMessage = "email 필드의 값이 올바르지 않습니다."
-
-                    mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual expectedMessage
-                    responseBody.code shouldBeEqual CommonErrorInfos.INVALID_FIELD.code
-
+                    checkError(
+                        mvcResult,
+                        HttpStatus.BAD_REQUEST,
+                        CommonErrorInfos.INVALID_FIELD.code,
+                        "email" + CommonErrorInfos.INVALID_FIELD.message
+                    )
                 }
             }
 
@@ -118,12 +116,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("409 상태코드와 관련한 메시지를 리턴한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBeExactly 409
-                    responseBody.message shouldBeEqual UserErrorInfos.DUPLICATED_EMAIL.message
-                    responseBody.code shouldBeEqual UserErrorInfos.DUPLICATED_EMAIL.code
+                    checkError(mvcResult, HttpStatus.CONFLICT, UserErrorInfos.DUPLICATED_EMAIL)
                 }
             }
 
@@ -178,12 +171,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 알맞은 메시지를 반환한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBeExactly 400
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFYCODE_INVALID.code
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
                 }
             }
         }
@@ -206,12 +194,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
 
                 then("404 상태코드와 관련 메시지를 반환한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBeExactly 404
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
+                    checkError(mvcResult, HttpStatus.NOT_FOUND, UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
                 }
             }
         }
@@ -273,15 +256,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 알맞은 메시지를 출력한다.") {
-                    mvcResult.response.status shouldBeExactly 400
-
-                    val responseBody = objectMapper.readValue(
-                        mvcResult.response.contentAsString,
-                        ErrorResponse::class.java
-                    )
-
-                    responseBody.message shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.message
-                    responseBody.code shouldBeEqual UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS.code
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
                     userRepository.findByEmail(email) shouldBe null
                 }
             }
@@ -320,15 +295,13 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                         .andReturn()
 
                     then("400 상태 코드와 적절한 오류 정보를 반환한다.") {
-                        mvcResult.response.status shouldBeExactly 400
-
-                        val responseBody = objectMapper.readValue(
-                            mvcResult.response.contentAsString,
-                            ErrorResponse::class.java
+                        checkError(
+                            mvcResult,
+                            HttpStatus.BAD_REQUEST,
+                            CommonErrorInfos.INVALID_FIELD.code,
+                            "password" + CommonErrorInfos.INVALID_FIELD.message
                         )
 
-                        responseBody.code shouldBeEqual CommonErrorInfos.INVALID_FIELD.code
-                        responseBody.message shouldBeEqual "password" + CommonErrorInfos.INVALID_FIELD.message
                     }
                 }
             }
@@ -359,15 +332,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 알맞은 메시지를 반환한다.") {
-                    mvcResult.response.status shouldBeExactly 400
-
-                    val responseBody = objectMapper.readValue(
-                        mvcResult.response.contentAsString,
-                        ErrorResponse::class.java
-                    )
-
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.message
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND.code
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
                     userRepository.findByEmail(email) shouldBe null
                 }
             }
@@ -399,15 +364,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 적절한 상태 메시지를 반환한다.") {
-                    mvcResult.response.status shouldBeExactly 400
-
-                    val responseBody = objectMapper.readValue(
-                        mvcResult.response.contentAsString,
-                        ErrorResponse::class.java
-                    )
-
-                    responseBody.code shouldBeEqual UserErrorInfos.EMAIL_NOT_VERIFIED.code
-                    responseBody.message shouldBeEqual UserErrorInfos.EMAIL_NOT_VERIFIED.message
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.EMAIL_NOT_VERIFIED)
                     userRepository.findByEmail(email) shouldBe null
                 }
             }

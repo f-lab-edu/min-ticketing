@@ -50,12 +50,21 @@ abstract class IntegrationTest : BehaviorSpec() {
 
 
     protected fun checkError(mvcResult: MvcResult, expectedStatus: HttpStatus, expectedErrorInfo: ErrorInfo) {
+        checkError(mvcResult, expectedStatus, expectedErrorInfo.code, expectedErrorInfo.message)
+    }
+
+    protected fun checkError(
+        mvcResult: MvcResult,
+        expectedStatus: HttpStatus,
+        expectedCode: String,
+        expectedMessage: String
+    ) {
         val responseBody =
             objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
 
         mvcResult.response.status shouldBeExactly expectedStatus.value()
-        responseBody.code shouldBeEqual expectedErrorInfo.code
-        responseBody.message shouldBeEqual expectedErrorInfo.message
+        responseBody.code shouldBeEqual expectedCode
+        responseBody.message shouldBeEqual expectedMessage
     }
 }
 
