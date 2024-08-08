@@ -6,6 +6,7 @@ import com.flab.ticketing.common.exception.BusinessException
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.InternalServerException
 import com.flab.ticketing.common.exception.UnAuthorizedException
+import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.JwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
@@ -37,6 +38,7 @@ class JwtAuthenticateFilter(
             filterChain.doFilter(request, response)
         }.onFailure { e ->
             when (e) {
+                is ExpiredJwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_EXPIRED)
                 is NullPointerException, is JwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
                 is BusinessException -> throw e
                 else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
