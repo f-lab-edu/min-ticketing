@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
@@ -26,7 +27,8 @@ class SecurityConfig {
         http: HttpSecurity,
         usernamePasswordAuthFilter: CustomUsernamePasswordAuthFilter,
         exceptionHandlerFilter: ExceptionHandlerFilter,
-        jwtAuthenticateFilter: JwtAuthenticateFilter
+        jwtAuthenticateFilter: JwtAuthenticateFilter,
+        authenticationEntryPoint: AuthenticationEntryPoint
     ): SecurityFilterChain {
         http
             .csrf { csrfConfig -> csrfConfig.disable() }
@@ -36,6 +38,7 @@ class SecurityConfig {
                     .requestMatchers("/api/user/login").permitAll()
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
+            .exceptionHandling { it.authenticationEntryPoint(authenticationEntryPoint) }
             .addFilterAt(usernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticateFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(exceptionHandlerFilter, JwtAuthenticateFilter::class.java)
