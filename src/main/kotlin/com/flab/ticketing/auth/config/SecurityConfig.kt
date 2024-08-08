@@ -33,7 +33,7 @@ class SecurityConfig {
             .authorizeHttpRequests { authorizedRequests ->
                 authorizedRequests
                     .requestMatchers("/api/user/new/**").permitAll()
-                    .requestMatchers("/api/users/login").permitAll()
+                    .requestMatchers("/api/user/login").permitAll()
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
             .addFilterAt(usernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter::class.java)

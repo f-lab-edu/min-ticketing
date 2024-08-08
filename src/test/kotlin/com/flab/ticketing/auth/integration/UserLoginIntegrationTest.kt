@@ -6,9 +6,7 @@ import com.flab.ticketing.auth.exception.UserErrorInfos
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
@@ -81,15 +79,8 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-
-
                 then("400 상태 코드와 적절한 오류를 리턴한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBe HttpStatus.BAD_REQUEST.value()
-                    responseBody.code shouldBeEqual CommonErrorInfos.INVALID_METHOD.code
-                    responseBody.message shouldBeEqual CommonErrorInfos.INVALID_METHOD.message
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, CommonErrorInfos.INVALID_METHOD)
                 }
             }
         }
@@ -112,13 +103,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("401 상태 코드와 적절한 메시지를 출력한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-
-                    mvcResult.response.status shouldBe 401
-                    responseBody.code shouldBeEqual UserErrorInfos.LOGIN_FAILED.code
-                    responseBody.message shouldBeEqual UserErrorInfos.LOGIN_FAILED.message
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.LOGIN_FAILED)
                 }
             }
         }
@@ -141,13 +126,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("401 상태 코드와 적절한 메시지를 출력한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-
-                    mvcResult.response.status shouldBe 401
-                    responseBody.code shouldBeEqual UserErrorInfos.LOGIN_FAILED.code
-                    responseBody.message shouldBeEqual UserErrorInfos.LOGIN_FAILED.message
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.LOGIN_FAILED)
                 }
             }
         }
@@ -189,12 +168,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 상태 코드와 적절한 오류 메시지를 반환한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBeExactly HttpStatus.UNAUTHORIZED.value()
-                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.code
-                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.message
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
                 }
             }
         }
@@ -214,12 +188,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 오류와 적절한 메시지를 반환한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBe HttpStatus.UNAUTHORIZED.value()
-                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.code
-                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.message
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
                 }
             }
         }
@@ -243,12 +212,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 오류와 적절한 메시지를 출력한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBe HttpStatus.UNAUTHORIZED.value()
-                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.code
-                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_INVALID.message
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
 
                 }
             }
@@ -272,12 +236,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 상태 코드와 적절한 메시지를 반환한다.") {
-                    val responseBody =
-                        objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
-
-                    mvcResult.response.status shouldBeExactly HttpStatus.UNAUTHORIZED.value()
-                    responseBody.code shouldBeEqual UserErrorInfos.AUTH_INFO_EXPIRED.code
-                    responseBody.message shouldBeEqual UserErrorInfos.AUTH_INFO_EXPIRED.message
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_EXPIRED)
                 }
             }
         }
