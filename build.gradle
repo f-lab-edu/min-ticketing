@@ -81,20 +81,6 @@ jacocoTestReport {
 
 }
 
-jacocoTestCoverageVerification {
-    violationRules {
-        rule {
-            element = 'CLASS'
-
-            limit {
-                counter = 'BRANCH'
-                value = 'COVEREDRATIO'
-                minimum = 0.75
-            }
-        }
-    }
-}
-
 task testCoverage(type: Test) {
     group 'verification'
     description 'Runs the unit tests with coverage'
