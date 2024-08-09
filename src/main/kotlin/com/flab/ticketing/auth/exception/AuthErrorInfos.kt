@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.exception
 
 import com.flab.ticketing.common.exception.ErrorInfo
 
-enum class UserErrorInfos(override val code: String, override val message: String) : ErrorInfo {
+enum class AuthErrorInfos(override val code: String, override val message: String) : ErrorInfo {
     DUPLICATED_EMAIL("USER-001", "이미 가입한 이메일입니다."),
     EMAIL_VERIFY_INFO_NOT_FOUND("USER-003", "이메일 인증 정보를 조회할 수 없습니다."),
     EMAIL_VERIFYCODE_INVALID("USER-004", "이메일 인증 코드가 잘못되었습니다."),

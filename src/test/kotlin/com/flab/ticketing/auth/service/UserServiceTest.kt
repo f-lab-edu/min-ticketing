@@ -1,13 +1,13 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.auth.dto.UserRegisterDto
 import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.EmailCodeGenerator
 import com.flab.ticketing.auth.utils.EmailSender
 import com.flab.ticketing.auth.utils.EmailVerifier
+import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.common.utils.NanoIdGenerator
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.mockk.every
 import io.mockk.mockk
@@ -21,8 +21,8 @@ class UserServiceTest : UnitTest() {
     private val userRepository: UserRepository = mockk()
     private val userPWEncoder: PasswordEncoder = mockk()
     private val nanoIdGenerator: NanoIdGenerator = mockk()
-    private val userService: UserService =
-        UserService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
+    private val authService: AuthService =
+        AuthService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
 
     init {
         "email 인증 정보가 저장되어 있지 않은 이메일에 인증 코드를 생성해 메일을 보낼 수 있다." {
@@ -33,7 +33,7 @@ class UserServiceTest : UnitTest() {
             every { emailVerifier.saveCode(any(), any()) } returns Unit
             every { userRepository.findByEmail(any()) } returns null
 
-            userService.sendEmailVerifyCode(email)
+            authService.sendEmailVerifyCode(email)
 
             verify {
                 emailSender.sendEmail(
@@ -52,7 +52,7 @@ class UserServiceTest : UnitTest() {
             every { emailVerifier.setVerifySuccess(email) } returns Unit
 
             shouldNotThrow<Exception> {
-                userService.verifyEmailCode(email, code)
+                authService.verifyEmailCode(email, code)
             }
             verify { emailVerifier.setVerifySuccess(email) }
 
@@ -72,7 +72,7 @@ class UserServiceTest : UnitTest() {
             every { nanoIdGenerator.createNanoId() } returns uid
             every { userRepository.save(any()) } returns expectedUser
 
-            userService.saveVerifiedUserInfo(
+            authService.saveVerifiedUserInfo(
                 UserRegisterDto(
                     email,
                     userPW,

@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.integration
 
 import com.flab.ticketing.auth.dto.UserLoginDto
 import com.flab.ticketing.auth.entity.User
-import com.flab.ticketing.auth.exception.UserErrorInfos
+import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.IntegrationTest
@@ -103,7 +103,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("401 상태 코드와 적절한 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.LOGIN_FAILED)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.LOGIN_FAILED)
                 }
             }
         }
@@ -126,7 +126,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("401 상태 코드와 적절한 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.LOGIN_FAILED)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.LOGIN_FAILED)
                 }
             }
         }
@@ -166,7 +166,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 상태 코드와 적절한 오류 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_INVALID)
                 }
             }
         }
@@ -186,7 +186,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 오류와 적절한 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_INVALID)
                 }
             }
         }
@@ -208,7 +208,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 오류와 적절한 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_INVALID)
 
                 }
             }
@@ -230,7 +230,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 상태 코드와 적절한 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_EXPIRED)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_EXPIRED)
                 }
             }
         }

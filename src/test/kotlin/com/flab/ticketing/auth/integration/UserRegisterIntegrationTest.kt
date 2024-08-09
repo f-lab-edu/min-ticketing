@@ -5,7 +5,7 @@ import com.flab.ticketing.auth.dto.UserEmailVerificationDto
 import com.flab.ticketing.auth.dto.UserRegisterDto
 import com.flab.ticketing.auth.entity.EmailVerifyInfo
 import com.flab.ticketing.auth.entity.User
-import com.flab.ticketing.auth.exception.UserErrorInfos
+import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.common.IntegrationTest
@@ -116,7 +116,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("409 상태코드와 관련한 메시지를 리턴한다.") {
-                    checkError(mvcResult, HttpStatus.CONFLICT, UserErrorInfos.DUPLICATED_EMAIL)
+                    checkError(mvcResult, HttpStatus.CONFLICT, AuthErrorInfos.DUPLICATED_EMAIL)
                 }
             }
 
@@ -171,7 +171,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 알맞은 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.EMAIL_VERIFYCODE_INVALID)
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.EMAIL_VERIFYCODE_INVALID)
                 }
             }
         }
@@ -194,7 +194,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
 
                 then("404 상태코드와 관련 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.NOT_FOUND, UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
+                    checkError(mvcResult, HttpStatus.NOT_FOUND, AuthErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
                 }
             }
         }
@@ -256,7 +256,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 알맞은 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
                     userRepository.findByEmail(email) shouldBe null
                 }
             }
@@ -332,7 +332,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 알맞은 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
                     userRepository.findByEmail(email) shouldBe null
                 }
             }
@@ -364,7 +364,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("400 상태코드와 적절한 상태 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, UserErrorInfos.EMAIL_NOT_VERIFIED)
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.EMAIL_NOT_VERIFIED)
                     userRepository.findByEmail(email) shouldBe null
                 }
             }

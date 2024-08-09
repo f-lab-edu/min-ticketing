@@ -1,13 +1,13 @@
 package com.flab.ticketing.auth.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.auth.exception.AuthErrorInfos
+import com.flab.ticketing.auth.utils.JwtTokenProvider
+import com.flab.ticketing.auth.utils.UserLoginInfoConverter
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.InternalServerException
 import com.flab.ticketing.common.exception.UnAuthorizedException
-import com.flab.ticketing.auth.exception.UserErrorInfos
-import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.auth.utils.UserLoginInfoConverter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -72,6 +72,6 @@ class CustomUsernamePasswordAuthFilter(
         response: HttpServletResponse?,
         failed: AuthenticationException?
     ) {
-        throw UnAuthorizedException(UserErrorInfos.LOGIN_FAILED)
+        throw UnAuthorizedException(AuthErrorInfos.LOGIN_FAILED)
     }
 }
