@@ -9,6 +9,7 @@ import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.entity.User
 import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -23,6 +24,7 @@ class AuthServiceTest : UnitTest() {
     private val nanoIdGenerator: NanoIdGenerator = mockk()
     private val authService: AuthService =
         AuthService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
+
 
     init {
         "email 인증 정보가 저장되어 있지 않은 이메일에 인증 코드를 생성해 메일을 보낼 수 있다." {
@@ -84,6 +86,25 @@ class AuthServiceTest : UnitTest() {
             verify { userRepository.save(expectedUser) }
         }
 
+        "DB에 저장된 사용자는 비밀번호 정보를 업데이트 할 수 있다." {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+            val newUserPW = "abcd1234!"
+
+            val encryptedPW = "encrypted1234!"
+            val newEncryptedPW = "newEncrypted1234!"
+
+            val user = User("notUsed", email, encryptedPW, "notUsed")
+
+            every { userRepository.findByEmail(email) } returns user
+            every { userPWEncoder.encode(userPW) } returns encryptedPW
+            every { userPWEncoder.encode(newUserPW) } returns newEncryptedPW
+
+
+            authService.updatePassword(email, userPW, newUserPW)
+
+            user.password shouldBeEqual newEncryptedPW
+        }
 
     }
 

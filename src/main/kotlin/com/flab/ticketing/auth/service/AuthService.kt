@@ -67,4 +67,17 @@ class AuthService(
         userRepository.save(user)
     }
 
+    @Transactional
+    fun updatePassword(email: String, currentPassword: String, newPassword: String) {
+        val user = userRepository.findByEmail(email) ?: throw NotFoundException(AuthErrorInfos.USER_INFO_NOT_FOUND)
+
+
+        if (!passwordEncoder.encode(currentPassword).equals(user.password)) {
+            throw InvalidValueException(AuthErrorInfos.PASSWORD_INVALID)
+        }
+
+        user.password = passwordEncoder.encode(newPassword)
+    }
+
+
 }
