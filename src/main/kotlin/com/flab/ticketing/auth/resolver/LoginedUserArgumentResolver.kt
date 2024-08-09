@@ -14,7 +14,7 @@ import org.springframework.web.method.support.ModelAndViewContainer
 
 
 @Component
-class LoginedUserUidArgumentResolver : HandlerMethodArgumentResolver {
+class LoginedUserArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         // 파라미터의 타입이 이 Resolver이 처리할 수 있는 타입인지 확인
         val isParameterTypeSupports = parameter.getParameterType().isAssignableFrom(String::class.java)
@@ -24,20 +24,18 @@ class LoginedUserUidArgumentResolver : HandlerMethodArgumentResolver {
         return isParameterTypeSupports && hasAnnotation
     }
 
-    @Throws(Exception::class)
     override fun resolveArgument(
         parameter: MethodParameter,
         mavContainer: ModelAndViewContainer?,
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
+        val authentication = SecurityContextHolder.getContext().authentication
+            ?: throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
 
-        return runCatching {
-            val userDetails = SecurityContextHolder.getContext().authentication!!.principal as? CustomUserDetails
+        val userDetails = authentication.principal as? CustomUserDetails
+            ?: throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
 
-            return userDetails?.username ?: throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
-        }.getOrElse {
-            throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
-        }
+        return userDetails.username
     }
 }
