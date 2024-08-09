@@ -1,6 +1,7 @@
 package com.flab.ticketing.auth.integration
 
 import com.flab.ticketing.auth.dto.UserLoginDto
+import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.JwtTokenProvider
@@ -235,6 +236,39 @@ class UserLoginIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("올바른 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
+                val uri = "/api/user/password"
+
+                val newUserPW = "abcd1234!"
+
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("200 상태코드와 사용자의 비밀번호를 업데이트 한다.") {
+                    mvcResult.response.status shouldBe HttpStatus.OK.value()
+
+                    val actual = userRepository.findByEmail(email)!!.password
+                    passwordEncoder.matches(newUserPW, actual) shouldBe true
+
+                }
+            }
+        }
+
+
         afterEach {
             userRepository.deleteAll()
         }
@@ -259,7 +293,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         userRepository.save(createUser(email, password, nickname, uid))
 
-        return jwtTokenProvider.sign(email, mutableListOf(), Date(0))
+        return jwtTokenProvider.sign(email, mutableListOf(), Date())
     }
 
     private fun isJwt(token: String): Boolean {

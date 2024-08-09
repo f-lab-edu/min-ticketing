@@ -2,15 +2,14 @@ package com.flab.ticketing.auth.controller
 
 import com.flab.ticketing.auth.dto.UserEmailRegisterDto
 import com.flab.ticketing.auth.dto.UserEmailVerificationDto
+import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
 import com.flab.ticketing.auth.dto.UserRegisterDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
+import com.flab.ticketing.auth.resolver.annotation.LoginUser
 import com.flab.ticketing.auth.service.AuthService
 import com.flab.ticketing.common.exception.InvalidValueException
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/user")
@@ -36,6 +35,12 @@ class AuthController(
         }
 
         authService.saveVerifiedUserInfo(registerInfo)
+    }
+
+    @PatchMapping("/password")
+    fun updatePassword(@LoginUser email: String, @Validated @RequestBody passwordUpdateDto: UserPasswordUpdateDto) {
+
+        authService.updatePassword(email, passwordUpdateDto.currentPassword, passwordUpdateDto.newPassword)
     }
 
 }
