@@ -135,9 +135,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, userPW))
-
-            val givenToken = jwtTokenProvider.sign(email, mutableListOf())
+            val givenToken = saveUserAndCreateJwt(email, userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -197,9 +195,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, userPW))
-
-            val givenToken = jwtTokenProvider.sign(email, mutableListOf())
+            val givenToken = saveUserAndCreateJwt(email, userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -222,9 +218,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, userPW))
-
-            val givenToken = jwtTokenProvider.sign(email, mutableListOf(), Date(0))
+            val givenToken = saveUserAndCreateJwt(email, userPW)
             `when`("인증이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
 
@@ -254,6 +248,18 @@ class UserLoginIntegrationTest : IntegrationTest() {
         uid: String = "NotUsed"
     ): User {
         return User(uid, email, passwordEncoder.encode(password), nickname)
+    }
+
+    private fun saveUserAndCreateJwt(
+        email: String,
+        password: String,
+        nickname: String = "Notused",
+        uid: String = "NotUsed"
+    ): String {
+
+        userRepository.save(createUser(email, password, nickname, uid))
+
+        return jwtTokenProvider.sign(email, mutableListOf(), Date(0))
     }
 
     private fun isJwt(token: String): Boolean {
