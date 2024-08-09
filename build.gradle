@@ -74,6 +74,7 @@ jacocoTestReport {
                     "com/flab/ticketing/**/TicketingApplication.*",
                     "com/flab/ticketing/**/TicketingApplicationKt.*",
                     "com/flab/ticketing/**/dto/*",
+                    "com/flab/ticketing/**/exception/*",
                     "**/config/*"
             ])
         }))
