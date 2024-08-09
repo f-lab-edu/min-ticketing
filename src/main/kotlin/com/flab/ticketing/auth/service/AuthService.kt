@@ -72,7 +72,7 @@ class AuthService(
         val user = userRepository.findByEmail(email) ?: throw NotFoundException(AuthErrorInfos.USER_INFO_NOT_FOUND)
 
 
-        if (!passwordEncoder.encode(currentPassword).equals(user.password)) {
+        if (!passwordEncoder.matches(currentPassword, user.password)) {
             throw InvalidValueException(AuthErrorInfos.PASSWORD_INVALID)
         }
 

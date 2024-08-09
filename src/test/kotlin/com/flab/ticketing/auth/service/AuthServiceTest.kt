@@ -97,7 +97,7 @@ class AuthServiceTest : UnitTest() {
             val user = User("notUsed", email, encryptedPW, "notUsed")
 
             every { userRepository.findByEmail(email) } returns user
-            every { userPWEncoder.encode(userPW) } returns encryptedPW
+            every { userPWEncoder.matches(userPW, encryptedPW) } returns true
             every { userPWEncoder.encode(newUserPW) } returns newEncryptedPW
 
 
