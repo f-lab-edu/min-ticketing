@@ -29,3 +29,8 @@ server:
     encoding:
       force-response: true
       charset: UTF-8
+
+jwt:
+  secret: SECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEY
+  access-token:
+    time: 1000000

@@ -1,12 +1,16 @@
 package com.flab.ticketing.common
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.exception.ErrorInfo
 import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
+import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.ints.shouldBeExactly
 import jakarta.annotation.PostConstruct
 import jakarta.annotation.PreDestroy
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,8 +19,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.MvcResult
 import redis.embedded.RedisServer
 
 
@@ -43,6 +49,23 @@ abstract class IntegrationTest : BehaviorSpec() {
         )
 
 
+    protected fun checkError(mvcResult: MvcResult, expectedStatus: HttpStatus, expectedErrorInfo: ErrorInfo) {
+        checkError(mvcResult, expectedStatus, expectedErrorInfo.code, expectedErrorInfo.message)
+    }
+
+    protected fun checkError(
+        mvcResult: MvcResult,
+        expectedStatus: HttpStatus,
+        expectedCode: String,
+        expectedMessage: String
+    ) {
+        val responseBody =
+            objectMapper.readValue(mvcResult.response.contentAsString, ErrorResponse::class.java)
+
+        mvcResult.response.status shouldBeExactly expectedStatus.value()
+        responseBody.code shouldBeEqual expectedCode
+        responseBody.message shouldBeEqual expectedMessage
+    }
 }
 
 
