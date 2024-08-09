@@ -1,13 +1,13 @@
 package com.flab.ticketing.auth.service
 
 import com.flab.ticketing.auth.dto.UserRegisterDto
-import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.EmailCodeGenerator
 import com.flab.ticketing.auth.utils.EmailSender
 import com.flab.ticketing.auth.utils.EmailVerifier
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.utils.NanoIdGenerator
+import com.flab.ticketing.user.entity.User
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.mockk.every
 import io.mockk.mockk

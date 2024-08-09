@@ -1,8 +1,8 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.user.entity.User
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every

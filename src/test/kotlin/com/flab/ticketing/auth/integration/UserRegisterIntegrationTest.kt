@@ -4,12 +4,12 @@ import com.flab.ticketing.auth.dto.UserEmailRegisterDto
 import com.flab.ticketing.auth.dto.UserEmailVerificationDto
 import com.flab.ticketing.auth.dto.UserRegisterDto
 import com.flab.ticketing.auth.entity.EmailVerifyInfo
-import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
+import com.flab.ticketing.user.entity.User
 import io.kotest.data.forAll
 import io.kotest.data.row
 import io.kotest.matchers.equals.shouldBeEqual

@@ -1,7 +1,6 @@
 package com.flab.ticketing.auth.service
 
 import com.flab.ticketing.auth.dto.UserRegisterDto
-import com.flab.ticketing.auth.entity.User
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.EmailCodeGenerator
@@ -11,6 +10,7 @@ import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.common.utils.NanoIdGenerator
+import com.flab.ticketing.user.entity.User
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
