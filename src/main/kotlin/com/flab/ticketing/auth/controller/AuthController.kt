@@ -39,6 +39,10 @@ class AuthController(
 
     @PatchMapping("/password")
     fun updatePassword(@LoginUser email: String, @Validated @RequestBody passwordUpdateDto: UserPasswordUpdateDto) {
+        if (!passwordUpdateDto.newPassword.equals(passwordUpdateDto.newPasswordConfirm)) {
+            throw InvalidValueException(AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+        }
+
 
         authService.updatePassword(email, passwordUpdateDto.currentPassword, passwordUpdateDto.newPassword)
     }

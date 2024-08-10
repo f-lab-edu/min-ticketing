@@ -332,6 +332,35 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         }
 
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가 - 새로운 비밀번호와 새로운 비밀번호 불일치") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("서로 다른 newPassword와 newPasswordConfirm 입력시") {
+                val uri = "/api/user/password"
+
+                val newUserPW = "abcd1234!"
+                val newPasswordConfirm = "abcde1234!"
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newPasswordConfirm))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                then("400 오류와 적절한 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+                }
+            }
+        }
+
         afterEach {
             userRepository.deleteAll()
         }
