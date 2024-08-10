@@ -219,7 +219,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val givenToken = saveUserAndCreateJwt(email, userPW, date = Date(0))
             `when`("인증이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
 
@@ -324,7 +324,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                         mvcResult,
                         HttpStatus.BAD_REQUEST,
                         CommonErrorInfos.INVALID_FIELD.code,
-                        "newPasswordConfirm,newPassword" + CommonErrorInfos.INVALID_FIELD.message
+                        "newPassword,newPasswordConfirm" + CommonErrorInfos.INVALID_FIELD.message
                     )
 
                 }
@@ -342,8 +342,8 @@ class UserLoginIntegrationTest : IntegrationTest() {
                 val uri = "/api/user/password"
 
                 val newUserPW = "abcd1234!"
-                val newPasswordConfirm = "abcde1234!"
-                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newPasswordConfirm))
+                val newUserPWConfirm = "abcde1234!"
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPWConfirm))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.patch(uri)
@@ -380,12 +380,13 @@ class UserLoginIntegrationTest : IntegrationTest() {
         email: String,
         password: String,
         nickname: String = "Notused",
-        uid: String = "NotUsed"
+        uid: String = "NotUsed",
+        date: Date = Date()
     ): String {
 
         userRepository.save(createUser(email, password, nickname, uid))
 
-        return jwtTokenProvider.sign(email, mutableListOf(), Date())
+        return jwtTokenProvider.sign(email, mutableListOf(), date)
     }
 
     private fun isJwt(token: String): Boolean {
