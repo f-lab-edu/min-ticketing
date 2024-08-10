@@ -5,6 +5,7 @@ import com.flab.ticketing.common.entity.BaseEntity
 import jakarta.persistence.*
 
 @Entity
+@Table(name = "orders")
 class Order(
     @Column(unique = true, updatable = false)
     private val uid: String,
