@@ -299,6 +299,39 @@ class UserLoginIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가 - 새로운 비밀번호 형식 조건 불만족") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("영문, 숫자, 특수문자를 포함한 8글자 조건을 만족하지 못한 새 비밀번호로 변경을 시도할 시") {
+                val uri = "/api/user/password"
+                val newUserPW = "invalid"
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태코드와 적절한 오류 메시지를 반환한다.") {
+                    checkError(
+                        mvcResult,
+                        HttpStatus.BAD_REQUEST,
+                        CommonErrorInfos.INVALID_FIELD.code,
+                        "newPasswordConfirm,newPassword" + CommonErrorInfos.INVALID_FIELD.message
+                    )
+
+                }
+            }
+
+        }
+
         afterEach {
             userRepository.deleteAll()
         }
