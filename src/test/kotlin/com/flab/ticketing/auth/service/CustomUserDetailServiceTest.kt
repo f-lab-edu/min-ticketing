@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.user.entity.repository.UserRepository
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.user.entity.User
 import io.kotest.assertions.throwables.shouldThrow

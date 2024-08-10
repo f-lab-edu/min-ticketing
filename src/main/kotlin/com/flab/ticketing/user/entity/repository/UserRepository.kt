@@ -1,4 +1,4 @@
-package com.flab.ticketing.auth.repository
+package com.flab.ticketing.user.entity.repository
 
 import com.flab.ticketing.user.entity.User
 import org.springframework.data.repository.CrudRepository

@@ -3,11 +3,11 @@ package com.flab.ticketing.auth.integration
 import com.flab.ticketing.auth.dto.UserLoginDto
 import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.auth.repository.UserRepository
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.user.entity.repository.UserRepository
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired

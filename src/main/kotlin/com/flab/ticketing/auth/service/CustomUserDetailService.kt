@@ -1,7 +1,7 @@
 package com.flab.ticketing.auth.service
 
 import com.flab.ticketing.auth.dto.CustomUserDetails
-import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.user.entity.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
