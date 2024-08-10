@@ -268,6 +268,36 @@ class UserLoginIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가 - 현재 비밀번호 오류") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("잘못된 현재 비밀번호, 올바른 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
+                val uri = "/api/user/password"
+
+                val invalidCurrentPW = "abcde1234!"
+                val newUserPW = "abcd1234!"
+
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(invalidCurrentPW, newUserPW, newUserPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태 코드와 적절한 오류 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.PASSWORD_INVALID)
+
+                }
+
+            }
+        }
 
         afterEach {
             userRepository.deleteAll()
