@@ -21,6 +21,6 @@ class CustomUserDetailService(private val userRepository: UserRepository) : User
         val user =
             userRepository.findByEmail(username) ?: throw UsernameNotFoundException("유저 정보를 조회할 수 없습니다.")
 
-        return CustomUserDetails(user.email, user.password)
+        return CustomUserDetails(user.uid, user.email, user.password, user.nickname)
     }
 }

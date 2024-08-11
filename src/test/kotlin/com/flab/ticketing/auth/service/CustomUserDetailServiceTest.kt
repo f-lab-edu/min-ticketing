@@ -1,8 +1,10 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.auth.dto.CustomUserDetails
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.user.entity.repository.UserRepository
+import io.kotest.assertions.fail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -19,13 +21,18 @@ class CustomUserDetailServiceTest : UnitTest() {
         "사용자의 Email 정보를 읽어서 UserDetail을 반환할 수 있다." {
             val email = "email@email.com"
             val userPW = "asdasf09120312@$@!$@$14"
+            val uid = "uid"
+            val nickname = "nickname"
 
-            every { userRepository.findByEmail(email) } returns createUser(email, userPW)
+            every { userRepository.findByEmail(email) } returns createUser(email, userPW, uid, nickname)
 
-            val userDetails = userDetailService.loadUserByUsername(email)
+            val userDetails = userDetailService.loadUserByUsername(email) as? CustomUserDetails
+                ?: fail("리턴 타입은 CustomUserDetail 구현체 여야 합니다.")
 
+            userDetails.uid shouldBe uid
             userDetails.username shouldBe email
             userDetails.password shouldBe userPW
+            userDetails.nickname shouldBe nickname
         }
 
         "사용자의 Email 정보를 읽을 수 없으면 UnAuthorizedException을 반환한다." {
