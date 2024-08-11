@@ -17,7 +17,4 @@ class PerformanceDateTime(
     @JoinColumn(name = "performance_id")
     private val performance: Performance,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "place_id")
-    private val performancePlace: PerformancePlace
-) : BaseEntity()
+    ) : BaseEntity()
