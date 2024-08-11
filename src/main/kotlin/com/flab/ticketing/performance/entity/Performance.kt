@@ -15,9 +15,8 @@ class Performance(
 
     private val description: String,
 
-    private val price: Int
-) : BaseEntity() {
+    private val price: Int,
 
     @OneToMany(mappedBy = "performance", fetch = FetchType.LAZY)
-    private lateinit var performanceDateTime: List<PerformanceDateTime>
-}
+    private val performanceDateTime: List<PerformanceDateTime> = mutableListOf()
+) : BaseEntity()

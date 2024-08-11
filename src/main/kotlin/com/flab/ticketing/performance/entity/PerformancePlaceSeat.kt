@@ -12,11 +12,13 @@ class PerformancePlaceSeat(
 
     private val row: Int,
 
-    private val column: Int
-) : BaseEntity() {
+    private val column: Int,
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private lateinit var place: PerformancePlace
+    private val place: PerformancePlace
+) : BaseEntity() {
+
 
     @Transient
     lateinit var name: String

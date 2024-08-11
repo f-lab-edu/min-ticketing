@@ -12,13 +12,12 @@ class PerformanceDateTime(
     private val uid: String,
 
     private val showTime: ZonedDateTime,
-) : BaseEntity() {
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
-    private lateinit var performance: Performance
+    private val performance: Performance,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private lateinit var performancePlace: PerformancePlace
-
-}
+    private val performancePlace: PerformancePlace
+) : BaseEntity()

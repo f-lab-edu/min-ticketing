@@ -7,9 +7,8 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "performance_places")
 class PerformancePlace(
-    private val name: String
-) : BaseEntity() {
+    private val name: String,
 
     @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    private lateinit var seats: List<PerformancePlaceSeat>
-}
+    private val seats: List<PerformancePlaceSeat> = mutableListOf()
+) : BaseEntity()

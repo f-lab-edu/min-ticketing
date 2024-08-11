@@ -10,16 +10,18 @@ class Order(
     @Column(unique = true, updatable = false)
     private val uid: String,
 
-    @Embedded
-    val payment: Payment
-) : BaseEntity() {
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordered_user_id")
-    private lateinit var user: User
+    private val user: User,
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
-    private lateinit var reservations: List<Reservation>
+    private val reservations: List<Reservation> = mutableListOf(),
+
+    @Embedded
+    val payment: Payment
+
+) : BaseEntity() {
+
 
     @Embeddable
     class Payment(
