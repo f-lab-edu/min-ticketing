@@ -3,6 +3,7 @@ package com.flab.ticketing.performance.dto
 import java.time.LocalDate
 
 data class PerformanceSearchResult(
+    val uid: String,
     val image: String,
     val title: String,
     val regionName: String,
