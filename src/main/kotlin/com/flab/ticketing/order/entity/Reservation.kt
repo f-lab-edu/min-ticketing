@@ -17,6 +17,6 @@ class Reservation(
     private val seat: PerformancePlaceSeat,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order")
+    @JoinColumn(name = "order_id")
     private val order: Order
 ) : BaseEntity()
