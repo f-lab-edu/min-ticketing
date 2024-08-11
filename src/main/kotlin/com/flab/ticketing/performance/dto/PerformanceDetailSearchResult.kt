@@ -6,6 +6,7 @@ data class PerformanceDetailSearchResult(
     val uid: String,
     val image: String,
     val title: String,
+    val region: String,
     val place: String,
     val price: Int,
     val description: String,
