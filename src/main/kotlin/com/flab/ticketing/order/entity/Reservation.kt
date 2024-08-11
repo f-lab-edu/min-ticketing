@@ -9,11 +9,11 @@ import jakarta.persistence.*
 @Table(name = "reservations")
 class Reservation(
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "performance_date_time")
+    @JoinColumn(name = "performance_date_time_id")
     private val performanceDateTime: PerformanceDateTime,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "performance_seat")
+    @JoinColumn(name = "performance_seat_id")
     private val seat: PerformancePlaceSeat,
 
     @ManyToOne(fetch = FetchType.LAZY)
