@@ -13,6 +13,8 @@ class Performance(
 
     private val name: String,
 
+    private val image: String,
+    
     private val description: String,
 
     private val price: Int,
