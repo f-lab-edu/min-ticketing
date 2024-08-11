@@ -1,9 +1,6 @@
 package com.flab.ticketing.auth.controller
 
-import com.flab.ticketing.auth.dto.UserEmailRegisterDto
-import com.flab.ticketing.auth.dto.UserEmailVerificationDto
-import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
-import com.flab.ticketing.auth.dto.UserRegisterDto
+import com.flab.ticketing.auth.dto.*
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.resolver.annotation.LoginUser
 import com.flab.ticketing.auth.service.AuthService
@@ -38,13 +35,16 @@ class AuthController(
     }
 
     @PatchMapping("/password")
-    fun updatePassword(@LoginUser email: String, @Validated @RequestBody passwordUpdateDto: UserPasswordUpdateDto) {
+    fun updatePassword(
+        @LoginUser userInfo: AuthenticatedUserDto,
+        @Validated @RequestBody passwordUpdateDto: UserPasswordUpdateDto
+    ) {
         if (!passwordUpdateDto.newPassword.equals(passwordUpdateDto.newPasswordConfirm)) {
             throw InvalidValueException(AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
         }
 
 
-        authService.updatePassword(email, passwordUpdateDto.currentPassword, passwordUpdateDto.newPassword)
+        authService.updatePassword(userInfo.email, passwordUpdateDto.currentPassword, passwordUpdateDto.newPassword)
     }
 
 }

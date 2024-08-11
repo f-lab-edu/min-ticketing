@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.resolver
 
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.resolver.annotation.LoginUser
 import com.flab.ticketing.common.exception.UnAuthorizedException
@@ -17,7 +17,7 @@ import org.springframework.web.method.support.ModelAndViewContainer
 class LoginedUserArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         // 파라미터의 타입이 이 Resolver이 처리할 수 있는 타입인지 확인
-        val isParameterTypeSupports = parameter.getParameterType().isAssignableFrom(String::class.java)
+        val isParameterTypeSupports = parameter.getParameterType().isAssignableFrom(AuthenticatedUserDto::class.java)
 
         // 이 ArgumentResolver가 적용되는 Annotation 지정
         val hasAnnotation = parameter.hasParameterAnnotation(LoginUser::class.java)
@@ -33,9 +33,8 @@ class LoginedUserArgumentResolver : HandlerMethodArgumentResolver {
         val authentication = SecurityContextHolder.getContext().authentication
             ?: throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
 
-        val userDetails = authentication.principal as? CustomUserDetails
+        return authentication.principal as? AuthenticatedUserDto
             ?: throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
 
-        return userDetails.username
     }
 }

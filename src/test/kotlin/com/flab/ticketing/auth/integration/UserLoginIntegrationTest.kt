@@ -1,5 +1,6 @@
 package com.flab.ticketing.auth.integration
 
+import com.flab.ticketing.auth.dto.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.UserLoginDto
 import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
@@ -386,7 +387,8 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
         userRepository.save(createUser(email, password, nickname, uid))
 
-        return jwtTokenProvider.sign(email, mutableListOf(), date)
+
+        return jwtTokenProvider.sign(AuthenticatedUserDto(uid, email, nickname), mutableListOf(), date)
     }
 
     private fun isJwt(token: String): Boolean {
