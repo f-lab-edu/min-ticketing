@@ -14,7 +14,8 @@ data class PerformanceDetailSearchResult(
 ) {
     data class DateInfo(
         val date: LocalDate,
-        val isSoldOut: Boolean
+        val total: Int,
+        val remaining: Int
     )
 
 }
