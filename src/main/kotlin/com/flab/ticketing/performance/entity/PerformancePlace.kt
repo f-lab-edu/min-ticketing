@@ -11,9 +11,20 @@ class PerformancePlace(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private val region: Region,
-    
+
     private val name: String,
 
     @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    private val seats: List<PerformancePlaceSeat> = mutableListOf()
-) : BaseEntity()
+    private val seats: MutableList<PerformancePlaceSeat> = mutableListOf()
+) : BaseEntity() {
+
+    fun addSeat(
+        uid: String,
+        row: Int,
+        column: Int
+    ) {
+        val seat = PerformancePlaceSeat(uid, row, column, this)
+        this.seats.add(seat)
+    }
+
+}

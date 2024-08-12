@@ -10,9 +10,9 @@ class PerformancePlaceSeat(
     @Column(unique = true, updatable = false)
     private val uid: String,
 
-    private val row: Int,
+    private val rowNum: Int,
 
-    private val column: Int,
+    private val columnNum: Int,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
@@ -30,13 +30,13 @@ class PerformancePlaceSeat(
 
     private fun initializeName() {
         val sb = StringBuilder()
-        var n = row
+        var n = rowNum
         while (n > 0) {
             n--
             val charCode = (n % 26 + 'A'.code).toChar()
             sb.insert(0, charCode)
             n /= 26
         }
-        name = sb.append(column).toString()
+        name = sb.append(columnNum).toString()
     }
 }

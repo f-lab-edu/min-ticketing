@@ -28,7 +28,7 @@ class PerformancePlaceSeatTest : UnitTest() {
 
     private fun createDummyPerformancePlace(): PerformancePlace {
         val dummyRegion = Region("uid", "서울")
-        return PerformancePlace(dummyRegion, "name", listOf())
+        return PerformancePlace(dummyRegion, "name", mutableListOf())
     }
 
 }
