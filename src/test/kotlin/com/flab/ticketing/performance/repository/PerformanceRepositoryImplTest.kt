@@ -6,6 +6,7 @@ import com.flab.ticketing.common.dto.CursorInfo
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.Performance
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.springframework.beans.factory.annotation.Autowired
@@ -124,6 +125,33 @@ class PerformanceRepositoryImplTest(
             val actual = performanceRepository.search(PerformanceSearchConditions(minPrice = minPrice), CursorInfo())
 
             actual.size shouldBe 2
+        }
+
+        "Performance를 최대 금액으로 필터링하여 조회할 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+
+            regionRepository.save(region)
+            placeRepository.save(place)
+            performanceRepository.save(price2000Performance)
+            performanceRepository.save(price3000Performance)
+            performanceRepository.save(price4000Performance)
+
+
+            val maxPrice = 3000
+            val actual = performanceRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), CursorInfo())
+
+            actual.size shouldBe 2
+            actual.filterNotNull().map { it.uid } shouldContainExactly listOf(
+                price3000Performance.uid,
+                price2000Performance.uid
+            )
         }
     }
 

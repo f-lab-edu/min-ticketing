@@ -55,6 +55,9 @@ class CustomPerformanceRepositoryImpl(
                         },
                         searchConditions.minPrice?.let {
                             path(Performance::price).greaterThanOrEqualTo(it)
+                        },
+                        searchConditions.maxPrice?.let {
+                            path(Performance::price).lessThanOrEqualTo(it)
                         }
                     )
                 )
