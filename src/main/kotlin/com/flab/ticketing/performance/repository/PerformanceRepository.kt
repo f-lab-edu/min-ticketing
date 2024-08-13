@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository
 interface PerformanceRepository : CustomPerformanceRepository,
     org.springframework.data.repository.Repository<Performance, Long> {
     fun save(performance: Performance)
+
+    fun deleteAll()
 }

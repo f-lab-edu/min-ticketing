@@ -7,6 +7,8 @@ import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
@@ -131,4 +133,12 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
     }
 
+
+    override suspend fun afterEach(testCase: TestCase, result: TestResult) {
+        super.afterEach(testCase, result)
+
+        performanceRepository.deleteAll()
+        placeRepository.deleteAll()
+        regionRepository.deleteAll()
+    }
 }
