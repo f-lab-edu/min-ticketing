@@ -4,6 +4,7 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.dto.CursorInfo
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
+import com.flab.ticketing.performance.entity.Performance
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -74,7 +75,43 @@ class PerformanceRepositoryImplTest(
             actual.size shouldBe limit
 
         }
+
+        "Performance를 Region UID로 필터링하여 조회할 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val seoulRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+                regionName = "서울",
+                performanceCount = 3
+            )
+
+            val gumiPerformanceCount = 3
+
+            val gumiRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+                regionName = "구미",
+                performanceCount = gumiPerformanceCount
+            )
+
+            savePerformance(seoulRegionPerformances)
+            savePerformance(gumiRegionPerformances)
+
+            val regionUid = gumiRegionPerformances[0].performancePlace.region.uid
+            val limit = 5
+            val actual =
+                performanceRepository.search(PerformanceSearchConditions(region = regionUid), CursorInfo(limit = 5))
+
+            actual.size shouldBe gumiPerformanceCount
+            actual.filterNotNull().map { it.uid } shouldContainAll gumiRegionPerformances.map { it.uid }
+
+        }
     }
 
 
+    private fun savePerformance(performances: List<Performance>) {
+        regionRepository.save(performances[0].performancePlace.region)
+        placeRepository.save(performances[0].performancePlace)
+
+        performances.forEach {
+            performanceRepository.save(it)
+        }
+    }
 }

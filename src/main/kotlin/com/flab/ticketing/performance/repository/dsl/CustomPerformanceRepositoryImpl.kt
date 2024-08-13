@@ -12,7 +12,6 @@ import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpql
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 
-
 @Repository
 class CustomPerformanceRepositoryImpl(
     private val kotlinJdslJpqlExecutor: KotlinJdslJpqlExecutor
@@ -49,6 +48,9 @@ class CustomPerformanceRepositoryImpl(
                         )
                     )
                 )
+                .where(searchConditions.region?.let {
+                    path(Region::uid).eq(it)
+                })
                 .groupBy(path(PerformanceDateTime::performance))
                 .orderBy(
                     path(Performance::id).desc()
@@ -61,4 +63,5 @@ class CustomPerformanceRepositoryImpl(
     override fun searchDetail(uid: String): PerformanceDetailSearchResult {
         TODO("Not yet implemented")
     }
+
 }

@@ -4,6 +4,7 @@ import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.dto.CursoredResponse
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
@@ -131,6 +132,64 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("공연 정보가 존재할 때") {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val seoulRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+                regionName = "서울",
+                performanceCount = 3
+            )
+
+            val gumiRegionName = "구미"
+            val gumiPerformanceCount = 3
+
+            val gumiRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+                regionName = gumiRegionName,
+                performanceCount = gumiPerformanceCount
+            )
+
+            savePerformance(seoulRegionPerformances)
+            savePerformance(gumiRegionPerformances)
+
+            `when`("특정 지역으로 공연을 검색할 시") {
+                val uri = "/api/performances"
+                val gumiRegionUid = gumiRegionPerformances[0].performancePlace.region.uid
+                
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .param("limit", "5")
+                        .param("region", gumiRegionUid)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("필터링 된 공연 정보 리스트가 반환된다.") {
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            PerformanceSearchResult::class.java
+                        )
+                    )
+
+                    val expected = gumiRegionPerformances.map {
+                        PerformanceSearchResult(
+                            it.uid,
+                            it.image,
+                            it.name,
+                            it.performancePlace.region.name,
+                            it.performanceDateTime.minOf { d -> d.showTime },
+                            it.performanceDateTime.maxOf { d -> d.showTime }
+                        )
+                    }.asReversed()
+
+                    actual.cursor shouldBe null
+                    actual.data.size shouldBe gumiPerformanceCount
+                    actual.data shouldContainExactly expected
+                }
+            }
+        }
+
     }
 
 
@@ -140,5 +199,14 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         performanceRepository.deleteAll()
         placeRepository.deleteAll()
         regionRepository.deleteAll()
+    }
+
+    private fun savePerformance(performances: List<Performance>) {
+        regionRepository.save(performances[0].performancePlace.region)
+        placeRepository.save(performances[0].performancePlace)
+
+        performances.forEach {
+            performanceRepository.save(it)
+        }
     }
 }
