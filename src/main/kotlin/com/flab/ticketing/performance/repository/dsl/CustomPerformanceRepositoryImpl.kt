@@ -58,6 +58,12 @@ class CustomPerformanceRepositoryImpl(
                         },
                         searchConditions.maxPrice?.let {
                             path(Performance::price).lessThanOrEqualTo(it)
+                        },
+                        searchConditions.showTime?.let {
+                            path(PerformanceDateTime::showTime).between(
+                                it.toLocalDate().atStartOfDay(it.zone),
+                                it.toLocalDate().plusDays(1).atStartOfDay(it.zone)
+                            )
                         }
                     )
                 )

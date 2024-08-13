@@ -16,6 +16,9 @@ import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class PerformanceSearchIntegrationTest : IntegrationTest() {
 
@@ -280,6 +283,65 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
 
+        }
+
+        given("공연 정보가 존재할 때 - 공연 날짜 검색") {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val performance1DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+            val performance2DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+
+            val performance1 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime
+            )
+
+            val performance2 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance2DateTime
+            )
+
+            savePerformance(listOf(performance1, performance2))
+
+
+            `when`("특정 공연 날짜로 검색할 시") {
+                val uri = "/api/performances"
+                val searchDate = performance1DateTime
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .param("limit", "5")
+                        .param("showTime", searchDate.toString())
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+
+                then("특정 공연날짜가 포함된 공연만 반환한다.") {
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            PerformanceSearchResult::class.java
+                        )
+                    )
+
+                    val expected = createSearchExpected(listOf(performance1))
+
+                    actual.cursor shouldBe null
+                    actual.data shouldContainExactly expected
+                }
+            }
         }
 
     }

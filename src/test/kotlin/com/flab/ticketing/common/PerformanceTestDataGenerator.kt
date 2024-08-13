@@ -36,6 +36,7 @@ class PerformanceTestDataGenerator {
         place: PerformancePlace,
         name: String = "공연",
         numShowtimes: Int = 1,
+        showTimeStartDateTime: ZonedDateTime = INIT_PERFORMANCE_DATE,
         price: Int = 10000
     ): Performance {
         val performance = Performance(
@@ -48,7 +49,7 @@ class PerformanceTestDataGenerator {
         )
 
         repeat(numShowtimes) {
-            val showTime = INIT_PERFORMANCE_DATE.plusDays(it.toLong())
+            val showTime = showTimeStartDateTime.plusDays(it.toLong())
             performance.addDateTime(generateUid("datetime"), showTime)
         }
 

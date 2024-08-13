@@ -10,6 +10,9 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 class PerformanceRepositoryImplTest(
     private val performanceRepository: PerformanceRepository
@@ -152,6 +155,42 @@ class PerformanceRepositoryImplTest(
                 price3000Performance.uid,
                 price2000Performance.uid
             )
+        }
+
+        "Performance를 공연 날짜로 필터링하여 조회할 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val performance1DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+            val performance2DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+
+            val performance1 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime
+            )
+            val performance2 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance2DateTime
+            )
+
+            savePerformance(listOf(performance1, performance2))
+
+            val actual = performanceRepository.search(
+                PerformanceSearchConditions(showTime = performance1DateTime),
+                CursorInfo()
+            )
+
+            actual.size shouldBe 1
+            actual[0]!!.uid shouldBe performance1.uid
+
         }
     }
 

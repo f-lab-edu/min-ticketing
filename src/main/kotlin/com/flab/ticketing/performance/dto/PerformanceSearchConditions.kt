@@ -1,9 +1,9 @@
 package com.flab.ticketing.performance.dto
 
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class PerformanceSearchConditions(
-    val showTime: LocalDateTime? = null,
+    val showTime: ZonedDateTime? = null,
     val minPrice: Int? = null,
     val maxPrice: Int? = null,
     val region: String? = null
