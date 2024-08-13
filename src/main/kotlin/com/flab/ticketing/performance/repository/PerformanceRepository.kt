@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface PerformanceRepository : CustomPerformanceRepository,
-    org.springframework.data.repository.Repository<Performance, Long>
+    org.springframework.data.repository.Repository<Performance, Long> {
+    fun save(performance: Performance)
+}
