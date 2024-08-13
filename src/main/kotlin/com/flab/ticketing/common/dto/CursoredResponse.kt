@@ -1,4 +1,6 @@
 package com.flab.ticketing.common.dto
 
-class CursoredResponse {
-}
+data class CursoredResponse<T>(
+    val cursor: String?,
+    val data: List<T>
+)
