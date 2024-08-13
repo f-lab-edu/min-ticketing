@@ -22,6 +22,12 @@ class CustomPerformanceRepositoryImpl(
     ): List<PerformanceSearchResult?> {
 
         val searchResult = kotlinJdslJpqlExecutor.findPage(PageRequest.of(0, cursorInfo.limit)) {
+            val subQuery = select<Long>(path(Performance::id))
+                .from(entity(Performance::class))
+                .where(
+                    path(Performance::uid).eq(cursorInfo.cursor)
+                ).asSubquery()
+
             selectNew<PerformanceSearchResult>(
                 path(Performance::uid),
                 path(Performance::image),
@@ -64,6 +70,9 @@ class CustomPerformanceRepositoryImpl(
                                 it.toLocalDate().atStartOfDay(it.zone),
                                 it.toLocalDate().plusDays(1).atStartOfDay(it.zone)
                             )
+                        },
+                        cursorInfo.cursor?.let {
+                            path(Performance::id).lessThanOrEqualTo(subQuery)
                         }
                     )
                 )

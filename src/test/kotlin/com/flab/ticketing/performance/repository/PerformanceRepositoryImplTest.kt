@@ -241,6 +241,27 @@ class PerformanceRepositoryImplTest(
             actual[0]!!.uid shouldBe performance1.uid
 
         }
+
+        "Performance에 커서 정보를 넣어 커서 이상의 정보를 검색할 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            var performances =
+                performanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
+
+            savePerformance(performances)
+
+            performances = performances.asReversed()
+
+            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(performances[2].uid, 5))
+
+            actual.filterNotNull().map { it.uid } shouldContainExactly listOf(
+                performances[2].uid,
+                performances[3].uid,
+                performances[4].uid,
+                performances[5].uid,
+                performances[6].uid
+            )
+        }
     }
 
 
