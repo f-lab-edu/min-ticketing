@@ -9,6 +9,7 @@ import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Repository
 
 
@@ -21,7 +22,7 @@ class CustomPerformanceRepositoryImpl(
         cursorInfo: CursorInfo
     ): List<PerformanceSearchResult?> {
 
-        val searchResult = kotlinJdslJpqlExecutor.findAll {
+        val searchResult = kotlinJdslJpqlExecutor.findPage(PageRequest.of(0, cursorInfo.limit)) {
             selectNew<PerformanceSearchResult>(
                 path(Performance::uid),
                 path(Performance::image),
@@ -39,9 +40,7 @@ class CustomPerformanceRepositoryImpl(
                     ),
                     join(entity(PerformancePlace::class)).on(
                         path(Performance::performancePlace).eq(
-                            entity(
-                                PerformancePlace::class
-                            )
+                            entity(PerformancePlace::class)
                         )
                     ),
                     join(entity(Region::class)).on(
@@ -56,7 +55,7 @@ class CustomPerformanceRepositoryImpl(
                 )
         }
 
-        return searchResult
+        return searchResult.content
     }
 
     override fun searchDetail(uid: String): PerformanceDetailSearchResult {

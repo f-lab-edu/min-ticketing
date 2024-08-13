@@ -51,6 +51,29 @@ class PerformanceRepositoryImplTest(
             actual.filterNotNull().map { it.title } shouldContainAll performances.map { it.name }
             actual.filterNotNull().map { it.regionName } shouldContainAll List(5) { region.name }
         }
+
+        "DB에 Performance List가 limit 이상의 갯수를 저장하고 있다면, 올바르게 limit개 만큼의 데이터를 갖고 올 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val performances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 10,
+                numShowtimes = 1,
+                seatPerPlace = 1
+            )
+
+            regionRepository.save(performances[0].performancePlace.region)
+            placeRepository.save(performances[0].performancePlace)
+
+            performances.forEach {
+                performanceRepository.save(it)
+            }
+
+            val limit = 5
+            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(limit = limit))
+
+            actual.size shouldBe limit
+
+        }
     }
 
 
