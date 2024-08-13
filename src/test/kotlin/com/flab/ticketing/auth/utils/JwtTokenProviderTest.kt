@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.utils
 
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.AuthenticatedUserDto
 import com.flab.ticketing.common.UnitTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
@@ -21,11 +21,15 @@ class JwtTokenProviderTest : UnitTest() {
 
     init {
         "JWT 토큰을 생성할 수 있다." {
+            val uid = "uid"
             val email = "email@email.com"
+            val nickname = "nickname"
+
+            val authenticatedUserDto = AuthenticatedUserDto(uid, email, nickname)
             val authorities = mutableListOf<GrantedAuthority>()
 
 
-            val jwt = jwtTokenProvider.sign(email, authorities)
+            val jwt = jwtTokenProvider.sign(authenticatedUserDto, authorities)
 
 
             isJwt(jwt) shouldBe true
@@ -33,17 +37,26 @@ class JwtTokenProviderTest : UnitTest() {
         }
 
         "생성한 JWT 토큰을 resolve해 Authentication 객체로 생성할 수 있다." {
+            val uid = "uid"
             val email = "email@email.com"
+            val nickname = "nickname"
+
+            val authenticatedUserDto = AuthenticatedUserDto(uid, email, nickname)
+
             val role = SimpleGrantedAuthority("ROLE_USER")
             val authorities = mutableListOf<GrantedAuthority>(role)
-            val jwt = jwtTokenProvider.sign(email, authorities)
+            val jwt = jwtTokenProvider.sign(authenticatedUserDto, authorities)
 
             val authentication = jwtTokenProvider.getAuthentication(jwt)
 
             val principal = authentication.principal
 
-            principal.shouldBeInstanceOf<CustomUserDetails>()
-            principal.username shouldBeEqual email
+            principal.shouldBeInstanceOf<AuthenticatedUserDto>()
+
+            principal.uid shouldBeEqual uid
+            principal.email shouldBeEqual email
+            principal.nickname shouldBeEqual nickname
+
             authentication.authorities shouldContainExactly listOf(role)
         }
     }

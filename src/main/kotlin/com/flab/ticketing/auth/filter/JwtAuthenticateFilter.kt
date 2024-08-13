@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.filter
 
-import com.flab.ticketing.auth.exception.UserErrorInfos
+import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.exception.BusinessException
 import com.flab.ticketing.common.exception.CommonErrorInfos
@@ -43,8 +43,8 @@ class JwtAuthenticateFilter(
             filterChain.doFilter(request, response)
         }.onFailure { e ->
             when (e) {
-                is ExpiredJwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_EXPIRED)
-                is JwtException -> throw UnAuthorizedException(UserErrorInfos.AUTH_INFO_INVALID)
+                is ExpiredJwtException -> throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_EXPIRED)
+                is JwtException -> throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
                 is BusinessException -> throw e
                 else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
             }

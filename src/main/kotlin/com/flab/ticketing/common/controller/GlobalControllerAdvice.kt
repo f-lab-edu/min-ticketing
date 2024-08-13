@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
-import java.util.*
 
 
 @RestControllerAdvice
@@ -30,12 +29,16 @@ class GlobalControllerAdvice {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleSpringValidatorException(e: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
-        val sj = StringJoiner(",")
-
-        e.fieldErrors.stream().forEach { s -> sj.add(s.field) }
+        val errorFields = e.fieldErrors.asSequence()
+            .map { it.field }
+            .sorted()  // 알파벳 순으로 정렬
+            .joinToString(",")
 
         val errorInfo = CommonErrorInfos.INVALID_FIELD
-        return ResponseEntity(ErrorResponse(sj.toString() + errorInfo.message, errorInfo.code), HttpStatus.BAD_REQUEST)
+        return ResponseEntity(
+            ErrorResponse("$errorFields${errorInfo.message}", errorInfo.code),
+            HttpStatus.BAD_REQUEST
+        )
     }
 
     @ExceptionHandler(ForbiddenException::class)

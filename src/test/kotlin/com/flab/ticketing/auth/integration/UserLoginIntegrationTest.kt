@@ -1,12 +1,14 @@
 package com.flab.ticketing.auth.integration
 
+import com.flab.ticketing.auth.dto.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.UserLoginDto
-import com.flab.ticketing.auth.entity.User
-import com.flab.ticketing.auth.exception.UserErrorInfos
-import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
+import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
+import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.user.entity.repository.UserRepository
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
@@ -103,7 +105,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("401 상태 코드와 적절한 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.LOGIN_FAILED)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.LOGIN_FAILED)
                 }
             }
         }
@@ -126,7 +128,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("401 상태 코드와 적절한 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.LOGIN_FAILED)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.LOGIN_FAILED)
                 }
             }
         }
@@ -135,9 +137,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, userPW))
-
-            val givenToken = jwtTokenProvider.sign(email, mutableListOf())
+            val givenToken = saveUserAndCreateJwt(email, userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -168,7 +168,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 상태 코드와 적절한 오류 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_INVALID)
                 }
             }
         }
@@ -188,7 +188,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 오류와 적절한 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_INVALID)
                 }
             }
         }
@@ -197,9 +197,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, userPW))
-
-            val givenToken = jwtTokenProvider.sign(email, mutableListOf())
+            val givenToken = saveUserAndCreateJwt(email, userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -212,7 +210,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 오류와 적절한 메시지를 출력한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_INVALID)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_INVALID)
 
                 }
             }
@@ -222,9 +220,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userRepository.save(createUser(email, userPW))
-
-            val givenToken = jwtTokenProvider.sign(email, mutableListOf(), Date(0))
+            val givenToken = saveUserAndCreateJwt(email, userPW, date = Date(0))
             `when`("인증이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
 
@@ -236,7 +232,132 @@ class UserLoginIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("401 상태 코드와 적절한 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, UserErrorInfos.AUTH_INFO_EXPIRED)
+                    checkError(mvcResult, HttpStatus.UNAUTHORIZED, AuthErrorInfos.AUTH_INFO_EXPIRED)
+                }
+            }
+        }
+
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("올바른 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
+                val uri = "/api/user/password"
+
+                val newUserPW = "abcd1234!"
+
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("200 상태코드와 사용자의 비밀번호를 업데이트 한다.") {
+                    mvcResult.response.status shouldBe HttpStatus.OK.value()
+
+                    val actual = userRepository.findByEmail(email)!!.password
+                    passwordEncoder.matches(newUserPW, actual) shouldBe true
+
+                }
+            }
+        }
+
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가 - 현재 비밀번호 오류") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("잘못된 현재 비밀번호, 올바른 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
+                val uri = "/api/user/password"
+
+                val invalidCurrentPW = "abcde1234!"
+                val newUserPW = "abcd1234!"
+
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(invalidCurrentPW, newUserPW, newUserPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태 코드와 적절한 오류 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.PASSWORD_INVALID)
+
+                }
+
+            }
+        }
+
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가 - 새로운 비밀번호 형식 조건 불만족") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("영문, 숫자, 특수문자를 포함한 8글자 조건을 만족하지 못한 새 비밀번호로 변경을 시도할 시") {
+                val uri = "/api/user/password"
+                val newUserPW = "invalid"
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPW))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 상태코드와 적절한 오류 메시지를 반환한다.") {
+                    checkError(
+                        mvcResult,
+                        HttpStatus.BAD_REQUEST,
+                        CommonErrorInfos.INVALID_FIELD.code,
+                        "newPassword,newPasswordConfirm" + CommonErrorInfos.INVALID_FIELD.message
+                    )
+
+                }
+            }
+
+        }
+
+        given("회원 정보가 저장되어 있고, 해당 회원 정보로 인증된 사용자가 - 새로운 비밀번호와 새로운 비밀번호 불일치") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+
+            val givenToken = saveUserAndCreateJwt(email, userPW)
+
+            `when`("서로 다른 newPassword와 newPasswordConfirm 입력시") {
+                val uri = "/api/user/password"
+
+                val newUserPW = "abcd1234!"
+                val newUserPWConfirm = "abcde1234!"
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPWConfirm))
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.patch(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                        .content(dto)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                then("400 오류와 적절한 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
                 }
             }
         }
@@ -254,6 +375,20 @@ class UserLoginIntegrationTest : IntegrationTest() {
         uid: String = "NotUsed"
     ): User {
         return User(uid, email, passwordEncoder.encode(password), nickname)
+    }
+
+    private fun saveUserAndCreateJwt(
+        email: String,
+        password: String,
+        nickname: String = "Notused",
+        uid: String = "NotUsed",
+        date: Date = Date()
+    ): String {
+
+        userRepository.save(createUser(email, password, nickname, uid))
+
+
+        return jwtTokenProvider.sign(AuthenticatedUserDto(uid, email, nickname), mutableListOf(), date)
     }
 
     private fun isJwt(token: String): Boolean {

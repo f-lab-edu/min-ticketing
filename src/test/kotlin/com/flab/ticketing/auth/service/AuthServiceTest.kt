@@ -1,28 +1,30 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.auth.dto.UserRegisterDto
-import com.flab.ticketing.auth.entity.User
-import com.flab.ticketing.auth.repository.UserRepository
+import com.flab.ticketing.user.entity.repository.UserRepository
 import com.flab.ticketing.auth.utils.EmailCodeGenerator
 import com.flab.ticketing.auth.utils.EmailSender
 import com.flab.ticketing.auth.utils.EmailVerifier
+import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.common.utils.NanoIdGenerator
+import com.flab.ticketing.user.entity.User
 import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.springframework.security.crypto.password.PasswordEncoder
 
-class UserServiceTest : UnitTest() {
+class AuthServiceTest : UnitTest() {
     private val emailCodeGenerator: EmailCodeGenerator = mockk()
     private val emailSender: EmailSender = mockk()
     private val emailVerifier: EmailVerifier = mockk()
     private val userRepository: UserRepository = mockk()
     private val userPWEncoder: PasswordEncoder = mockk()
     private val nanoIdGenerator: NanoIdGenerator = mockk()
-    private val userService: UserService =
-        UserService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
+    private val authService: AuthService =
+        AuthService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
+
 
     init {
         "email 인증 정보가 저장되어 있지 않은 이메일에 인증 코드를 생성해 메일을 보낼 수 있다." {
@@ -33,7 +35,7 @@ class UserServiceTest : UnitTest() {
             every { emailVerifier.saveCode(any(), any()) } returns Unit
             every { userRepository.findByEmail(any()) } returns null
 
-            userService.sendEmailVerifyCode(email)
+            authService.sendEmailVerifyCode(email)
 
             verify {
                 emailSender.sendEmail(
@@ -52,7 +54,7 @@ class UserServiceTest : UnitTest() {
             every { emailVerifier.setVerifySuccess(email) } returns Unit
 
             shouldNotThrow<Exception> {
-                userService.verifyEmailCode(email, code)
+                authService.verifyEmailCode(email, code)
             }
             verify { emailVerifier.setVerifySuccess(email) }
 
@@ -72,7 +74,7 @@ class UserServiceTest : UnitTest() {
             every { nanoIdGenerator.createNanoId() } returns uid
             every { userRepository.save(any()) } returns expectedUser
 
-            userService.saveVerifiedUserInfo(
+            authService.saveVerifiedUserInfo(
                 UserRegisterDto(
                     email,
                     userPW,
@@ -84,6 +86,25 @@ class UserServiceTest : UnitTest() {
             verify { userRepository.save(expectedUser) }
         }
 
+        "DB에 저장된 사용자는 비밀번호 정보를 업데이트 할 수 있다." {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+            val newUserPW = "abcd1234!"
+
+            val encryptedPW = "encrypted1234!"
+            val newEncryptedPW = "newEncrypted1234!"
+
+            val user = User("notUsed", email, encryptedPW, "notUsed")
+
+            every { userRepository.findByEmail(email) } returns user
+            every { userPWEncoder.matches(userPW, encryptedPW) } returns true
+            every { userPWEncoder.encode(newUserPW) } returns newEncryptedPW
+
+
+            authService.updatePassword(email, userPW, newUserPW)
+
+            user.password shouldBeEqual newEncryptedPW
+        }
 
     }
 

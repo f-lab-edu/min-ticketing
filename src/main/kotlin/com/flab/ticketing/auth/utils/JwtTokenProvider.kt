@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.utils
 
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.AuthenticatedUserDto
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.io.Decoders
@@ -24,10 +24,17 @@ class JwtTokenProvider(
     private val secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(_secretKey))
 
     companion object {
-        private const val CLAIM_NAME = "auth"
+        private const val EMAIL_CLAIM_NAME = "email"
+        private const val NICKNAME_CLAIM_NAME = "nickname"
+        private const val AUTHORITIES_CLAIM_NAME = "auth"
     }
 
-    fun sign(id: String, authorities: MutableCollection<out GrantedAuthority>, createTime: Date = Date()): String {
+    fun sign(
+        userInfo: AuthenticatedUserDto,
+        authorities: MutableCollection<out GrantedAuthority>,
+        createTime: Date = Date()
+    ): String {
+
         val authorityString = authorities.stream()
             .map(GrantedAuthority::getAuthority)
             .collect(Collectors.joining(","))
@@ -35,23 +42,28 @@ class JwtTokenProvider(
         val expiredTime = Date(createTime.time + accessTokenTime)
 
         return Jwts.builder()
-            .subject(id)
-            .claim(CLAIM_NAME, authorityString)
+            .subject(userInfo.uid)
+            .claim(EMAIL_CLAIM_NAME, userInfo.email)
+            .claim(NICKNAME_CLAIM_NAME, userInfo.nickname)
+            .claim(AUTHORITIES_CLAIM_NAME, authorityString)
             .expiration(expiredTime)
             .signWith(secretKey)
             .compact()
     }
 
+
     fun getAuthentication(accessToken: String): Authentication {
         val claims = parseClaims(accessToken)
 
-        val email = claims.subject
+        val uid = claims.subject
+        val email = claims.get(EMAIL_CLAIM_NAME).toString()
+        val nickname = claims.get(NICKNAME_CLAIM_NAME).toString()
 
         val authorities: MutableCollection<out GrantedAuthority> = claims.get("auth").toString().split(",")
             .mapNotNull { role -> role.takeIf { it.isNotBlank() }?.let { SimpleGrantedAuthority(it) } }
             .toMutableList()
 
-        return UsernamePasswordAuthenticationToken(CustomUserDetails(email, ""), "", authorities)
+        return UsernamePasswordAuthenticationToken(AuthenticatedUserDto(uid, email, nickname), "", authorities)
     }
 
     private fun parseClaims(accessToken: String): Claims {

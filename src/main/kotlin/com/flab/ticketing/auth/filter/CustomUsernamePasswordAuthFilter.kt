@@ -1,13 +1,15 @@
 package com.flab.ticketing.auth.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.auth.dto.AuthenticatedUserDto
+import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.exception.AuthErrorInfos
+import com.flab.ticketing.auth.utils.JwtTokenProvider
+import com.flab.ticketing.auth.utils.UserLoginInfoConverter
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.InternalServerException
 import com.flab.ticketing.common.exception.UnAuthorizedException
-import com.flab.ticketing.auth.exception.UserErrorInfos
-import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.auth.utils.UserLoginInfoConverter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,7 +19,6 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.AuthenticationException
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter
 import org.springframework.stereotype.Component
 import java.nio.charset.Charset
@@ -57,8 +58,8 @@ class CustomUsernamePasswordAuthFilter(
         authResult: Authentication
     ) {
         runCatching {
-            val userDetails = authResult.principal as UserDetails
-            val jwt = jwtTokenProvider.sign(userDetails.username, userDetails.authorities)
+            val userDetails = authResult.principal as CustomUserDetails
+            val jwt = jwtTokenProvider.sign(AuthenticatedUserDto.of(userDetails), userDetails.authorities)
 
             response.status = HttpServletResponse.SC_OK
             response.addHeader(HttpHeaders.AUTHORIZATION, jwt)
@@ -72,6 +73,6 @@ class CustomUsernamePasswordAuthFilter(
         response: HttpServletResponse?,
         failed: AuthenticationException?
     ) {
-        throw UnAuthorizedException(UserErrorInfos.LOGIN_FAILED)
+        throw UnAuthorizedException(AuthErrorInfos.LOGIN_FAILED)
     }
 }
