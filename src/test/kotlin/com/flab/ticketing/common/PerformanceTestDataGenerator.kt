@@ -10,11 +10,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class PerformanceTestDataGenerator(
-    private val regionRepository: RegionRepository,
-    private val placeRepository: PerformancePlaceRepository,
-    private val performanceRepository: PerformanceRepository
-) {
+class PerformanceTestDataGenerator {
 
     private var regionCounter = 0
     private var seatCounter = 0
@@ -23,31 +19,6 @@ class PerformanceTestDataGenerator(
 
     companion object {
         val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
-    }
-
-    fun saveTestPerformanceData(
-        regionName: String = "서울",
-        placeName: String = "홍대 문화공연장",
-        performanceName: String = "멋진 공연",
-        numSeats: Int = 1,
-        numShowtimes: Int = 3
-    ): Performance {
-        val region = createRegion(regionName)
-
-        val place = createPerformancePlace(region, placeName, numSeats)
-
-        val performance = createPerformance(place, performanceName)
-
-        repeat(numShowtimes) {
-            val showTime = INIT_PERFORMANCE_DATE.plusDays(it.toLong())
-            performance.addDateTime(generateUid("datetime"), showTime)
-        }
-
-        regionRepository.save(region)
-        placeRepository.save(place)
-        performanceRepository.save(performance)
-
-        return performance
     }
 
     fun createRegion(name: String): Region {
@@ -64,8 +35,8 @@ class PerformanceTestDataGenerator(
         return place
     }
 
-    fun createPerformance(place: PerformancePlace, name: String): Performance {
-        return Performance(
+    fun createPerformance(place: PerformancePlace, name: String, numShowtimes: Int = 1): Performance {
+        val performance = Performance(
             uid = generateUid("performance"),
             name = name,
             image = "https://example.com/image.jpg",
@@ -73,6 +44,13 @@ class PerformanceTestDataGenerator(
             price = 50000,
             performancePlace = place
         )
+
+        repeat(numShowtimes) {
+            val showTime = INIT_PERFORMANCE_DATE.plusDays(it.toLong())
+            performance.addDateTime(generateUid("datetime"), showTime)
+        }
+
+        return performance
     }
 
     fun generateUid(prefix: String): String {
@@ -86,10 +64,4 @@ class PerformanceTestDataGenerator(
         return "$prefix${counter.toString().padStart(3, '0')}"
     }
 
-    fun reset() {
-        regionCounter = 0
-        seatCounter = 0
-        performanceCounter = 0
-        datetimeCounter = 0
-    }
 }

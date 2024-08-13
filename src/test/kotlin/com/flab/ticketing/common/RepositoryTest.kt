@@ -19,37 +19,16 @@ import org.springframework.context.annotation.Import
 @Import(
     KotlinJdslAutoConfiguration::class,
     CustomPerformanceRepositoryImpl::class,
-    RepositoryTest.RepositoryTestConfig::class
-)
+
+    )
 abstract class RepositoryTest : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
 
-    @Autowired
-    lateinit var performanceTestDataGenerator: PerformanceTestDataGenerator
-
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
-        performanceTestDataGenerator.reset()
-    }
-
-    @TestConfiguration
-    internal class RepositoryTestConfig {
-
-        @Bean
-        fun testDataGenerator(
-            regionRepository: RegionRepository,
-            placeRepository: PerformancePlaceRepository,
-            performanceRepository: PerformanceRepository
-        ): PerformanceTestDataGenerator {
-
-            return PerformanceTestDataGenerator(
-                regionRepository,
-                placeRepository,
-                performanceRepository
-            )
-        }
 
     }
+
 }
 
