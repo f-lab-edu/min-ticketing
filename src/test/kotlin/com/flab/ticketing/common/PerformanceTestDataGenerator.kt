@@ -57,12 +57,11 @@ class PerformanceTestDataGenerator {
         numShowtimes: Int = 2,
         seatPerPlace: Int = 2
     ): List<Performance> {
-        val performanceTestDataGenerator = PerformanceTestDataGenerator()
-        val region = performanceTestDataGenerator.createRegion(regionName)
-        val place = performanceTestDataGenerator.createPerformancePlace(region, placeName, seatPerPlace)
+        val region = createRegion(regionName)
+        val place = createPerformancePlace(region, placeName, seatPerPlace)
 
         return List(performanceCount) {
-            performanceTestDataGenerator.createPerformance(place, "공연$it", numShowtimes)
+            createPerformance(place, "공연$it", numShowtimes)
         }
     }
 
