@@ -343,7 +343,72 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
         }
+        given("공연 정보가 존재할 때 - 멀티 조건 검색") {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val performance1DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+            val performance1Price = 50000
+
+            val performance1 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime,
+                price = performance1Price
+            )
+
+            val performance2 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime,
+                price = 10000
+            )
+
+            val performance3 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                ),
+                price = 15000
+            )
+
+            savePerformance(listOf(performance1, performance2, performance3))
+
+            `when`("다양한 조건으로 공연을 검색할 시") {
+                val uri = "/api/performances"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .param("limit", "5")
+                        .param("showTime", performance1DateTime.toString())
+                        .param("minPrice", (performance1Price - 1000).toString())
+                        .param("maxPrice", (performance1Price + 5000).toString())
+                        .param("region", region.uid)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("모든 조건을 만족하는 공연 정보만이 조회된다.") {
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            PerformanceSearchResult::class.java
+                        )
+                    )
+
+                    val expected = createSearchExpected(listOf(performance1))
+
+                    actual.cursor shouldBe null
+                    actual.data shouldContainExactly expected
+
+                }
+            }
+        }
     }
 
 

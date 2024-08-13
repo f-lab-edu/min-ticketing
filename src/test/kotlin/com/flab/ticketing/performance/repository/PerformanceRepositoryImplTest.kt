@@ -192,6 +192,55 @@ class PerformanceRepositoryImplTest(
             actual[0]!!.uid shouldBe performance1.uid
 
         }
+
+        "Performance를 모든 조건을 넣어 검색할 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val performance1DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+            val performance1Price = 50000
+
+            val performance1 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime,
+                price = performance1Price
+            )
+
+            val performance2 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime,
+                price = 10000
+            )
+
+            val performance3 = performanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                ),
+                price = 15000
+            )
+
+            savePerformance(listOf(performance1, performance2, performance3))
+
+            val actual = performanceRepository.search(
+                PerformanceSearchConditions(
+                    performance1DateTime,
+                    performance1Price - 1000,
+                    performance1Price + 1000,
+                    region.uid
+                ), CursorInfo()
+            )
+
+            actual.size shouldBe 1
+            actual[0]!!.uid shouldBe performance1.uid
+
+        }
     }
 
 
