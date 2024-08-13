@@ -8,15 +8,15 @@ import jakarta.persistence.*
 @Table(name = "performance_place_seats")
 class PerformancePlaceSeat(
     @Column(unique = true, updatable = false)
-    private val uid: String,
+    val uid: String,
 
-    private val rowNum: Int,
+    val rowNum: Int,
 
-    private val columnNum: Int,
+    val columnNum: Int,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private val place: PerformancePlace
+    val place: PerformancePlace
 ) : BaseEntity() {
 
 

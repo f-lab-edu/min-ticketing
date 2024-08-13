@@ -9,12 +9,12 @@ import java.time.ZonedDateTime
 @Table(name = "performance_datetimes")
 class PerformanceDateTime(
     @Column(unique = true, updatable = false)
-    private val uid: String,
+    val uid: String,
 
-    private val showTime: ZonedDateTime,
+    val showTime: ZonedDateTime,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_id")
-    private val performance: Performance,
+    val performance: Performance,
 
     ) : BaseEntity()

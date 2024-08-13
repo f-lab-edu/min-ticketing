@@ -10,9 +10,9 @@ import jakarta.persistence.*
 class PerformancePlace(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
-    private val region: Region,
+    val region: Region,
 
-    private val name: String,
+    val name: String,
 
     @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     private val seats: MutableList<PerformancePlaceSeat> = mutableListOf()

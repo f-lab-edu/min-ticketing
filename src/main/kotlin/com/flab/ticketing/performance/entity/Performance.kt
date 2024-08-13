@@ -2,6 +2,7 @@ package com.flab.ticketing.performance.entity
 
 import com.flab.ticketing.common.entity.BaseEntity
 import jakarta.persistence.*
+import java.time.ZonedDateTime
 
 
 @Entity
@@ -9,20 +10,31 @@ import jakarta.persistence.*
 class Performance(
 
     @Column(unique = true, updatable = false)
-    private val uid: String,
+    val uid: String,
 
-    private val name: String,
+    val name: String,
 
-    private val image: String,
+    val image: String,
 
-    private val description: String,
+    val description: String,
 
-    private val price: Int,
+    val price: Int,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "place_id")
-    private val performancePlace: PerformancePlace,
+    val performancePlace: PerformancePlace,
 
-    @OneToMany(mappedBy = "performance", fetch = FetchType.LAZY)
-    private val performanceDateTime: List<PerformanceDateTime> = mutableListOf()
-) : BaseEntity()
+    @OneToMany(mappedBy = "performance", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    private val performanceDateTime: MutableList<PerformanceDateTime> = mutableListOf()
+) : BaseEntity() {
+
+    fun addDateTime(
+        uid: String,
+        showTime: ZonedDateTime,
+
+        ) {
+        val dateTime = PerformanceDateTime(uid, showTime, this)
+        performanceDateTime.add(dateTime)
+    }
+
+}
