@@ -48,9 +48,16 @@ class CustomPerformanceRepositoryImpl(
                         )
                     )
                 )
-                .where(searchConditions.region?.let {
-                    path(Region::uid).eq(it)
-                })
+                .where(
+                    and(
+                        searchConditions.region?.let {
+                            path(Region::uid).eq(it)
+                        },
+                        searchConditions.minPrice?.let {
+                            path(Performance::price).greaterThanOrEqualTo(it)
+                        }
+                    )
+                )
                 .groupBy(path(PerformanceDateTime::performance))
                 .orderBy(
                     path(Performance::id).desc()

@@ -103,6 +103,28 @@ class PerformanceRepositoryImplTest(
             actual.filterNotNull().map { it.uid } shouldContainAll gumiRegionPerformances.map { it.uid }
 
         }
+
+        "Performance를 최소 금액으로 필터링하여 조회할 수 있다." {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
+
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+
+            regionRepository.save(region)
+            placeRepository.save(place)
+            performanceRepository.save(price2000Performance)
+            performanceRepository.save(price3000Performance)
+            performanceRepository.save(price4000Performance)
+
+            val minPrice = 3000
+            val actual = performanceRepository.search(PerformanceSearchConditions(minPrice = minPrice), CursorInfo())
+
+            actual.size shouldBe 2
+        }
     }
 
 

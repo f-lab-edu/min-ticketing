@@ -18,11 +18,11 @@ class PerformanceTestDataGenerator {
         val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
     }
 
-    fun createRegion(name: String): Region {
+    fun createRegion(name: String = "지역"): Region {
         return Region(generateUid("region"), name)
     }
 
-    fun createPerformancePlace(region: Region, name: String, numSeats: Int): PerformancePlace {
+    fun createPerformancePlace(region: Region, name: String = " 공연장", numSeats: Int = 2): PerformancePlace {
         val place = PerformancePlace(region, name)
         repeat(numSeats) {
             val row = it / 10 + 1
@@ -32,13 +32,18 @@ class PerformanceTestDataGenerator {
         return place
     }
 
-    fun createPerformance(place: PerformancePlace, name: String, numShowtimes: Int = 1): Performance {
+    fun createPerformance(
+        place: PerformancePlace,
+        name: String = "공연",
+        numShowtimes: Int = 1,
+        price: Int = 10000
+    ): Performance {
         val performance = Performance(
             uid = generateUid("performance"),
             name = name,
             image = "https://example.com/image.jpg",
             description = "This is a test performance description",
-            price = 50000,
+            price = price,
             performancePlace = place
         )
 

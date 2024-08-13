@@ -132,7 +132,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
 
-        given("공연 정보가 존재할 때") {
+        given("공연 정보가 존재할 때 - 지역 검색") {
             val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
             val seoulRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
@@ -154,7 +154,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             `when`("특정 지역으로 공연을 검색할 시") {
                 val uri = "/api/performances"
                 val gumiRegionUid = gumiRegionPerformances[0].performancePlace.region.uid
-                
+
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
                         .param("limit", "5")
@@ -189,7 +189,52 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
         }
+        given("공연 정보가 존재할 때 - 최저 금액 검색") {
+            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
+            val region = performanceTestDataGenerator.createRegion()
+            val place = performanceTestDataGenerator.createPerformancePlace(region)
+
+            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+
+
+            regionRepository.save(region)
+            placeRepository.save(place)
+            performanceRepository.save(price2000Performance)
+            performanceRepository.save(price3000Performance)
+            performanceRepository.save(price4000Performance)
+
+
+            `when`("최저으로 공연을 검색할 시") {
+                val uri = "/api/performances"
+                val minPrice = 3000
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .param("limit", "5")
+                        .param("minPrice", minPrice.toString())
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("특정 금액 이상의 공연만 검색된다.") {
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            PerformanceSearchResult::class.java
+                        )
+                    )
+
+                    val expected = createSearchExpected(listOf(price4000Performance, price3000Performance))
+
+                    actual.data.size shouldBe expected.size
+                    actual.data shouldContainExactly expected
+                }
+            }
+        }
     }
 
 
@@ -207,6 +252,19 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
         performances.forEach {
             performanceRepository.save(it)
+        }
+    }
+
+    private fun createSearchExpected(performances: List<Performance>): List<PerformanceSearchResult> {
+        return performances.map {
+            PerformanceSearchResult(
+                it.uid,
+                it.image,
+                it.name,
+                it.performancePlace.region.name,
+                it.performanceDateTime.minOf { d -> d.showTime },
+                it.performanceDateTime.maxOf { d -> d.showTime }
+            )
         }
     }
 }
