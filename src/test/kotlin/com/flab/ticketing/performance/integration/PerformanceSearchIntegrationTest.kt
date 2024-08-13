@@ -29,15 +29,13 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
         given("공연 정보가 6개 이상 존재할 때") {
             val performanceTestDataGenerator = PerformanceTestDataGenerator()
-            val region = performanceTestDataGenerator.createRegion("서울")
-            val place = performanceTestDataGenerator.createPerformancePlace(region, "공연장 1", 2)
 
-            val performances = List(6) {
-                performanceTestDataGenerator.createPerformance(place, "공연$it", 2)
-            }
+            val performances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 6
+            )
 
-            regionRepository.save(region)
-            placeRepository.save(place)
+            regionRepository.save(performances[0].performancePlace.region)
+            placeRepository.save(performances[0].performancePlace)
 
             performances.forEach {
                 performanceRepository.save(it)
@@ -78,6 +76,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
         }
+        
 
     }
 

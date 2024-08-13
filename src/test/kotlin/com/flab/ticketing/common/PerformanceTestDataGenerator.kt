@@ -3,9 +3,6 @@ package com.flab.ticketing.common
 import com.flab.ticketing.common.entity.Region
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformancePlace
-import com.flab.ticketing.performance.repository.PerformancePlaceRepository
-import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.performance.repository.RegionRepository
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -51,6 +48,22 @@ class PerformanceTestDataGenerator {
         }
 
         return performance
+    }
+
+    fun createPerformanceGroupbyRegion(
+        regionName: String = "서울",
+        placeName: String = "장소",
+        performanceCount: Int,
+        numShowtimes: Int = 2,
+        seatPerPlace: Int = 2
+    ): List<Performance> {
+        val performanceTestDataGenerator = PerformanceTestDataGenerator()
+        val region = performanceTestDataGenerator.createRegion(regionName)
+        val place = performanceTestDataGenerator.createPerformancePlace(region, placeName, seatPerPlace)
+
+        return List(performanceCount) {
+            performanceTestDataGenerator.createPerformance(place, "공연$it", numShowtimes)
+        }
     }
 
     fun generateUid(prefix: String): String {
