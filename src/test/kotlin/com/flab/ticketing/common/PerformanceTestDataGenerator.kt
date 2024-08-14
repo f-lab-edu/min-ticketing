@@ -7,16 +7,13 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-class PerformanceTestDataGenerator {
+object PerformanceTestDataGenerator {
 
     private var regionCounter = 0
     private var seatCounter = 0
     private var performanceCounter = 0
     private var datetimeCounter = 0
-
-    companion object {
-        val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
-    }
+    private val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
 
     fun createRegion(name: String = "지역"): Region {
         return Region(generateUid("region"), name)
@@ -80,6 +77,15 @@ class PerformanceTestDataGenerator {
             else -> throw IllegalArgumentException("Unknown prefix: $prefix")
         }
         return "$prefix${counter.toString().padStart(3, '0')}"
+    }
+
+
+    fun reset(){
+        regionCounter = 0;
+        seatCounter = 0;
+        performanceCounter = 0;
+        datetimeCounter = 0;
+
     }
 
 }

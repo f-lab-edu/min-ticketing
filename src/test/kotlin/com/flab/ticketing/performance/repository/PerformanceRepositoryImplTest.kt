@@ -5,6 +5,8 @@ import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.dto.CursorInfo
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.Performance
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -31,13 +33,12 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance List를 조회할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion("서울")
-            val place = performanceTestDataGenerator.createPerformancePlace(region, "공연장 1", 10)
+            val region = PerformanceTestDataGenerator.createRegion("서울")
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region, "공연장 1", 10)
 
             val performances = List(5) {
-                performanceTestDataGenerator.createPerformance(place, "공연$it", 1)
+                PerformanceTestDataGenerator.createPerformance(place, "공연$it", 1)
             }
 
             regionRepository.save(region)
@@ -58,9 +59,8 @@ class PerformanceRepositoryImplTest(
         }
 
         "DB에 Performance List가 limit 이상의 갯수를 저장하고 있다면, 올바르게 limit개 만큼의 데이터를 갖고 올 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val performances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 10,
                 numShowtimes = 1,
                 seatPerPlace = 1
@@ -81,16 +81,15 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 Region UID로 필터링하여 조회할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val seoulRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val seoulRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 regionName = "서울",
                 performanceCount = 3
             )
 
             val gumiPerformanceCount = 3
 
-            val gumiRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val gumiRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 regionName = "구미",
                 performanceCount = gumiPerformanceCount
             )
@@ -109,14 +108,13 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 최소 금액으로 필터링하여 조회할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
 
             regionRepository.save(region)
             placeRepository.save(place)
@@ -131,14 +129,13 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 최대 금액으로 필터링하여 조회할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
 
             regionRepository.save(region)
             placeRepository.save(place)
@@ -158,10 +155,9 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 공연 날짜로 필터링하여 조회할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -172,11 +168,11 @@ class PerformanceRepositoryImplTest(
                 ZoneId.of("Asia/Seoul")
             )
 
-            val performance1 = performanceTestDataGenerator.createPerformance(
+            val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime
             )
-            val performance2 = performanceTestDataGenerator.createPerformance(
+            val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance2DateTime
             )
@@ -194,10 +190,9 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 모든 조건을 넣어 검색할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -205,19 +200,19 @@ class PerformanceRepositoryImplTest(
             )
             val performance1Price = 50000
 
-            val performance1 = performanceTestDataGenerator.createPerformance(
+            val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = performance1Price
             )
 
-            val performance2 = performanceTestDataGenerator.createPerformance(
+            val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = 10000
             )
 
-            val performance3 = performanceTestDataGenerator.createPerformance(
+            val performance3 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
@@ -243,10 +238,9 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance에 커서 정보를 넣어 커서 이상의 정보를 검색할 수 있다." {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
             var performances =
-                performanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
+                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
 
             savePerformance(performances)
 
@@ -272,5 +266,10 @@ class PerformanceRepositoryImplTest(
         performances.forEach {
             performanceRepository.save(it)
         }
+    }
+
+    override suspend fun afterEach(testCase: TestCase, result: TestResult) {
+        super.afterEach(testCase, result)
+        PerformanceTestDataGenerator.reset()
     }
 }

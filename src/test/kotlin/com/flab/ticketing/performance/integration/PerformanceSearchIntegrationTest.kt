@@ -34,9 +34,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
     init {
 
         given("공연 정보가 6개 이상 존재할 때") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val performances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 6
             )
 
@@ -84,9 +83,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
 
         given("공연 정보가 5개 이하로 존재할 시") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val performances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 5
             )
 
@@ -136,9 +134,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
 
         given("공연 정보가 존재할 때 - 지역 검색") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val seoulRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val seoulRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 regionName = "서울",
                 performanceCount = 3
             )
@@ -146,7 +143,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             val gumiRegionName = "구미"
             val gumiPerformanceCount = 3
 
-            val gumiRegionPerformances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val gumiRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 regionName = gumiRegionName,
                 performanceCount = gumiPerformanceCount
             )
@@ -193,14 +190,13 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
         given("공연 정보가 존재할 때 - 최저 금액 검색") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
 
 
             regionRepository.save(region)
@@ -239,14 +235,13 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
         given("공연 정보가 존재할 때 - 최고 금액 검색") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = performanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
+            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
+            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
 
 
             regionRepository.save(region)
@@ -286,10 +281,9 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
 
         given("공연 정보가 존재할 때 - 공연 날짜 검색") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -300,12 +294,12 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 ZoneId.of("Asia/Seoul")
             )
 
-            val performance1 = performanceTestDataGenerator.createPerformance(
+            val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime
             )
 
-            val performance2 = performanceTestDataGenerator.createPerformance(
+            val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance2DateTime
             )
@@ -344,10 +338,9 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
         given("공연 정보가 존재할 때 - 멀티 조건 검색") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            val region = performanceTestDataGenerator.createRegion()
-            val place = performanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -355,19 +348,19 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             )
             val performance1Price = 50000
 
-            val performance1 = performanceTestDataGenerator.createPerformance(
+            val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = performance1Price
             )
 
-            val performance2 = performanceTestDataGenerator.createPerformance(
+            val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = 10000
             )
 
-            val performance3 = performanceTestDataGenerator.createPerformance(
+            val performance3 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
@@ -411,9 +404,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
 
         given("다수의 공연 정보가 존재할 때") {
-            val performanceTestDataGenerator = PerformanceTestDataGenerator()
 
-            var performances = performanceTestDataGenerator.createPerformanceGroupbyRegion(
+            var performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 10
             )
 
@@ -455,6 +447,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
 
+        PerformanceTestDataGenerator.reset()
         performanceRepository.deleteAll()
         placeRepository.deleteAll()
         regionRepository.deleteAll()
