@@ -1,10 +1,12 @@
 package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.dto.CursorInfo
+import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.order.service.ReservationService
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,7 +26,7 @@ class PerformanceService(
     fun searchDetail(uid : String) : PerformanceDetailResponse{
         val performance = performanceRepository.findByUid(uid)
         if(performance == null){
-            throw Exception()
+            throw NotFoundException(PerformanceErrorInfos.PERFORMANCE_NOT_FOUND)
         }
 
 

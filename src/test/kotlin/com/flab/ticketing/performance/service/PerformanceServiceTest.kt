@@ -2,11 +2,15 @@ package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.order.service.ReservationService
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 
@@ -50,6 +54,17 @@ class PerformanceServiceTest : UnitTest(){
             actualDesc shouldBeEqual performance.description
             actualDateInfo shouldContainAll  expectedDateInfo
 
+        }
+
+        "performance Detail 정보 조회 실패시 NotFoundException을 throw한다."{
+
+            every { performanceRepository.findByUid(any()) } returns null
+
+            val e = shouldThrow<NotFoundException> {
+                performanceService.searchDetail("uid")
+            }
+
+            e.info shouldBe PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
         }
 
     }

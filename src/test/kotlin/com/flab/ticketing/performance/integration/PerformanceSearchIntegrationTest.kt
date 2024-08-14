@@ -6,6 +6,7 @@ import com.flab.ticketing.common.dto.CursoredResponse
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
@@ -495,6 +496,24 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
         }
 
+        given("공연 정보가 존재하지 않을 때"){
+
+            `when`("존재하지 않는 공연의 UID로 상세 조회 시"){
+                val invalidUid = "asdasdsa"
+                val uri = "/api/performances/$invalidUid"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                then("404 상태 코드와 알맞은 메시지를 반환한다."){
+                    checkError(mvcResult, HttpStatus.NOT_FOUND, PerformanceErrorInfos.PERFORMANCE_NOT_FOUND)
+                }
+            }
+        }
     }
 
 
