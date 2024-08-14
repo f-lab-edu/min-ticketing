@@ -8,6 +8,8 @@ import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
+import io.kotest.core.tuple
+import io.kotest.data.forAll
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -185,6 +187,28 @@ class PerformanceRepositoryImplTest(
             actual[0]!!.uid shouldBe performance1.uid
 
         }
+
+        "Performance를 공연 이름으로 필터링하여 조회할 수 있다."{
+            val givenNames = listOf("예쁜 공연", "멋진 공연", "아주 멋진 공연", "공연 멋진", "공멋진연")
+
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+
+            val performances = PerformanceTestDataGenerator.createPerformancesInNames(
+                place = place,
+                nameIn = givenNames
+            )
+            savePerformance(performances)
+
+            val actual = performanceRepository.search(PerformanceSearchConditions(q = "멋진"), CursorInfo())
+
+            val expected = createSearchExpectedOrderByIdDesc(performances.drop(1))
+
+            actual.size shouldBe 4
+            actual shouldContainExactly expected
+
+        }
+
 
         "Performance를 모든 조건을 넣어 검색할 수 있다." {
 

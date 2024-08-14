@@ -115,6 +115,30 @@ object PerformanceTestDataGenerator {
         return result
     }
 
+    /**
+     * Performance를 이름별로 생성하는 메소드로, 순서는 nameIn과 동일합니다.
+     */
+    fun createPerformancesInNames(
+        place: PerformancePlace,
+        nameIn : List<String>,
+        numShowtimes: Int = 2,
+        price: Int = 10000
+    ) : MutableList<Performance>{
+        val result = mutableListOf<Performance>()
+        for(name in nameIn){
+            result.add(
+                createPerformance(
+                    place = place,
+                    numShowtimes= numShowtimes,
+                    name = name,
+                    price = price)
+            )
+
+        }
+        return result
+
+    }
+
 
     fun generateUid(prefix: String): String {
         val counter = when (prefix) {

@@ -81,6 +81,9 @@ class CustomPerformanceRepositoryImpl(
                         searchConditions.showTime?.let {
                             entity(Performance::class).`in`(dateSubQuery)
                         },
+                        searchConditions.q?.let {
+                            path(Performance::name).like("%${it}%")
+                        },
                         cursorInfo.cursor?.let {
                             path(Performance::id).lessThanOrEqualTo(cursorSubQuery)
                         }

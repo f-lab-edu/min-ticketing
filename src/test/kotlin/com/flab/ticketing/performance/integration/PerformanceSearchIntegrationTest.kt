@@ -392,6 +392,49 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
         }
+        given("공연 정보가 존재할 때 - 공연 이름 검색"){
+            val givenNames = listOf("멋진 공연", "예쁜 공연", "아주 멋진 공연")
+
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+
+            val performances = PerformanceTestDataGenerator.createPerformancesInNames(
+                place = place,
+                nameIn = givenNames
+            )
+            savePerformance(performances)
+
+            `when`("공연의 이름으로 검색할 시"){
+                val uri = "/api/performances"
+                val nameQuery = "멋진"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .param("limit", "5")
+                        .param("q", nameQuery)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                then("검색 공연 이름이 포함된 공연만 조회된다."){
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            PerformanceSearchResult::class.java
+                        )
+                    )
+
+                    val expected = createSearchExpectedOrderByIdDesc(listOf(performances[0], performances[2]))
+
+                    actual.cursor shouldBe null
+                    actual.data shouldContainExactly expected
+
+                }
+            }
+        }
+
     }
 
 
