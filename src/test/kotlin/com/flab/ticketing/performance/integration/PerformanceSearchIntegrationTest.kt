@@ -299,17 +299,20 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 ZoneId.of("Asia/Seoul")
             )
             val performance1Price = 50000
+            val performance1Name = "공공공연"
 
             val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
-                price = performance1Price
+                price = performance1Price,
+                name = performance1Name
             )
 
             val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
-                price = 10000
+                price = 10000,
+                name = performance1Name
             )
 
             val performance3 = PerformanceTestDataGenerator.createPerformance(

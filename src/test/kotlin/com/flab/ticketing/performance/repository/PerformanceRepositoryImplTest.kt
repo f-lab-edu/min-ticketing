@@ -220,17 +220,20 @@ class PerformanceRepositoryImplTest(
                 ZoneId.of("Asia/Seoul")
             )
             val performance1Price = 50000
+            val performance1Name = "공공공연"
 
             val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
-                price = performance1Price
+                price = performance1Price,
+                name = performance1Name
             )
 
             val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
-                price = 10000
+                price = 10000,
+                name = performance1Name
             )
 
             val performance3 = PerformanceTestDataGenerator.createPerformance(
@@ -239,17 +242,28 @@ class PerformanceRepositoryImplTest(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
                     ZoneId.of("Asia/Seoul")
                 ),
+                price = performance1Price,
+                name = performance1Name
+            )
+
+            val performance4 = PerformanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                ),
                 price = 15000
             )
 
-            savePerformance(listOf(performance1, performance2, performance3))
+            savePerformance(listOf(performance1, performance2, performance3, performance4))
 
             val actual = performanceRepository.search(
                 PerformanceSearchConditions(
                     performance1DateTime,
                     performance1Price - 1000,
                     performance1Price + 1000,
-                    region.uid
+                    region.uid,
+                    q = "공공"
                 ), CursorInfo()
             )
 
