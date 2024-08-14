@@ -3,6 +3,7 @@ package com.flab.ticketing.performance.integration
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.dto.CursoredResponse
+import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
@@ -14,6 +15,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import java.time.LocalDateTime
@@ -439,6 +441,60 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("공연 정보가 존재할 때 - 상세 조회 검색"){
+            val placeSeatCnt = 10
+
+            val place = PerformanceTestDataGenerator.createPerformancePlace(
+                numSeats = placeSeatCnt
+            )
+
+            val showTimes = listOf(
+                ZonedDateTime.of(LocalDateTime.of(2024, 1,1, 10, 0,0), ZoneId.of("Asia/Seoul")),
+                ZonedDateTime.of(LocalDateTime.of(2024, 1,1, 12, 0,0), ZoneId.of("Asia/Seoul")),
+                ZonedDateTime.of(LocalDateTime.of(2024, 1,2, 9, 0,0), ZoneId.of("Asia/Seoul"))
+            )
+
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimes = showTimes
+            )
+
+            savePerformance(listOf(performance))
+
+            `when`("특정 공연의 UID를 가지고 공연 상세 정보를 검색할 시"){
+                val uri = "/api/performances/${performance.uid}"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("해당 공연의 상세 정보를 반환한다."){
+                    val actual = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        PerformanceDetailResponse::class.java
+                    )
+
+                    val expectedDateInfo = performance.performanceDateTime.map {
+                        PerformanceDetailResponse.DateInfo(
+                            uid = it.uid,
+                            dateTime = it.showTime.toLocalDateTime(),
+                            total = placeSeatCnt.toLong(),
+                            remaining = placeSeatCnt.toLong()
+                        )
+                    }
+
+                    val expected = createDetailSearchExpected(performance, expectedDateInfo)
+
+                    mvcResult.response.status shouldBe HttpStatus.OK.value()
+                    actual shouldBeEqual expected
+                }
+
+            }
+
+        }
+
     }
 
 
@@ -473,5 +529,22 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 it.performanceDateTime.maxOf { d -> d.showTime }
             )
         }
+    }
+
+    private fun createDetailSearchExpected(
+        performance: Performance,
+        dateInfos : List<PerformanceDetailResponse.DateInfo>
+    ): PerformanceDetailResponse{
+
+        return PerformanceDetailResponse(
+            uid = performance.uid,
+            image = performance.image,
+            title = performance.name,
+            region = performance.performancePlace.region.name,
+            place = performance.performancePlace.name,
+            price = performance.price,
+            description = performance.description,
+            dateInfo = dateInfos
+        )
     }
 }
