@@ -22,11 +22,24 @@ class CustomPerformanceRepositoryImpl(
     ): List<PerformanceSearchResult?> {
 
         val searchResult = kotlinJdslJpqlExecutor.findPage(PageRequest.of(0, cursorInfo.limit)) {
-            val subQuery = select<Long>(path(Performance::id))
+
+            val cursorSubQuery = select<Long>(path(Performance::id))
                 .from(entity(Performance::class))
                 .where(
                     path(Performance::uid).eq(cursorInfo.cursor)
                 ).asSubquery()
+
+            val searchShowTime = searchConditions.showTime
+
+            val dateSubQuery = selectDistinct<Performance>(path(PerformanceDateTime::performance))
+                .from(entity(PerformanceDateTime::class))
+                .where(
+                    path(PerformanceDateTime::showTime).between(
+                        searchShowTime?.toLocalDate()?.atStartOfDay(searchShowTime.zone),
+                        searchShowTime?.toLocalDate()?.plusDays(1)?.atStartOfDay(searchShowTime.zone)
+                    )
+                )
+                .asSubquery()
 
             selectNew<PerformanceSearchResult>(
                 path(Performance::uid),
@@ -66,13 +79,10 @@ class CustomPerformanceRepositoryImpl(
                             path(Performance::price).lessThanOrEqualTo(it)
                         },
                         searchConditions.showTime?.let {
-                            path(PerformanceDateTime::showTime).between(
-                                it.toLocalDate().atStartOfDay(it.zone),
-                                it.toLocalDate().plusDays(1).atStartOfDay(it.zone)
-                            )
+                            entity(Performance::class).`in`(dateSubQuery)
                         },
                         cursorInfo.cursor?.let {
-                            path(Performance::id).lessThanOrEqualTo(subQuery)
+                            path(Performance::id).lessThanOrEqualTo(cursorSubQuery)
                         }
                     )
                 )

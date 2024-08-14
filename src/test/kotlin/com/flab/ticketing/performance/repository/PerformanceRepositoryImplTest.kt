@@ -154,7 +154,8 @@ class PerformanceRepositoryImplTest(
                 showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2024, 1, 1, 10, 0, 0),
                     ZoneId.of("Asia/Seoul")
-                )
+                ),
+                numShowtimes = 2
             )
 
             // 2023-1-1 10:00(Asia/Seoul) 공연 정보
@@ -163,7 +164,8 @@ class PerformanceRepositoryImplTest(
                 showTimeStartDateTime =  ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
                     ZoneId.of("Asia/Seoul")
-                )
+                ),
+                numShowtimes = 2
             )
 
             savePerformance(listOf(performance1, performance2))
