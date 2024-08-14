@@ -98,8 +98,4 @@ class CustomPerformanceRepositoryImpl(
         return searchResult.content
     }
 
-    override fun searchDetail(uid: String): PerformanceDetailSearchResult {
-        TODO("Not yet implemented")
-    }
-
 }
