@@ -1,8 +1,9 @@
 package com.flab.ticketing.performance.dto
 
 import java.time.LocalDate
+import java.time.LocalDateTime
 
-data class PerformanceDetailSearchResult(
+data class PerformanceDetailResponse(
     val uid: String,
     val image: String,
     val title: String,
@@ -13,9 +14,10 @@ data class PerformanceDetailSearchResult(
     val dateInfo: List<DateInfo>
 ) {
     data class DateInfo(
-        val date: LocalDate,
-        val total: Int,
-        val remaining: Int
+        val uid: String,
+        val dateTime: LocalDateTime,
+        val total: Long,
+        val remaining: Long
     )
 
 }

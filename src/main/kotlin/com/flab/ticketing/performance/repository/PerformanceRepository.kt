@@ -12,7 +12,7 @@ interface PerformanceRepository : CustomPerformanceRepository,
 
     fun deleteAll()
     @EntityGraph(attributePaths = ["performancePlace", "performanceDateTime"])
-    fun findByUid(uid : String): Performance
+    fun findByUid(uid : String): Performance?
 
 
 }
