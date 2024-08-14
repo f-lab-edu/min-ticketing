@@ -19,7 +19,7 @@ object PerformanceTestDataGenerator {
         return Region(generateUid("region"), name)
     }
 
-    fun createPerformancePlace(region: Region, name: String = " 공연장", numSeats: Int = 2): PerformancePlace {
+    fun createPerformancePlace(region: Region = createRegion(), name: String = " 공연장", numSeats: Int = 2): PerformancePlace {
         val place = PerformancePlace(region, name)
         repeat(numSeats) {
             val row = it / 10 + 1
@@ -30,7 +30,32 @@ object PerformanceTestDataGenerator {
     }
 
     fun createPerformance(
-        place: PerformancePlace,
+        place: PerformancePlace = createPerformancePlace(),
+        name: String = "공연",
+        showTimes : List<ZonedDateTime>,
+        price: Int = 10000,
+        image:String = "http://image.com/image/1",
+        description: String = "공연 설명"
+    ) : Performance{
+
+        val performance = Performance(
+            uid = generateUid("performance"),
+            name = name,
+            image = image,
+            description = description,
+            price = price,
+            performancePlace = place
+        )
+
+        for(showTime in showTimes){
+            performance.addDateTime(generateUid("datetime"), showTime)
+        }
+
+        return performance
+    }
+
+    fun createPerformance(
+        place: PerformancePlace = createPerformancePlace(),
         name: String = "공연",
         numShowtimes: Int = 1,
         showTimeStartDateTime: ZonedDateTime = INIT_PERFORMANCE_DATE,
@@ -95,7 +120,7 @@ object PerformanceTestDataGenerator {
      * Performance를 가격별로 생성하는 메소드로, 순서는 DateIn과 동일합니다.
      */
     fun createPerformancesDatesIn(
-        place: PerformancePlace,
+        place: PerformancePlace = createPerformancePlace(),
         dateIn : List<ZonedDateTime>,
         numShowtimes: Int = 2,
         price: Int = 10000
@@ -109,7 +134,6 @@ object PerformanceTestDataGenerator {
                     showTimeStartDateTime = date,
                     price = price)
             )
-
         }
 
         return result

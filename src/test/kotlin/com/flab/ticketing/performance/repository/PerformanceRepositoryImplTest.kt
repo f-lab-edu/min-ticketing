@@ -8,9 +8,6 @@ import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
-import io.kotest.core.tuple
-import io.kotest.data.forAll
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -287,6 +284,16 @@ class PerformanceRepositoryImplTest(
             val expected = List(limit){idx -> performances[idx + startIdx].uid}
 
             actual.filterNotNull().map { it.uid } shouldContainExactly expected
+        }
+
+        "Performance를 UID로 검색할 수 있다."{
+            val performance = PerformanceTestDataGenerator.createPerformance()
+
+            savePerformance(listOf(performance))
+
+            val actual = performanceRepository.findByUid(performance.uid)
+
+            actual shouldNotBe null
         }
     }
 
