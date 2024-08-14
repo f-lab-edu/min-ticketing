@@ -68,6 +68,54 @@ object PerformanceTestDataGenerator {
         }
     }
 
+    /**
+     * Performance를 가격별로 생성하는 메소드로, 순서는 PriceIn과 동일합니다.
+     */
+    fun createPerformancesPriceIn(
+        place: PerformancePlace,
+        priceIn : List<Int>,
+        numShowtimes: Int = 2,
+        showTimeStartDateTime: ZonedDateTime = INIT_PERFORMANCE_DATE
+    ): MutableList<Performance> {
+        val result = mutableListOf<Performance>()
+        for(price in priceIn){
+            result.add(
+                createPerformance(
+                    place = place,
+                    numShowtimes= numShowtimes,
+                    showTimeStartDateTime = showTimeStartDateTime,
+                    price = price)
+            )
+        }
+
+        return result;
+    }
+
+    /**
+     * Performance를 가격별로 생성하는 메소드로, 순서는 DateIn과 동일합니다.
+     */
+    fun createPerformancesDatesIn(
+        place: PerformancePlace,
+        dateIn : List<ZonedDateTime>,
+        numShowtimes: Int = 2,
+        price: Int = 10000
+    ): MutableList<Performance> {
+        val result = mutableListOf<Performance>()
+        for(date in dateIn){
+            result.add(
+                createPerformance(
+                    place = place,
+                    numShowtimes= numShowtimes,
+                    showTimeStartDateTime = date,
+                    price = price)
+            )
+
+        }
+
+        return result
+    }
+
+
     fun generateUid(prefix: String): String {
         val counter = when (prefix) {
             "region" -> ++regionCounter

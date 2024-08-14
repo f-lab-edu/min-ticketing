@@ -39,18 +39,15 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 performanceCount = 6
             )
 
-            regionRepository.save(performances[0].performancePlace.region)
-            placeRepository.save(performances[0].performancePlace)
-
-            performances.forEach {
-                performanceRepository.save(it)
-            }
+            savePerformance(performances)
 
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
-                val uri = "/api/performances?limit=5"
+                val uri = "/api/performances"
+                val limit = 5
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
+                        .param("limit", limit.toString())
                 )
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
@@ -64,16 +61,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = performances.map {
-                        PerformanceSearchResult(
-                            it.uid,
-                            it.image,
-                            it.name,
-                            it.performancePlace.region.name,
-                            it.performanceDateTime.minOf { d -> d.showTime },
-                            it.performanceDateTime.maxOf { d -> d.showTime }
-                        )
-                    }.asReversed().dropLast(1)
+                    val expected = createSearchExpectedOrderByIdDesc(performances.drop(1))
 
                     actual.cursor?.shouldBeEqual(performances[0].uid)
                     actual.data.size shouldBe 5
@@ -87,19 +75,15 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 5
             )
-
-            regionRepository.save(performances[0].performancePlace.region)
-            placeRepository.save(performances[0].performancePlace)
-
-            performances.forEach {
-                performanceRepository.save(it)
-            }
+            savePerformance(performances)
 
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
-                val uri = "/api/performances?limit=5"
+                val uri = "/api/performances"
+                val limit = 5
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
+                        .param("limit", limit.toString())
                 )
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
@@ -114,16 +98,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = performances.map {
-                        PerformanceSearchResult(
-                            it.uid,
-                            it.image,
-                            it.name,
-                            it.performancePlace.region.name,
-                            it.performanceDateTime.minOf { d -> d.showTime },
-                            it.performanceDateTime.maxOf { d -> d.showTime }
-                        )
-                    }.asReversed()
+                    val expected = createSearchExpectedOrderByIdDesc(performances)
 
                     actual.cursor shouldBe null
                     actual.data.size shouldBe 5
@@ -140,11 +115,10 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 performanceCount = 3
             )
 
-            val gumiRegionName = "구미"
             val gumiPerformanceCount = 3
 
             val gumiRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
-                regionName = gumiRegionName,
+                regionName = "구미",
                 performanceCount = gumiPerformanceCount
             )
 
@@ -172,16 +146,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = gumiRegionPerformances.map {
-                        PerformanceSearchResult(
-                            it.uid,
-                            it.image,
-                            it.name,
-                            it.performancePlace.region.name,
-                            it.performanceDateTime.minOf { d -> d.showTime },
-                            it.performanceDateTime.maxOf { d -> d.showTime }
-                        )
-                    }.asReversed()
+                    val expected = createSearchExpectedOrderByIdDesc(gumiRegionPerformances)
 
                     actual.cursor shouldBe null
                     actual.data.size shouldBe gumiPerformanceCount
@@ -190,21 +155,16 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
         given("공연 정보가 존재할 때 - 최저 금액 검색") {
-
             val region = PerformanceTestDataGenerator.createRegion()
             val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val performancePrices = listOf(2000, 3000, 4000)
 
-
-            regionRepository.save(region)
-            placeRepository.save(place)
-            performanceRepository.save(price2000Performance)
-            performanceRepository.save(price3000Performance)
-            performanceRepository.save(price4000Performance)
-
+            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+                place = place,
+                priceIn = performancePrices
+            )
+            savePerformance(performances)
 
             `when`("최저으로 공연을 검색할 시") {
                 val uri = "/api/performances"
@@ -227,7 +187,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = createSearchExpected(listOf(price4000Performance, price3000Performance))
+                    val expected = createSearchExpectedOrderByIdDesc(performances.drop(1))
 
                     actual.data.size shouldBe expected.size
                     actual.data shouldContainExactly expected
@@ -239,16 +199,13 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             val region = PerformanceTestDataGenerator.createRegion()
             val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val performancePrices = listOf(2000, 3000, 4000)
 
-
-            regionRepository.save(region)
-            placeRepository.save(place)
-            performanceRepository.save(price2000Performance)
-            performanceRepository.save(price3000Performance)
-            performanceRepository.save(price4000Performance)
+            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+                place = place,
+                priceIn = performancePrices
+            )
+            savePerformance(performances)
 
             `when`("최고 금액으로 공연을 검색할 시") {
                 val uri = "/api/performances"
@@ -262,7 +219,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("특정 금액 이상의 공연만 검색된다.") {
+                then("특정 금액 이하의 공연만 검색된다.") {
                     val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
@@ -271,7 +228,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = createSearchExpected(listOf(price3000Performance, price2000Performance))
+                    val expected = createSearchExpectedOrderByIdDesc(performances.dropLast(1))
 
                     actual.data.size shouldBe expected.size
                     actual.data shouldContainExactly expected
@@ -294,17 +251,12 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 ZoneId.of("Asia/Seoul")
             )
 
-            val performance1 = PerformanceTestDataGenerator.createPerformance(
+            val performances = PerformanceTestDataGenerator.createPerformancesDatesIn(
                 place = place,
-                showTimeStartDateTime = performance1DateTime
+                dateIn = listOf(performance1DateTime, performance2DateTime)
             )
 
-            val performance2 = PerformanceTestDataGenerator.createPerformance(
-                place = place,
-                showTimeStartDateTime = performance2DateTime
-            )
-
-            savePerformance(listOf(performance1, performance2))
+            savePerformance(performances)
 
 
             `when`("특정 공연 날짜로 검색할 시") {
@@ -330,7 +282,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = createSearchExpected(listOf(performance1))
+                    val expected = createSearchExpectedOrderByIdDesc(listOf(performances[0]))
 
                     actual.cursor shouldBe null
                     actual.data shouldContainExactly expected
@@ -394,7 +346,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = createSearchExpected(listOf(performance1))
+                    val expected = createSearchExpectedOrderByIdDesc(listOf(performance1))
 
                     actual.cursor shouldBe null
                     actual.data shouldContainExactly expected
@@ -405,17 +357,17 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
         given("다수의 공연 정보가 존재할 때") {
 
-            var performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 10
             )
 
             savePerformance(performances)
 
-            performances = performances.asReversed()
 
             `when`("특정 커서를 입력하여 공연 정보를 검색할 시") {
                 val uri = "/api/performances"
 
+                // performance004, 003, 002를 조회, 001을 반환해야함.
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
                         .param("limit", "3")
@@ -432,11 +384,10 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                         )
                     )
 
-                    val expected = createSearchExpected(listOf(performances[3], performances[4], performances[5]))
-                    val expectedCursor = performances[6].uid
+                    val expected = createSearchExpectedOrderByIdDesc(performances)
 
-                    actual.cursor!! shouldBeEqual expectedCursor
-                    actual.data shouldContainExactly expected
+                    actual.cursor!! shouldBeEqual expected[9].uid
+                    actual.data shouldContainExactly expected.subList(6,9)
 
                 }
             }
@@ -462,8 +413,10 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
     }
 
-    private fun createSearchExpected(performances: List<Performance>): List<PerformanceSearchResult> {
-        return performances.map {
+    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSearchResult> {
+        val sorted = performances.sortedBy { it.id }.asReversed()
+
+        return sorted.map {
             PerformanceSearchResult(
                 it.uid,
                 it.image,

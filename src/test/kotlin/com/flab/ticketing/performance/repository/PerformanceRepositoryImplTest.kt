@@ -4,9 +4,11 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.dto.CursorInfo
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
+import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
+import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
@@ -33,29 +35,21 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance List를 조회할 수 있다." {
+            val givenPerformanceCnt = 5;
 
-            val region = PerformanceTestDataGenerator.createRegion("서울")
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region, "공연장 1", 10)
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = givenPerformanceCnt
+            )
 
-            val performances = List(5) {
-                PerformanceTestDataGenerator.createPerformance(place, "공연$it", 1)
-            }
+            savePerformance(performances)
 
-            regionRepository.save(region)
-            placeRepository.save(place)
+            val cursorSize = 5;
+            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(limit = cursorSize))
 
-            performances.forEach {
-                performanceRepository.save(it)
-            }
+            val expected = createSearchExpectedOrderByIdDesc(performances)
 
-
-            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo())
-
-            actual.size shouldBe performances.size
-            actual.filterNotNull().map { it.uid } shouldContainAll performances.map { it.uid }
-            actual.filterNotNull().map { it.image } shouldContainAll performances.map { it.image }
-            actual.filterNotNull().map { it.title } shouldContainAll performances.map { it.name }
-            actual.filterNotNull().map { it.regionName } shouldContainAll List(5) { region.name }
+            actual.size shouldBe cursorSize
+            actual shouldContainExactly expected
         }
 
         "DB에 Performance List가 limit 이상의 갯수를 저장하고 있다면, 올바르게 limit개 만큼의 데이터를 갖고 올 수 있다." {
@@ -65,19 +59,12 @@ class PerformanceRepositoryImplTest(
                 numShowtimes = 1,
                 seatPerPlace = 1
             )
-
-            regionRepository.save(performances[0].performancePlace.region)
-            placeRepository.save(performances[0].performancePlace)
-
-            performances.forEach {
-                performanceRepository.save(it)
-            }
+            savePerformance(performances)
 
             val limit = 5
             val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(limit = limit))
 
             actual.size shouldBe limit
-
         }
 
         "Performance를 Region UID로 필터링하여 조회할 수 있다." {
@@ -98,34 +85,38 @@ class PerformanceRepositoryImplTest(
             savePerformance(gumiRegionPerformances)
 
             val regionUid = gumiRegionPerformances[0].performancePlace.region.uid
-            val limit = 5
-            val actual =
-                performanceRepository.search(PerformanceSearchConditions(region = regionUid), CursorInfo(limit = 5))
+            val actual = performanceRepository.search(
+                    PerformanceSearchConditions(region = regionUid),
+                    CursorInfo()
+            )
+
+            val expected = createSearchExpectedOrderByIdDesc(gumiRegionPerformances)
 
             actual.size shouldBe gumiPerformanceCount
-            actual.filterNotNull().map { it.uid } shouldContainAll gumiRegionPerformances.map { it.uid }
+            actual shouldContainExactly expected
 
         }
 
         "Performance를 최소 금액으로 필터링하여 조회할 수 있다." {
-
             val region = PerformanceTestDataGenerator.createRegion()
             val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val givenPriceRange = listOf(2000, 3000, 4000)
+            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+                place = place,
+                priceIn = givenPriceRange
+            )
 
-            regionRepository.save(region)
-            placeRepository.save(place)
-            performanceRepository.save(price2000Performance)
-            performanceRepository.save(price3000Performance)
-            performanceRepository.save(price4000Performance)
+            savePerformance(performances)
 
             val minPrice = 3000
             val actual = performanceRepository.search(PerformanceSearchConditions(minPrice = minPrice), CursorInfo())
 
             actual.size shouldBe 2
+            actual.filterNotNull().map { it.uid } shouldContainAll listOf(
+                performances[1].uid,
+                performances[2].uid
+            )
         }
 
         "Performance를 최대 금액으로 필터링하여 조회할 수 있다." {
@@ -133,24 +124,22 @@ class PerformanceRepositoryImplTest(
             val region = PerformanceTestDataGenerator.createRegion()
             val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val price2000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 2000)
-            val price3000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 3000)
-            val price4000Performance = PerformanceTestDataGenerator.createPerformance(place = place, price = 4000)
+            val givenPriceRange = listOf(2000, 3000, 4000)
+            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+                place = place,
+                priceIn = givenPriceRange
+            )
 
-            regionRepository.save(region)
-            placeRepository.save(place)
-            performanceRepository.save(price2000Performance)
-            performanceRepository.save(price3000Performance)
-            performanceRepository.save(price4000Performance)
-
+            savePerformance(performances)
 
             val maxPrice = 3000
             val actual = performanceRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), CursorInfo())
 
             actual.size shouldBe 2
-            actual.filterNotNull().map { it.uid } shouldContainExactly listOf(
-                price3000Performance.uid,
-                price2000Performance.uid
+
+            actual.filterNotNull().map { it.uid } shouldContainAll listOf(
+                performances[0].uid,
+                performances[1].uid
             )
         }
 
@@ -159,28 +148,34 @@ class PerformanceRepositoryImplTest(
             val region = PerformanceTestDataGenerator.createRegion()
             val place = PerformanceTestDataGenerator.createPerformancePlace(region)
 
-            val performance1DateTime = ZonedDateTime.of(
-                LocalDateTime.of(2024, 1, 1, 10, 0, 0),
-                ZoneId.of("Asia/Seoul")
-            )
-            val performance2DateTime = ZonedDateTime.of(
-                LocalDateTime.of(2023, 1, 1, 10, 0, 0),
-                ZoneId.of("Asia/Seoul")
-            )
-
+            // 2024-1-1 10:00(Asia/Seoul) 공연 정보
             val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
-                showTimeStartDateTime = performance1DateTime
+                showTimeStartDateTime = ZonedDateTime.of(
+                    LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                )
             )
+
+            // 2023-1-1 10:00(Asia/Seoul) 공연 정보
             val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
-                showTimeStartDateTime = performance2DateTime
+                showTimeStartDateTime =  ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                )
             )
 
             savePerformance(listOf(performance1, performance2))
 
+            // 2024-1-1 00:00시(Asia/Seoul)로 검색
+            val searchShowTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 0, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+
             val actual = performanceRepository.search(
-                PerformanceSearchConditions(showTime = performance1DateTime),
+                PerformanceSearchConditions(showTime = searchShowTime),
                 CursorInfo()
             )
 
@@ -238,7 +233,6 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance에 커서 정보를 넣어 커서 이상의 정보를 검색할 수 있다." {
-
             var performances =
                 PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
 
@@ -246,15 +240,13 @@ class PerformanceRepositoryImplTest(
 
             performances = performances.asReversed()
 
-            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(performances[2].uid, 5))
+            val limit = 5;
+            val startIdx = 3;
+            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(performances[startIdx].uid, limit))
 
-            actual.filterNotNull().map { it.uid } shouldContainExactly listOf(
-                performances[2].uid,
-                performances[3].uid,
-                performances[4].uid,
-                performances[5].uid,
-                performances[6].uid
-            )
+            val expected = List(limit){idx -> performances[idx + startIdx].uid}
+
+            actual.filterNotNull().map { it.uid } shouldContainExactly expected
         }
     }
 
@@ -265,6 +257,21 @@ class PerformanceRepositoryImplTest(
 
         performances.forEach {
             performanceRepository.save(it)
+        }
+    }
+
+    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSearchResult> {
+        val sorted = performances.sortedBy { it.id }.asReversed()
+
+        return sorted.map {
+            PerformanceSearchResult(
+                it.uid,
+                it.image,
+                it.name,
+                it.performancePlace.region.name,
+                it.performanceDateTime.minOf { d -> d.showTime },
+                it.performanceDateTime.maxOf { d -> d.showTime }
+            )
         }
     }
 
