@@ -293,9 +293,15 @@ class PerformanceRepositoryImplTest(
 
             savePerformance(listOf(performance))
 
-            val actual = performanceRepository.findByUid(performance.uid)
+            val (uid, image, title, regionName, placeName, price, description) = performanceRepository.findByUid(performance.uid)!!
 
-            actual shouldNotBe null
+            uid shouldBe performance.uid
+            image shouldBe performance.image
+            title shouldBe performance.name
+            regionName shouldBe performance.performancePlace.region.name
+            placeName shouldBe performance.performancePlace.name
+            price shouldBe performance.price
+            description shouldBe performance.description
         }
 
         "Performance의 DateInfo를 검색할 수 있다."{

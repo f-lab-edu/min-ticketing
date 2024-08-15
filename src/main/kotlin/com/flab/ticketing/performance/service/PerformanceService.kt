@@ -38,9 +38,9 @@ class PerformanceService(
         return PerformanceDetailResponse(
             performance.uid,
             performance.image,
-            performance.name,
-            performance.performancePlace.region.name,
-            performance.performancePlace.name,
+            performance.title,
+            performance.regionName,
+            performance.placeName,
             performance.price,
             performance.description,
             dateInfo

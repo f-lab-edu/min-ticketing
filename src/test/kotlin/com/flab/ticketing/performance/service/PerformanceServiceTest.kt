@@ -5,6 +5,7 @@ import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.PerformanceDateInfo
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import io.kotest.assertions.throwables.shouldThrow
@@ -29,6 +30,16 @@ class PerformanceServiceTest : UnitTest(){
 
             val reservatedSeats = 2L
 
+            val givenPerformanceInfo = PerformanceDetailSearchResult(
+                uid = performance.uid,
+                image = performance.image,
+                title = performance.name,
+                regionName = performance.performancePlace.region.name,
+                placeName = performance.performancePlace.name,
+                price = performance.price,
+                description = performance.description
+            )
+
             val givenDateInfos = performance.performanceDateTime.map {
                 PerformanceDateInfo(
                     it.uid,
@@ -38,7 +49,7 @@ class PerformanceServiceTest : UnitTest(){
                 )
             }
 
-            every { performanceRepository.findByUid(performance.uid) } returns performance
+            every { performanceRepository.findByUid(performance.uid) } returns givenPerformanceInfo
             every { performanceDateReader.getDateInfo(performance.uid) } returns givenDateInfos
 
             val (actualUid, actualImage, actualTitle, actualRegion, actualPlace, actualPrice, actualDesc, actualDateInfo) = performanceService.searchDetail(
