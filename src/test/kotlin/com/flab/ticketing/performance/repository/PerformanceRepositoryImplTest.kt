@@ -3,6 +3,7 @@ package com.flab.ticketing.performance.repository
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.dto.CursorInfo
+import com.flab.ticketing.performance.dto.PerformanceDateInfo
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
@@ -15,6 +16,7 @@ import io.kotest.matchers.shouldNotBe
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class PerformanceRepositoryImplTest(
@@ -295,6 +297,43 @@ class PerformanceRepositoryImplTest(
 
             actual shouldNotBe null
         }
+
+        "Performance의 DateInfo를 검색할 수 있다."{
+            val placeSeats = 10
+
+            val showTimes = listOf(
+                ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 0, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                ),
+                ZonedDateTime.of(
+                    LocalDateTime.of(2024, 1, 1, 0, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                )
+            )
+
+
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = placeSeats),
+                showTimes = showTimes
+            )
+
+            savePerformance(listOf(performance))
+
+            val expected = performance.performanceDateTime.map {
+                PerformanceDateInfo(
+                    uid = it.uid,
+                    showTime = it.showTime.withZoneSameInstant(ZoneOffset.ofHours(9)),
+                    totalSeats = placeSeats.toLong(),
+                    reservatedSeats = 0
+                )
+            }
+
+            val actual = performanceRepository.getDateInfo(performance.uid)
+
+            actual shouldContainAll expected
+        }
+
     }
 
 
