@@ -304,6 +304,19 @@ class PerformanceRepositoryImplTest(
             description shouldBe performance.description
         }
 
+        "Performance를 UID로 검색할 시 UID에 해당하는 정보만 나온다."{
+            val performances = List(5) {
+                PerformanceTestDataGenerator.createPerformance()
+            }
+
+            savePerformance(performances)
+
+            val actual = performanceRepository.findByUid(performances[2].uid)
+
+            actual!!.uid shouldBe performances[2].uid
+
+        }
+
         "Performance의 DateInfo를 검색할 수 있다."{
             val placeSeats = 10
 
