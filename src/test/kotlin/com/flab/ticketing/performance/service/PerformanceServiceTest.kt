@@ -3,7 +3,7 @@ package com.flab.ticketing.performance.service
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
-import com.flab.ticketing.order.service.ReservationService
+import com.flab.ticketing.performance.dto.PerformanceDateInfo
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
@@ -17,8 +17,8 @@ import io.mockk.mockk
 class PerformanceServiceTest : UnitTest(){
 
     private val performanceRepository : PerformanceRepository = mockk()
-    private val reservationService: ReservationService = mockk()
-    private val performanceService : PerformanceService = PerformanceService(performanceRepository, reservationService)
+    private val performanceDateReader: PerformanceDateReader = mockk()
+    private val performanceService : PerformanceService = PerformanceService(performanceRepository, performanceDateReader)
 
     init {
         "Performance Detail 정보를 검색할 수 있다."{
@@ -27,8 +27,19 @@ class PerformanceServiceTest : UnitTest(){
                 numShowtimes = 2
             )
 
+            val reservatedSeats = 2L
+
+            val givenDateInfos = performance.performanceDateTime.map {
+                PerformanceDateInfo(
+                    it.uid,
+                    it.showTime,
+                    performance.performancePlace.seats.size.toLong(),
+                    reservatedSeats
+                )
+            }
+
             every { performanceRepository.findByUid(performance.uid) } returns performance
-            every { reservationService.getReservationCount(any()) } returns 1
+            every { performanceDateReader.getDateInfo(performance.uid) } returns givenDateInfos
 
             val (actualUid, actualImage, actualTitle, actualRegion, actualPlace, actualPrice, actualDesc, actualDateInfo) = performanceService.searchDetail(
                 performance.uid
@@ -40,7 +51,7 @@ class PerformanceServiceTest : UnitTest(){
                     it.uid,
                     it.showTime.toLocalDateTime(),
                     totalSeatSize,
-                    totalSeatSize - 1
+                    totalSeatSize - reservatedSeats
                 )
             }
 

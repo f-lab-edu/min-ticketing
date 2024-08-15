@@ -2,7 +2,6 @@ package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.dto.CursorInfo
 import com.flab.ticketing.common.exception.NotFoundException
-import com.flab.ticketing.order.service.ReservationService
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
@@ -16,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PerformanceService(
     private val performanceRepository: PerformanceRepository,
-    private val reservationService: ReservationService
+    private val performanceDateReader: PerformanceDateReader
 ) {
 
     fun search(cursorInfo: CursorInfo, searchConditions: PerformanceSearchConditions): List<PerformanceSearchResult> {
@@ -24,22 +23,17 @@ class PerformanceService(
     }
 
     fun searchDetail(uid : String) : PerformanceDetailResponse{
-        val performance = performanceRepository.findByUid(uid)
-        if(performance == null){
+        val performance = performanceRepository.findByUid(uid) ?:
             throw NotFoundException(PerformanceErrorInfos.PERFORMANCE_NOT_FOUND)
-        }
 
-
-        val seatSize = performance.performancePlace.seats.size
-
-        val dateInfo = performance.performanceDateTime.map {
+        val dateInfo = performanceDateReader.getDateInfo(uid).map {
             PerformanceDetailResponse.DateInfo(
                 it.uid,
                 it.showTime.toLocalDateTime(),
-                seatSize.toLong(),
-                seatSize - reservationService.getReservationCount(it.uid),
-            ) }
-
+                it.totalSeats,
+                it.totalSeats - it.reservatedSeats
+            )
+        }
 
         return PerformanceDetailResponse(
             performance.uid,
