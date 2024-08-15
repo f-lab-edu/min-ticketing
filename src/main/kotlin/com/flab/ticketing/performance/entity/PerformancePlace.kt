@@ -14,7 +14,8 @@ class PerformancePlace(
 
     val name: String,
 
-    @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = [CascadeType.ALL]) val seats: MutableList<PerformancePlaceSeat> = mutableListOf()
+    @OneToMany(mappedBy = "place", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    val seats: MutableList<PerformancePlaceSeat> = mutableListOf()
 ) : BaseEntity() {
 
     fun addSeat(
