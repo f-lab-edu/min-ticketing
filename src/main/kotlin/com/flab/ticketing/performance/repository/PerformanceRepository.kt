@@ -5,6 +5,7 @@ import com.flab.ticketing.performance.dto.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.dsl.CustomPerformanceRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -27,6 +28,7 @@ interface PerformanceRepository : CustomPerformanceRepository,
             "JOIN p.performancePlace pp " +
             "JOIN pp.seats ss " +
             "LEFT JOIN Reservation rs ON ss = rs.seat " +
+            "WHERE p.uid = :uid " +
             "GROUP BY pd.uid")
-    fun getDateInfo(performanceUid: String) : List<PerformanceDateInfo>
+    fun getDateInfo(@Param("uid") performanceUid: String) : List<PerformanceDateInfo>
 }

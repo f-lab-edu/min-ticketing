@@ -340,14 +340,26 @@ class PerformanceRepositoryImplTest(
             actual shouldContainAll expected
         }
 
+
+        "PerformanceDate를 UID로 검색할 시 해당 UID에 해당하는 Date정보만 조회한다."{
+            val datePerPerformance = 5
+            val performances = List(2) {
+                PerformanceTestDataGenerator.createPerformance(numShowtimes = datePerPerformance)
+            }
+
+            savePerformance(performances)
+
+            val actual = performanceRepository.getDateInfo(performances[0].uid)
+            actual.size shouldBe datePerPerformance
+            actual.map { it.uid } shouldContainAll performances[0].performanceDateTime.map { it.uid }
+        }
     }
 
 
     private fun savePerformance(performances: List<Performance>) {
-        regionRepository.save(performances[0].performancePlace.region)
-        placeRepository.save(performances[0].performancePlace)
-
         performances.forEach {
+            regionRepository.save(it.performancePlace.region)
+            placeRepository.save(it.performancePlace)
             performanceRepository.save(it)
         }
     }
