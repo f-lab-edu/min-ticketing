@@ -41,6 +41,7 @@
 ## 💡 Technical Issues
 
 ---
+- [공연 상세 조회 시 발생한 N + 1 문제를 해결하고, 확장성 있는 코드로 변경하기](https://flannel-dill-7dc.notion.site/N-1-ad7f7737e89e4ffba6866650f7925de6?pvs=4)
 - [테스트 코드 개선하기, TDD와 BDD의 관계](https://flannel-dill-7dc.notion.site/0d997311ea344437b6cae3cb63487d76?pvs=4)
 
 
