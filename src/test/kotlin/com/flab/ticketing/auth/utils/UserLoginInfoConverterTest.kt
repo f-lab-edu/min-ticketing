@@ -2,10 +2,10 @@ package com.flab.ticketing.auth.utils
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.auth.dto.UserLoginDto
+import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.InvalidValueException
-import com.flab.ticketing.auth.dto.UserLoginDto
-import com.flab.ticketing.auth.exception.UserErrorInfos
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
@@ -50,7 +50,7 @@ class UserLoginInfoConverterTest : UnitTest() {
                 userLoginInfoConverter.convert(inputStream, charSet)
             }
 
-            e.info shouldBeEqual UserErrorInfos.LOGIN_INFO_INVALID
+            e.info shouldBeEqual AuthErrorInfos.LOGIN_INFO_INVALID
         }
 
         "RequestBody가 아무것도 들어오지 않은 경우 InvalidValueException을 throw 한다." {
@@ -61,7 +61,7 @@ class UserLoginInfoConverterTest : UnitTest() {
                 userLoginInfoConverter.convert(inputStream, charSet)
             }
 
-            e.info shouldBeEqual UserErrorInfos.LOGIN_INFO_INVALID
+            e.info shouldBeEqual AuthErrorInfos.LOGIN_INFO_INVALID
         }
     }
 

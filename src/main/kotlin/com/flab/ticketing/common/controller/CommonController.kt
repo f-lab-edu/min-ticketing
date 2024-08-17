@@ -1,4 +1,4 @@
-package com.flab.ticketing.auth.controller
+package com.flab.ticketing.common.controller
 
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

@@ -1,4 +1,4 @@
-package com.flab.ticketing.auth.entity
+package com.flab.ticketing.user.entity
 
 import com.flab.ticketing.common.entity.BaseEntity
 import jakarta.persistence.Column

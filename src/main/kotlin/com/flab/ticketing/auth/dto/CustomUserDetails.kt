@@ -4,8 +4,10 @@ import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 class CustomUserDetails(
-    private val username: String,
+    val uid: String,
+    private val email: String,
     private val password: String,
+    val nickname: String,
     private val authorities: MutableCollection<out GrantedAuthority> = mutableListOf()
 ) : UserDetails {
 
@@ -18,6 +20,6 @@ class CustomUserDetails(
     }
 
     override fun getUsername(): String {
-        return username
+        return email
     }
 }
