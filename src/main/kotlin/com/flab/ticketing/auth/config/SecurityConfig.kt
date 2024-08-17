@@ -36,6 +36,7 @@ class SecurityConfig {
                 authorizedRequests
                     .requestMatchers("/api/user/new/**").permitAll()
                     .requestMatchers("/api/user/login").permitAll()
+                    .requestMatchers("/api/performances", "/api/performances/*").permitAll()
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
             .exceptionHandling { it.authenticationEntryPoint(authenticationEntryPoint) }

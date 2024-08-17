@@ -3,11 +3,16 @@ package com.flab.ticketing.common
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.ErrorResponse
 import com.flab.ticketing.common.exception.ErrorInfo
+import com.flab.ticketing.performance.repository.PerformancePlaceRepository
+import com.flab.ticketing.performance.repository.PerformanceRepository
+import com.flab.ticketing.performance.repository.RegionRepository
 import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
@@ -18,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
@@ -38,8 +44,7 @@ abstract class IntegrationTest : BehaviorSpec() {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
-
-
+    
     val greenMail = GreenMail(ServerSetupTest.SMTP_IMAP)
         .withConfiguration(
             GreenMailConfiguration
@@ -66,6 +71,7 @@ abstract class IntegrationTest : BehaviorSpec() {
         responseBody.code shouldBeEqual expectedCode
         responseBody.message shouldBeEqual expectedMessage
     }
+
 }
 
 
