@@ -604,6 +604,30 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
         }
+        given("공연 날짜 정보가 존재하지 않을 때") {
+
+            val user = UserTestDataGenerator.createUser()
+            userRepository.save(user)
+            val jwt = createJwt(user)
+
+            `when`("로그인한 유저가 잘못된 공연과, 공연 날짜 정보로 좌석 정보를 조회할 시") {
+                val invalidPerformanceId = "Per"
+                val invalidDateId = "date"
+
+                val uri = "/api/performances/$invalidPerformanceId/dates/$invalidDateId"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+                then("Not Found 상태 코드를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.NOT_FOUND, PerformanceErrorInfos.PERFORMANCE_NOT_FOUND)
+                }
+            }
+        }
+
     }
 
 
