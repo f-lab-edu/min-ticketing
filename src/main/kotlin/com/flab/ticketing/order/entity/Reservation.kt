@@ -10,13 +10,13 @@ import jakarta.persistence.*
 class Reservation(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_date_time_id")
-    private val performanceDateTime: PerformanceDateTime,
+    val performanceDateTime: PerformanceDateTime,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performance_seat_id")
-    private val seat: PerformancePlaceSeat,
+    val seat: PerformancePlaceSeat,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    private val order: Order
+    val order: Order
 ) : BaseEntity()

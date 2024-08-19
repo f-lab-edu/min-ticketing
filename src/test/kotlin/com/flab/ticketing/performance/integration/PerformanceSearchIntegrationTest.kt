@@ -29,6 +29,8 @@ import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -660,12 +662,15 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         super.afterEach(testCase, result)
 
         PerformanceTestDataGenerator.reset()
-        reservationRepository.deleteAll()
-        orderRepository.deleteAll()
-        userRepository.deleteAll()
-        performanceRepository.deleteAll()
-        placeRepository.deleteAll()
-        regionRepository.deleteAll()
+        withContext(Dispatchers.IO) {
+            reservationRepository.deleteAll()
+            orderRepository.deleteAll()
+            userRepository.deleteAll()
+            performanceRepository.deleteAll()
+            placeRepository.deleteAll()
+            regionRepository.deleteAll()
+        }
+
 
     }
 
@@ -723,7 +728,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         performanceDateTime: PerformanceDateTime
     ): PerformanceDateInfoResult {
         val seatInfos: MutableList<MutableList<PerformanceDateInfoResult.SeatInfo>> = mutableListOf()
-        val reservedSeatIds = reservations.map { it.id }
+        val reservedSeatIds = reservations.map { it.seat.id }
 
 
         val sortedSeats = seats.sortedWith { s1, s2 ->
