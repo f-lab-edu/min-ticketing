@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.dto.response.ErrorResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus

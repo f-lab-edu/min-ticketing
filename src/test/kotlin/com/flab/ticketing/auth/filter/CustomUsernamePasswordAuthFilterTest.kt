@@ -1,11 +1,11 @@
 package com.flab.ticketing.auth.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.exception.BadRequestException
-import com.flab.ticketing.auth.dto.UserLoginDto
+import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.auth.utils.UserLoginInfoConverter
+import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.common.exception.BadRequestException
 import io.kotest.assertions.throwables.shouldThrow
 import io.mockk.every
 import io.mockk.mockk
@@ -36,7 +36,7 @@ class CustomUsernamePasswordAuthFilterTest : UnitTest() {
             every { request.inputStream } returns mockk()
 
             every { request.characterEncoding } returns StandardCharsets.UTF_8.name()
-            every { userLoginInfoConverter.convert(any(), StandardCharsets.UTF_8) } returns UserLoginDto(
+            every { userLoginInfoConverter.convert(any(), StandardCharsets.UTF_8) } returns UserLoginRequest(
                 email,
                 userPW
             )

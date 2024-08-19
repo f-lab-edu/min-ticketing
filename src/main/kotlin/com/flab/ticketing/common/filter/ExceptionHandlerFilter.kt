@@ -1,7 +1,7 @@
 package com.flab.ticketing.common.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.ErrorInfo

@@ -3,10 +3,10 @@ package com.flab.ticketing.performance.service
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
-import com.flab.ticketing.performance.dto.PerformanceDateInfo
-import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
-import com.flab.ticketing.performance.dto.PerformanceDetailResponse
-import com.flab.ticketing.performance.dto.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
+import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
@@ -45,7 +45,7 @@ class PerformanceServiceTest : UnitTest() {
             )
 
             val givenDateInfos = performance.performanceDateTime.map {
-                PerformanceDateInfo(
+                PerformanceDateSummaryResult(
                     it.uid,
                     it.showTime,
                     performance.performancePlace.seats.size.toLong(),
@@ -113,7 +113,7 @@ class PerformanceServiceTest : UnitTest() {
             val actual =
                 performanceService.getPerformanceSeatInfo(performance.uid, performanceDateTime.uid)
 
-            val expectedSeats = mutableListOf<MutableList<PerformanceDateInfoResult.SeatInfo>>()
+            val expectedSeats = mutableListOf<MutableList<PerformanceDateDetailResponse.SeatInfo>>()
 
             performance.performancePlace.seats.sortedWith(
                 compareBy<PerformancePlaceSeat> { it.rowNum }
@@ -123,7 +123,7 @@ class PerformanceServiceTest : UnitTest() {
                     expectedSeats.add(mutableListOf())
                 }
                 expectedSeats[it.rowNum - 1].add(
-                    PerformanceDateInfoResult.SeatInfo(
+                    PerformanceDateDetailResponse.SeatInfo(
                         it.uid,
                         it.name,
                         reservatedUids.contains(it.uid)

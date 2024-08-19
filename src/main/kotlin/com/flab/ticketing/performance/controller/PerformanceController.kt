@@ -1,11 +1,11 @@
 package com.flab.ticketing.performance.controller
 
-import com.flab.ticketing.common.dto.CursorInfo
-import com.flab.ticketing.common.dto.CursoredResponse
-import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
-import com.flab.ticketing.performance.dto.PerformanceDetailResponse
-import com.flab.ticketing.performance.dto.PerformanceSearchConditions
-import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.common.dto.response.CursoredResponse
+import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
+import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.service.PerformanceService
 import org.springframework.web.bind.annotation.*
 
@@ -19,17 +19,17 @@ class PerformanceController(
 
     @GetMapping
     fun getList(
-        @ModelAttribute cursorInfo: CursorInfo,
+        @ModelAttribute cursorInfoDto: CursorInfoDto,
         @ModelAttribute searchConditions: PerformanceSearchConditions
-    ): CursoredResponse<PerformanceSearchResult> {
+    ): CursoredResponse<PerformanceSummarySearchResult> {
         val performances = performanceService.search(
-            CursorInfo(cursorInfo.cursor, cursorInfo.limit + 1),
+            CursorInfoDto(cursorInfoDto.cursor, cursorInfoDto.limit + 1),
             searchConditions
         )
 
-        if (performances.size == cursorInfo.limit + 1) {
+        if (performances.size == cursorInfoDto.limit + 1) {
             return CursoredResponse(
-                performances[cursorInfo.limit].uid,
+                performances[cursorInfoDto.limit].uid,
                 performances.dropLast(1)
             )
         }
@@ -48,7 +48,7 @@ class PerformanceController(
     fun getPerformanceDateSeatInfo(
         @PathVariable("performanceId") performanceUid: String,
         @PathVariable("dateId") dateUid: String
-    ): PerformanceDateInfoResult {
+    ): PerformanceDateDetailResponse {
         return performanceService.getPerformanceSeatInfo(
             performanceUid,
             dateUid

@@ -2,10 +2,10 @@ package com.flab.ticketing.performance.repository
 
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
-import com.flab.ticketing.common.dto.CursorInfo
-import com.flab.ticketing.performance.dto.PerformanceDateInfo
-import com.flab.ticketing.performance.dto.PerformanceSearchConditions
-import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
+import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.entity.Performance
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -45,7 +45,7 @@ class PerformanceRepositoryImplTest(
             savePerformance(performances)
 
             val cursorSize = 5
-            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(limit = cursorSize))
+            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfoDto(limit = cursorSize))
 
             val expected = createSearchExpectedOrderByIdDesc(performances)
 
@@ -63,7 +63,7 @@ class PerformanceRepositoryImplTest(
             savePerformance(performances)
 
             val limit = 5
-            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(limit = limit))
+            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfoDto(limit = limit))
 
             actual.size shouldBe limit
         }
@@ -88,7 +88,7 @@ class PerformanceRepositoryImplTest(
             val regionUid = gumiRegionPerformances[0].performancePlace.region.uid
             val actual = performanceRepository.search(
                 PerformanceSearchConditions(region = regionUid),
-                CursorInfo()
+                CursorInfoDto()
             )
 
             val expected = createSearchExpectedOrderByIdDesc(gumiRegionPerformances)
@@ -111,7 +111,7 @@ class PerformanceRepositoryImplTest(
             savePerformance(performances)
 
             val minPrice = 3000
-            val actual = performanceRepository.search(PerformanceSearchConditions(minPrice = minPrice), CursorInfo())
+            val actual = performanceRepository.search(PerformanceSearchConditions(minPrice = minPrice), CursorInfoDto())
 
             actual.size shouldBe 2
             actual.filterNotNull().map { it.uid } shouldContainAll listOf(
@@ -134,7 +134,7 @@ class PerformanceRepositoryImplTest(
             savePerformance(performances)
 
             val maxPrice = 3000
-            val actual = performanceRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), CursorInfo())
+            val actual = performanceRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), CursorInfoDto())
 
             actual.size shouldBe 2
 
@@ -179,7 +179,7 @@ class PerformanceRepositoryImplTest(
 
             val actual = performanceRepository.search(
                 PerformanceSearchConditions(showTime = searchShowTime),
-                CursorInfo()
+                CursorInfoDto()
             )
 
             actual.size shouldBe 1
@@ -199,7 +199,7 @@ class PerformanceRepositoryImplTest(
             )
             savePerformance(performances)
 
-            val actual = performanceRepository.search(PerformanceSearchConditions(q = "멋진"), CursorInfo())
+            val actual = performanceRepository.search(PerformanceSearchConditions(q = "멋진"), CursorInfoDto())
 
             val expected = createSearchExpectedOrderByIdDesc(performances.drop(1))
 
@@ -263,7 +263,7 @@ class PerformanceRepositoryImplTest(
                     performance1Price + 1000,
                     region.uid,
                     q = "공공"
-                ), CursorInfo()
+                ), CursorInfoDto()
             )
 
             actual.size shouldBe 1
@@ -283,7 +283,7 @@ class PerformanceRepositoryImplTest(
             val startIdx = 3
             val actual = performanceRepository.search(
                 PerformanceSearchConditions(),
-                CursorInfo(performances[startIdx].uid, limit)
+                CursorInfoDto(performances[startIdx].uid, limit)
             )
 
             val expected = List(limit) { idx -> performances[idx + startIdx].uid }
@@ -345,7 +345,7 @@ class PerformanceRepositoryImplTest(
             savePerformance(listOf(performance))
 
             val expected = performance.performanceDateTime.map {
-                PerformanceDateInfo(
+                PerformanceDateSummaryResult(
                     uid = it.uid,
                     showTime = it.showTime.withZoneSameInstant(ZoneOffset.ofHours(9)),
                     totalSeats = placeSeats.toLong(),
@@ -398,11 +398,11 @@ class PerformanceRepositoryImplTest(
         }
     }
 
-    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSearchResult> {
+    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSummarySearchResult> {
         val sorted = performances.sortedBy { it.id }.asReversed()
 
         return sorted.map {
-            PerformanceSearchResult(
+            PerformanceSummarySearchResult(
                 it.uid,
                 it.image,
                 it.name,

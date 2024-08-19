@@ -1,6 +1,10 @@
 package com.flab.ticketing.auth.controller
 
-import com.flab.ticketing.auth.dto.*
+import com.flab.ticketing.auth.dto.request.UserEmailRegisterRequest
+import com.flab.ticketing.auth.dto.request.UserEmailVerificationRequest
+import com.flab.ticketing.auth.dto.request.UserPasswordUpdateRequest
+import com.flab.ticketing.auth.dto.request.UserRegisterRequest
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.resolver.annotation.LoginUser
 import com.flab.ticketing.auth.service.AuthService
@@ -14,19 +18,19 @@ class AuthController(
     private val authService: AuthService
 ) {
     @PostMapping("/new/email")
-    fun emailSend(@Validated @RequestBody emailInfo: UserEmailRegisterDto) {
+    fun emailSend(@Validated @RequestBody emailInfo: UserEmailRegisterRequest) {
         authService.sendEmailVerifyCode(emailInfo.email)
     }
 
 
     @PostMapping("/new/email/verify")
-    fun verifyEmailCode(@Validated @RequestBody verifyInfo: UserEmailVerificationDto) {
+    fun verifyEmailCode(@Validated @RequestBody verifyInfo: UserEmailVerificationRequest) {
         authService.verifyEmailCode(verifyInfo.email, verifyInfo.code)
     }
 
 
     @PostMapping("/new/info")
-    fun saveVerifiedUserInfo(@Validated @RequestBody registerInfo: UserRegisterDto) {
+    fun saveVerifiedUserInfo(@Validated @RequestBody registerInfo: UserRegisterRequest) {
         if (!registerInfo.password.equals(registerInfo.passwordConfirm)) {
             throw InvalidValueException(AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
         }
@@ -37,7 +41,7 @@ class AuthController(
     @PatchMapping("/password")
     fun updatePassword(
         @LoginUser userInfo: AuthenticatedUserDto,
-        @Validated @RequestBody passwordUpdateDto: UserPasswordUpdateDto
+        @Validated @RequestBody passwordUpdateDto: UserPasswordUpdateRequest
     ) {
         if (!passwordUpdateDto.newPassword.equals(passwordUpdateDto.newPasswordConfirm)) {
             throw InvalidValueException(AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)

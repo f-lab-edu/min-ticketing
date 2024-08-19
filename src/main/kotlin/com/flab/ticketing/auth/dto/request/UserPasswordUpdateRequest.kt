@@ -1,8 +1,8 @@
-package com.flab.ticketing.auth.dto
+package com.flab.ticketing.auth.dto.request
 
 import jakarta.validation.constraints.Pattern
 
-data class UserPasswordUpdateDto(
+data class UserPasswordUpdateRequest(
     @field:Pattern(
         regexp = "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#\$%^&*])[A-Za-z0-9!@#\$%^&*]{8,}$"
     )

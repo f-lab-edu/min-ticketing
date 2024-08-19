@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.utils
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.auth.dto.UserLoginDto
+import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.exception.InvalidValueException
 import org.springframework.stereotype.Component
@@ -17,11 +17,11 @@ class UserLoginInfoConverter(
     private val objectMapper: ObjectMapper
 ) {
 
-    fun convert(inputStream: InputStream, charset: Charset): UserLoginDto {
+    fun convert(inputStream: InputStream, charset: Charset): UserLoginRequest {
         try {
             val reqBody = StreamUtils.copyToString(inputStream, charset)
 
-            return objectMapper.readValue(reqBody, UserLoginDto::class.java)
+            return objectMapper.readValue(reqBody, UserLoginRequest::class.java)
         } catch (e: JsonMappingException) {
             throw InvalidValueException(AuthErrorInfos.LOGIN_INFO_INVALID)
         } catch (e: IOException) {

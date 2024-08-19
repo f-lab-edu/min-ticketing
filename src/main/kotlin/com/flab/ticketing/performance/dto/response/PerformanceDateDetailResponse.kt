@@ -1,6 +1,6 @@
-package com.flab.ticketing.performance.dto
+package com.flab.ticketing.performance.dto.response
 
-data class PerformanceDateInfoResult(
+data class PerformanceDateDetailResponse(
     val dateUid: String,
     val pricePerSeat: Int,
     val seats: List<List<SeatInfo>>

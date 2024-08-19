@@ -1,9 +1,9 @@
-package com.flab.ticketing.auth.dto
+package com.flab.ticketing.auth.dto.service
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class CustomUserDetails(
+class CustomUserDetailsDto(
     val uid: String,
     private val email: String,
     private val password: String,

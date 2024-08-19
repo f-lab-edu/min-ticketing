@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.order.repository.ReservationRepository
-import com.flab.ticketing.performance.dto.PerformanceDateInfo
+import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,7 +15,7 @@ class PerformanceDateReader(
 ) {
 
 
-    fun getDateInfo(performanceUid: String): List<PerformanceDateInfo> {
+    fun getDateInfo(performanceUid: String): List<PerformanceDateSummaryResult> {
         return performanceRepository.getDateInfo(performanceUid)
     }
 

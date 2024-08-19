@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.performance.dto.PerformanceDateInfo
-import com.flab.ticketing.performance.dto.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.dsl.CustomPerformanceRepository
 import org.springframework.data.jpa.repository.Query
@@ -17,7 +17,7 @@ interface PerformanceRepository : CustomPerformanceRepository,
 
 
     @Query(
-        "SELECT new com.flab.ticketing.performance.dto.PerformanceDetailSearchResult(p.uid, p.image, p.name, r.name, pp.name, p.price, p.description) FROM Performance p " +
+        "SELECT new com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult(p.uid, p.image, p.name, r.name, pp.name, p.price, p.description) FROM Performance p " +
                 "JOIN p.performancePlace pp " +
                 "JOIN pp.region r " +
                 "WHERE p.uid = :uid"
@@ -34,7 +34,7 @@ interface PerformanceRepository : CustomPerformanceRepository,
                 "WHERE p.uid = :uid " +
                 "GROUP BY pd.uid"
     )
-    fun getDateInfo(@Param("uid") performanceUid: String): List<PerformanceDateInfo>
+    fun getDateInfo(@Param("uid") performanceUid: String): List<PerformanceDateSummaryResult>
 
 
     @Query(
@@ -44,5 +44,5 @@ interface PerformanceRepository : CustomPerformanceRepository,
                 "WHERE p.uid = :uid"
     )
     fun findPerformanceByUidJoinWithPlaceAndSeat(@Param("uid") uid: String): Performance?
-    
+
 }

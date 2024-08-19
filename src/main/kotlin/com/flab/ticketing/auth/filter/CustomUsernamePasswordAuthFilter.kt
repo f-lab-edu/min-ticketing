@@ -1,8 +1,8 @@
 package com.flab.ticketing.auth.filter
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.auth.dto.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.auth.utils.UserLoginInfoConverter
@@ -58,7 +58,7 @@ class CustomUsernamePasswordAuthFilter(
         authResult: Authentication
     ) {
         runCatching {
-            val userDetails = authResult.principal as CustomUserDetails
+            val userDetails = authResult.principal as CustomUserDetailsDto
             val jwt = jwtTokenProvider.sign(AuthenticatedUserDto.of(userDetails), userDetails.authorities)
 
             response.status = HttpServletResponse.SC_OK
