@@ -627,6 +627,31 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 }
             }
         }
+        given("공연 정보가 존재할 때 - 잘못된 날짜 고유 식별자") {
+            val performance = PerformanceTestDataGenerator.createPerformance(numShowtimes = 1)
+            savePerformance(listOf(performance))
+
+            val user = UserTestDataGenerator.createUser()
+            userRepository.save(user)
+            val jwt = createJwt(user)
+
+            `when`("공연 UID는 올바르나, 공연 날짜 UID가 공연에 속하지 않은 경우") {
+                val performanceUid = performance.uid
+                val invalidDateUid = "invalid"
+                val uri = "/api/performances/$performanceUid/dates/$invalidDateUid"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 BAD Request 오류를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
+                }
+            }
+        }
 
     }
 

@@ -1,6 +1,7 @@
 package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.dto.CursorInfo
+import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
@@ -54,6 +55,10 @@ class PerformanceService(
             performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performanceUid) ?: throw NotFoundException(
                 PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
             )
+
+        if (!performance.performanceDateTime.map { it.uid }.contains(performanceDateUid)) {
+            throw BadRequestException(PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
+        }
 
         val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateInfoResult.SeatInfo>>()
 

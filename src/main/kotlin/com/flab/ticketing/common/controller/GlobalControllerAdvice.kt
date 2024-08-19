@@ -17,7 +17,7 @@ class GlobalControllerAdvice {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.CONFLICT)
     }
 
-    @ExceptionHandler(InvalidValueException::class, BusinessIllegalStateException::class)
+    @ExceptionHandler(InvalidValueException::class, BusinessIllegalStateException::class, BadRequestException::class)
     fun handleBadRequestException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.BAD_REQUEST)
     }
