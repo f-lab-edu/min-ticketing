@@ -36,7 +36,7 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance List를 조회할 수 있다." {
-            val givenPerformanceCnt = 5;
+            val givenPerformanceCnt = 5
 
             val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = givenPerformanceCnt
@@ -44,7 +44,7 @@ class PerformanceRepositoryImplTest(
 
             savePerformance(performances)
 
-            val cursorSize = 5;
+            val cursorSize = 5
             val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(limit = cursorSize))
 
             val expected = createSearchExpectedOrderByIdDesc(performances)
@@ -87,8 +87,8 @@ class PerformanceRepositoryImplTest(
 
             val regionUid = gumiRegionPerformances[0].performancePlace.region.uid
             val actual = performanceRepository.search(
-                    PerformanceSearchConditions(region = regionUid),
-                    CursorInfo()
+                PerformanceSearchConditions(region = regionUid),
+                CursorInfo()
             )
 
             val expected = createSearchExpectedOrderByIdDesc(gumiRegionPerformances)
@@ -162,7 +162,7 @@ class PerformanceRepositoryImplTest(
             // 2023-1-1 10:00(Asia/Seoul) 공연 정보
             val performance2 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
-                showTimeStartDateTime =  ZonedDateTime.of(
+                showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
                     ZoneId.of("Asia/Seoul")
                 ),
@@ -187,7 +187,7 @@ class PerformanceRepositoryImplTest(
 
         }
 
-        "Performance를 공연 이름으로 필터링하여 조회할 수 있다."{
+        "Performance를 공연 이름으로 필터링하여 조회할 수 있다." {
             val givenNames = listOf("예쁜 공연", "멋진 공연", "아주 멋진 공연", "공연 멋진", "공멋진연")
 
             val region = PerformanceTestDataGenerator.createRegion()
@@ -279,21 +279,26 @@ class PerformanceRepositoryImplTest(
 
             performances = performances.asReversed()
 
-            val limit = 5;
-            val startIdx = 3;
-            val actual = performanceRepository.search(PerformanceSearchConditions(), CursorInfo(performances[startIdx].uid, limit))
+            val limit = 5
+            val startIdx = 3
+            val actual = performanceRepository.search(
+                PerformanceSearchConditions(),
+                CursorInfo(performances[startIdx].uid, limit)
+            )
 
-            val expected = List(limit){idx -> performances[idx + startIdx].uid}
+            val expected = List(limit) { idx -> performances[idx + startIdx].uid }
 
             actual.filterNotNull().map { it.uid } shouldContainExactly expected
         }
 
-        "Performance를 UID로 검색할 수 있다."{
+        "Performance를 UID로 검색할 수 있다." {
             val performance = PerformanceTestDataGenerator.createPerformance()
 
             savePerformance(listOf(performance))
 
-            val (uid, image, title, regionName, placeName, price, description) = performanceRepository.findByUid(performance.uid)!!
+            val (uid, image, title, regionName, placeName, price, description) = performanceRepository.findByUid(
+                performance.uid
+            )!!
 
             uid shouldBe performance.uid
             image shouldBe performance.image
@@ -304,7 +309,7 @@ class PerformanceRepositoryImplTest(
             description shouldBe performance.description
         }
 
-        "Performance를 UID로 검색할 시 UID에 해당하는 정보만 나온다."{
+        "Performance를 UID로 검색할 시 UID에 해당하는 정보만 나온다." {
             val performances = List(5) {
                 PerformanceTestDataGenerator.createPerformance()
             }
@@ -317,7 +322,7 @@ class PerformanceRepositoryImplTest(
 
         }
 
-        "Performance의 DateInfo를 검색할 수 있다."{
+        "Performance의 DateInfo를 검색할 수 있다." {
             val placeSeats = 10
 
             val showTimes = listOf(
@@ -354,7 +359,7 @@ class PerformanceRepositoryImplTest(
         }
 
 
-        "PerformanceDate를 UID로 검색할 시 해당 UID에 해당하는 Date정보만 조회한다."{
+        "PerformanceDate를 UID로 검색할 시 해당 UID에 해당하는 Date정보만 조회한다." {
             val datePerPerformance = 5
             val performances = List(2) {
                 PerformanceTestDataGenerator.createPerformance(numShowtimes = datePerPerformance)
@@ -365,6 +370,22 @@ class PerformanceRepositoryImplTest(
             val actual = performanceRepository.getDateInfo(performances[0].uid)
             actual.size shouldBe datePerPerformance
             actual.map { it.uid } shouldContainAll performances[0].performanceDateTime.map { it.uid }
+        }
+
+        "Performance를 UID로 FETCH JOIN해 검색할 수 있다." {
+            val performances = List(2) {
+                PerformanceTestDataGenerator.createPerformance()
+            }
+
+            savePerformance(performances)
+
+            val actual =
+                performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performances[0].uid)
+            val expected = performances[0]
+
+            actual!!.id shouldBe expected.id
+            actual.performancePlace.id shouldBe expected.performancePlace.id
+            actual.performancePlace.seats.map { it.uid } shouldContainAll expected.performancePlace.seats.map { it.uid }
         }
     }
 

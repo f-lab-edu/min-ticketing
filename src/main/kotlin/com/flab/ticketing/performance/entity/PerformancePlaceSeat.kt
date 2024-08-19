@@ -28,6 +28,7 @@ class PerformancePlaceSeat(
         initializeName()
     }
 
+    @PostLoad
     private fun initializeName() {
         val sb = StringBuilder()
         var n = rowNum

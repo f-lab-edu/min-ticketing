@@ -12,7 +12,7 @@ import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.repository.ReservationRepository
-import com.flab.ticketing.performance.dto.PerformanceDateInfoResponse
+import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.Performance
@@ -593,13 +593,13 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
                     val actual = objectMapper.readValue(
                         mvcResult.response.contentAsString,
-                        PerformanceDateInfoResponse::class.java
+                        PerformanceDateInfoResult::class.java
                     )
 
                     actual.dateUid shouldBeEqual expected.dateUid
                     actual.pricePerSeat shouldBeEqual expected.pricePerSeat
                     for (i in 0..<actual.seats.size) {
-                        actual.seats shouldContainExactly expected.seats[i]
+                        actual.seats[i] shouldContainExactly expected.seats[i]
                     }
                 }
             }
@@ -611,9 +611,12 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         super.afterEach(testCase, result)
 
         PerformanceTestDataGenerator.reset()
+        reservationRepository.deleteAll()
+        orderRepository.deleteAll()
         performanceRepository.deleteAll()
         placeRepository.deleteAll()
         regionRepository.deleteAll()
+
     }
 
     private fun savePerformance(performances: List<Performance>) {
@@ -668,8 +671,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         reservations: List<Reservation>,
         performance: Performance,
         performanceDateTime: PerformanceDateTime
-    ): PerformanceDateInfoResponse {
-        val seatInfos: MutableList<MutableList<PerformanceDateInfoResponse.SeatInfo>> = mutableListOf()
+    ): PerformanceDateInfoResult {
+        val seatInfos: MutableList<MutableList<PerformanceDateInfoResult.SeatInfo>> = mutableListOf()
         val reservedSeatIds = reservations.map { it.id }
 
 
@@ -686,7 +689,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 seatInfos.add(mutableListOf())
             }
             seatInfos[it.rowNum - 1].add(
-                PerformanceDateInfoResponse.SeatInfo(
+                PerformanceDateInfoResult.SeatInfo(
                     it.uid,
                     it.name,
                     reservedSeatIds.contains(it.id)
@@ -694,7 +697,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             )
         }
 
-        return PerformanceDateInfoResponse(
+        return PerformanceDateInfoResult(
             performanceDateTime.uid,
             performance.price,
             seatInfos

@@ -4,12 +4,15 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.PerformanceDateInfo
+import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
 import com.flab.ticketing.performance.dto.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -88,6 +91,52 @@ class PerformanceServiceTest : UnitTest() {
             }
 
             e.info shouldBe PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
+        }
+
+        "Performance Date의 좌석 정보를 조회할 수 있다." {
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 5)
+            )
+
+            val performanceDateTime = performance.performanceDateTime[0]
+            val reservatedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
+
+            every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
+            every {
+                performanceDateReader.getReservatedSeatUids(
+                    performance.performancePlace.id,
+                    performanceDateTime.uid
+                )
+            } returns reservatedUids
+
+
+            val actual =
+                performanceService.getPerformanceSeatInfo(performance.uid, performanceDateTime.uid)
+
+            val expectedSeats = mutableListOf<MutableList<PerformanceDateInfoResult.SeatInfo>>()
+
+            performance.performancePlace.seats.sortedWith(
+                compareBy<PerformancePlaceSeat> { it.rowNum }
+                    .thenBy { it.columnNum }
+            ).forEach {
+                if (expectedSeats.size <= it.rowNum - 1) {
+                    expectedSeats.add(mutableListOf())
+                }
+                expectedSeats[it.rowNum - 1].add(
+                    PerformanceDateInfoResult.SeatInfo(
+                        it.uid,
+                        it.name,
+                        reservatedUids.contains(it.uid)
+                    )
+                )
+            }
+
+            actual.dateUid shouldBeEqual performanceDateTime.uid
+            actual.pricePerSeat shouldBe performance.price
+
+            for (i in 0..<actual.seats.size) {
+                actual.seats[i] shouldContainExactly expectedSeats[i]
+            }
         }
 
     }
