@@ -15,14 +15,15 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 
-class PerformanceServiceTest : UnitTest(){
+class PerformanceServiceTest : UnitTest() {
 
-    private val performanceRepository : PerformanceRepository = mockk()
+    private val performanceRepository: PerformanceRepository = mockk()
     private val performanceDateReader: PerformanceDateReader = mockk()
-    private val performanceService : PerformanceService = PerformanceService(performanceRepository, performanceDateReader)
+    private val performanceService: PerformanceService =
+        PerformanceService(performanceRepository, performanceDateReader)
 
     init {
-        "Performance Detail 정보를 검색할 수 있다."{
+        "Performance Detail 정보를 검색할 수 있다." {
 
             val performance = PerformanceTestDataGenerator.createPerformance(
                 numShowtimes = 2
@@ -74,11 +75,11 @@ class PerformanceServiceTest : UnitTest(){
             actualPlace shouldBeEqual performance.performancePlace.name
             actualPrice shouldBeEqual performance.price
             actualDesc shouldBeEqual performance.description
-            actualDateInfo shouldContainAll  expectedDateInfo
+            actualDateInfo shouldContainAll expectedDateInfo
 
         }
 
-        "performance Detail 정보 조회 실패시 NotFoundException을 throw한다."{
+        "performance Detail 정보 조회 실패시 NotFoundException을 throw한다." {
 
             every { performanceRepository.findByUid(any()) } returns null
 

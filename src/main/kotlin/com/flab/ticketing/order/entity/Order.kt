@@ -8,19 +8,23 @@ import jakarta.persistence.*
 @Table(name = "orders")
 class Order(
     @Column(unique = true, updatable = false)
-    private val uid: String,
+    val uid: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ordered_user_id")
-    private val user: User,
+    val user: User,
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
-    private val reservations: List<Reservation> = mutableListOf(),
+    val reservations: MutableList<Reservation> = mutableListOf(),
 
     @Embedded
     val payment: Payment
 
 ) : BaseEntity() {
+
+    fun addReservation(reservation: Reservation) {
+        reservations.add(reservation)
+    }
 
 
     @Embeddable
