@@ -662,6 +662,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         PerformanceTestDataGenerator.reset()
         reservationRepository.deleteAll()
         orderRepository.deleteAll()
+        userRepository.deleteAll()
         performanceRepository.deleteAll()
         placeRepository.deleteAll()
         regionRepository.deleteAll()
