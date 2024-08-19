@@ -1,3 +1,13 @@
 package com.flab.ticketing.common.exception
 
-class DuplicatedException(override val info: ErrorInfo) : BusinessException(info)
+class DuplicatedException : BusinessException{
+    override val info: ErrorInfo
+
+    constructor(errorInfo: ErrorInfo) : super() {
+        this.info = errorInfo
+    }
+
+    constructor(errorInfo: ErrorInfo, cause: Throwable) : super(cause) {
+        this.info = errorInfo
+    }
+}
