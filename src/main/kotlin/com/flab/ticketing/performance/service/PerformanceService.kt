@@ -1,12 +1,12 @@
 package com.flab.ticketing.performance.service
 
-import com.flab.ticketing.common.dto.CursorInfo
+import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.NotFoundException
-import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
-import com.flab.ticketing.performance.dto.PerformanceDetailResponse
-import com.flab.ticketing.performance.dto.PerformanceSearchConditions
-import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
+import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceRepository
@@ -21,8 +21,11 @@ class PerformanceService(
     private val performanceDateReader: PerformanceDateReader
 ) {
 
-    fun search(cursorInfo: CursorInfo, searchConditions: PerformanceSearchConditions): List<PerformanceSearchResult> {
-        return performanceRepository.search(searchConditions, cursorInfo).filterNotNull()
+    fun search(
+        cursorInfoDto: CursorInfoDto,
+        searchConditions: PerformanceSearchConditions
+    ): List<PerformanceSummarySearchResult> {
+        return performanceRepository.search(searchConditions, cursorInfoDto).filterNotNull()
     }
 
     fun searchDetail(uid: String): PerformanceDetailResponse {
@@ -50,7 +53,7 @@ class PerformanceService(
         )
     }
 
-    fun getPerformanceSeatInfo(performanceUid: String, performanceDateUid: String): PerformanceDateInfoResult {
+    fun getPerformanceSeatInfo(performanceUid: String, performanceDateUid: String): PerformanceDateDetailResponse {
         val performance =
             performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performanceUid) ?: throw NotFoundException(
                 PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
@@ -60,7 +63,7 @@ class PerformanceService(
             throw BadRequestException(PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
         }
 
-        val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateInfoResult.SeatInfo>>()
+        val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateDetailResponse.SeatInfo>>()
 
         val dateSeatUids =
             performanceDateReader.getReservatedSeatUids(performance.performancePlace.id, performanceDateUid)
@@ -73,7 +76,7 @@ class PerformanceService(
                     orderedDateSeatInfo.add(mutableListOf())
                 }
                 orderedDateSeatInfo[it.rowNum - 1].add(
-                    PerformanceDateInfoResult.SeatInfo(
+                    PerformanceDateDetailResponse.SeatInfo(
                         it.uid,
                         it.name,
                         dateSeatUids.contains(it.uid)
@@ -81,7 +84,7 @@ class PerformanceService(
                 )
             }
 
-        return PerformanceDateInfoResult(
+        return PerformanceDateDetailResponse(
             performanceDateUid,
             performance.price,
             orderedDateSeatInfo

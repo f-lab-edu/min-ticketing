@@ -1,8 +1,8 @@
 package com.flab.ticketing.auth.integration
 
-import com.flab.ticketing.auth.dto.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.UserLoginDto
-import com.flab.ticketing.auth.dto.UserPasswordUpdateDto
+import com.flab.ticketing.auth.dto.request.UserLoginRequest
+import com.flab.ticketing.auth.dto.request.UserPasswordUpdateRequest
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.IntegrationTest
@@ -42,7 +42,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             `when`("알맞은 Email과 Password를 입력하여 로그인을 시도할 시") {
                 val uri = "/api/user/login"
 
-                val dto = objectMapper.writeValueAsString(UserLoginDto(email, userPW))
+                val dto = objectMapper.writeValueAsString(UserLoginRequest(email, userPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -71,7 +71,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             `when`("로그인 HTTP 메서드를 POST가 아닌 다른 메서드를 호출해 로그인을 시도한다면") {
                 val uri = "/api/user/login"
 
-                val dto = objectMapper.writeValueAsString(UserLoginDto(email, userPW))
+                val dto = objectMapper.writeValueAsString(UserLoginRequest(email, userPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
@@ -95,7 +95,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             `when`("비밀번호를 잘못 입력한 경우") {
                 val uri = "/api/user/login"
                 val invalidPW = "abcd1234!"
-                val dto = objectMapper.writeValueAsString(UserLoginDto(email, invalidPW))
+                val dto = objectMapper.writeValueAsString(UserLoginRequest(email, invalidPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -118,7 +118,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
                 val email = "invalid@email.com"
                 val userPW = "invalid1234!"
 
-                val dto = objectMapper.writeValueAsString(UserLoginDto(email, userPW))
+                val dto = objectMapper.writeValueAsString(UserLoginRequest(email, userPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -248,7 +248,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
                 val newUserPW = "abcd1234!"
 
-                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPW))
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateRequest(userPW, newUserPW, newUserPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.patch(uri)
@@ -281,7 +281,8 @@ class UserLoginIntegrationTest : IntegrationTest() {
                 val invalidCurrentPW = "abcde1234!"
                 val newUserPW = "abcd1234!"
 
-                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(invalidCurrentPW, newUserPW, newUserPW))
+                val dto =
+                    objectMapper.writeValueAsString(UserPasswordUpdateRequest(invalidCurrentPW, newUserPW, newUserPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.patch(uri)
@@ -309,7 +310,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             `when`("영문, 숫자, 특수문자를 포함한 8글자 조건을 만족하지 못한 새 비밀번호로 변경을 시도할 시") {
                 val uri = "/api/user/password"
                 val newUserPW = "invalid"
-                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPW))
+                val dto = objectMapper.writeValueAsString(UserPasswordUpdateRequest(userPW, newUserPW, newUserPW))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.patch(uri)
@@ -344,7 +345,8 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
                 val newUserPW = "abcd1234!"
                 val newUserPWConfirm = "abcde1234!"
-                val dto = objectMapper.writeValueAsString(UserPasswordUpdateDto(userPW, newUserPW, newUserPWConfirm))
+                val dto =
+                    objectMapper.writeValueAsString(UserPasswordUpdateRequest(userPW, newUserPW, newUserPWConfirm))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.patch(uri)

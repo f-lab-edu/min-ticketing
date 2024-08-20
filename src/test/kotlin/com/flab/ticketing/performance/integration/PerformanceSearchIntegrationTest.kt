@@ -1,20 +1,20 @@
 package com.flab.ticketing.performance.integration
 
-import com.flab.ticketing.auth.dto.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UserTestDataGenerator
-import com.flab.ticketing.common.dto.CursoredResponse
+import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.repository.ReservationRepository
-import com.flab.ticketing.performance.dto.PerformanceDateInfoResult
-import com.flab.ticketing.performance.dto.PerformanceDetailResponse
-import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
+import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
@@ -85,11 +85,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("정렬조건은 최신 등록 순으로, 5개의 공연 정보(1페이지)와 다음 공연의 커서를 받을 수 있다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -122,11 +122,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
 
                 then("cursor 정보는 NULL이고, 공연 정보가 존재하는 만큼 반환한다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -170,11 +170,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("필터링 된 공연 정보 리스트가 반환된다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -211,11 +211,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("특정 금액 이상의 공연만 검색된다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -252,11 +252,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("특정 금액 이하의 공연만 검색된다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -306,11 +306,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
 
                 then("특정 공연날짜가 포함된 공연만 반환한다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -348,11 +348,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
 
                 then("검색 공연 이름이 포함된 공연만 조회된다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -416,11 +416,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("모든 조건을 만족하는 공연 정보만이 조회된다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -454,11 +454,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("특정 커서 이상의 공연 정보를 조회한다.") {
-                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSearchResult>>(
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
                             CursoredResponse::class.java,
-                            PerformanceSearchResult::class.java
+                            PerformanceSummarySearchResult::class.java
                         )
                     )
 
@@ -595,7 +595,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
                     val actual = objectMapper.readValue(
                         mvcResult.response.contentAsString,
-                        PerformanceDateInfoResult::class.java
+                        PerformanceDateDetailResponse::class.java
                     )
 
                     actual.dateUid shouldBeEqual expected.dateUid
@@ -689,11 +689,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
     }
 
 
-    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSearchResult> {
+    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSummarySearchResult> {
         val sorted = performances.sortedBy { it.id }.asReversed()
 
         return sorted.map {
-            PerformanceSearchResult(
+            PerformanceSummarySearchResult(
                 it.uid,
                 it.image,
                 it.name,
@@ -726,8 +726,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         reservations: List<Reservation>,
         performance: Performance,
         performanceDateTime: PerformanceDateTime
-    ): PerformanceDateInfoResult {
-        val seatInfos: MutableList<MutableList<PerformanceDateInfoResult.SeatInfo>> = mutableListOf()
+    ): PerformanceDateDetailResponse {
+        val seatInfos: MutableList<MutableList<PerformanceDateDetailResponse.SeatInfo>> = mutableListOf()
         val reservedSeatIds = reservations.map { it.seat.id }
 
 
@@ -744,7 +744,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 seatInfos.add(mutableListOf())
             }
             seatInfos[it.rowNum - 1].add(
-                PerformanceDateInfoResult.SeatInfo(
+                PerformanceDateDetailResponse.SeatInfo(
                     it.uid,
                     it.name,
                     reservedSeatIds.contains(it.id)
@@ -752,7 +752,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             )
         }
 
-        return PerformanceDateInfoResult(
+        return PerformanceDateDetailResponse(
             performanceDateTime.uid,
             performance.price,
             seatInfos
@@ -762,7 +762,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
     private fun createJwt(user: User): String {
         return jwtTokenProvider.sign(
             AuthenticatedUserDto.of(
-                CustomUserDetails(
+                CustomUserDetailsDto(
                     user.uid,
                     user.email,
                     user.password,

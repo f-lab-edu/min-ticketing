@@ -1,15 +1,15 @@
 package com.flab.ticketing.auth.integration
 
-import com.flab.ticketing.auth.dto.UserEmailRegisterDto
-import com.flab.ticketing.auth.dto.UserEmailVerificationDto
-import com.flab.ticketing.auth.dto.UserRegisterDto
+import com.flab.ticketing.auth.dto.request.UserEmailRegisterRequest
+import com.flab.ticketing.auth.dto.request.UserEmailVerificationRequest
+import com.flab.ticketing.auth.dto.request.UserRegisterRequest
 import com.flab.ticketing.auth.entity.EmailVerifyInfo
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
-import com.flab.ticketing.user.entity.repository.UserRepository
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.user.entity.repository.UserRepository
 import io.kotest.data.forAll
 import io.kotest.data.row
 import io.kotest.matchers.equals.shouldBeEqual
@@ -40,7 +40,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
             `when`("이메일 인증 코드를 요청 시") {
                 val uri = "/api/user/new/email"
 
-                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(email))
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterRequest(email))
 
 
                 val mvcResult = mockMvc.perform(
@@ -75,7 +75,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
             `when`("이메일 인증 코드를 요청 시") {
                 val uri = "/api/user/new/email"
-                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(from))
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterRequest(from))
 
 
                 val mvcResult = mockMvc.perform(
@@ -104,7 +104,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
             `when`("이메일 인증 코드를 요청 시") {
                 val uri = "/api/user/new/email"
-                val dto = objectMapper.writeValueAsString(UserEmailRegisterDto(savedEmail))
+                val dto = objectMapper.writeValueAsString(UserEmailRegisterRequest(savedEmail))
 
 
                 val mvcResult = mockMvc.perform(
@@ -130,7 +130,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
             `when`("올바른 인증 코드를 가지고 검증 시도할 시") {
                 val uri = "/api/user/new/email/verify"
-                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationRequest(email, code))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -159,7 +159,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
             `when`("잘못된 인증 코드를 가지고 검증 시도할 시") {
                 val invalidCode = "AB1234"
-                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, invalidCode))
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationRequest(email, invalidCode))
                 val uri = "/api/user/new/email/verify"
 
                 val mvcResult = mockMvc.perform(
@@ -182,7 +182,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
             `when`("인증 코드를 검증 시도하면") {
                 val uri = "/api/user/new/email/verify"
-                val dto = objectMapper.writeValueAsString(UserEmailVerificationDto(email, code))
+                val dto = objectMapper.writeValueAsString(UserEmailVerificationRequest(email, code))
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -209,7 +209,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                 val userPW = "abc1234!"
                 val userPWConfirm = "abc1234!"
                 val nickname = "minturtle"
-                val dto = UserRegisterDto(
+                val dto = UserRegisterRequest(
                     email,
                     userPW,
                     userPWConfirm,
@@ -240,7 +240,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                 val userPW = "abc1234!"
                 val userPWConfirm = "1234abc!"
                 val nickname = "minturtle"
-                val dto = UserRegisterDto(
+                val dto = UserRegisterRequest(
                     email,
                     userPW,
                     userPWConfirm,
@@ -279,7 +279,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                     val uri = "/api/user/new/info"
 
                     val nickname = "minturtle"
-                    val dto = UserRegisterDto(
+                    val dto = UserRegisterRequest(
                         email,
                         userPW,
                         userPWConfirm,
@@ -316,7 +316,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                 val userPW = "abc1234!"
                 val userPWConfirm = "abc1234!"
                 val nickname = "minturtle"
-                val dto = UserRegisterDto(
+                val dto = UserRegisterRequest(
                     email,
                     userPW,
                     userPWConfirm,
@@ -348,7 +348,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
                 val userPW = "abc1234!"
                 val userPWConfirm = "abc1234!"
                 val nickname = "minturtle"
-                val dto = UserRegisterDto(
+                val dto = UserRegisterRequest(
                     email,
                     userPW,
                     userPWConfirm,

@@ -1,9 +1,9 @@
-package com.flab.ticketing.performance.dto
+package com.flab.ticketing.performance.dto.service
 
 import java.time.LocalDate
 import java.time.ZonedDateTime
 
-data class PerformanceSearchResult(
+data class PerformanceSummarySearchResult(
     val uid: String,
     val image: String,
     val title: String,

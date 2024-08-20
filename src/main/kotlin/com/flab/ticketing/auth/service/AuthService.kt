@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.auth.dto.UserRegisterDto
+import com.flab.ticketing.auth.dto.request.UserRegisterRequest
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.utils.EmailCodeGenerator
 import com.flab.ticketing.auth.utils.EmailSender
@@ -56,7 +56,7 @@ class AuthService(
 
 
     @Transactional
-    fun saveVerifiedUserInfo(registerInfo: UserRegisterDto) {
+    fun saveVerifiedUserInfo(registerInfo: UserRegisterRequest) {
         emailVerifier.checkVerified(registerInfo.email)
 
         val uid = nanoIdGenerator.createNanoId()

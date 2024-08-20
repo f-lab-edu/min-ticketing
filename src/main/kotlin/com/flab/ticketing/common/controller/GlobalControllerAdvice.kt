@@ -1,6 +1,6 @@
 package com.flab.ticketing.common.controller
 
-import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
