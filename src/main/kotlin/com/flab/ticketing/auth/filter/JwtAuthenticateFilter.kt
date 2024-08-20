@@ -46,7 +46,7 @@ class JwtAuthenticateFilter(
                 is ExpiredJwtException -> throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_EXPIRED)
                 is JwtException -> throw UnAuthorizedException(AuthErrorInfos.AUTH_INFO_INVALID)
                 is BusinessException -> throw e
-                else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
+                else -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR, e)
             }
         }
 

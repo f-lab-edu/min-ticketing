@@ -64,7 +64,7 @@ class CustomUsernamePasswordAuthFilter(
             response.status = HttpServletResponse.SC_OK
             response.addHeader(HttpHeaders.AUTHORIZATION, jwt)
         }.onFailure {
-            throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
+            throw InternalServerException(CommonErrorInfos.SERVICE_ERROR, it)
         }
     }
 
