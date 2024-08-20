@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
+import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.dsl.CustomPerformanceRepository
 import org.springframework.data.jpa.repository.Query
@@ -26,7 +26,7 @@ interface PerformanceRepository : CustomPerformanceRepository,
 
 
     @Query(
-        "SELECT new com.flab.ticketing.performance.dto.PerformanceDateInfo(pd.uid, pd.showTime, count(ss), count(rs.seat)) FROM Performance p " +
+        "SELECT new com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult(pd.uid, pd.showTime, count(ss), count(rs.seat)) FROM Performance p " +
                 "JOIN p.performanceDateTime pd " +
                 "JOIN p.performancePlace pp " +
                 "JOIN pp.seats ss " +
