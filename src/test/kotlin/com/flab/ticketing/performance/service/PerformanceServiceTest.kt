@@ -17,6 +17,7 @@ import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import java.time.ZonedDateTime
 
 class PerformanceServiceTest : UnitTest() {
 
@@ -109,13 +110,15 @@ class PerformanceServiceTest : UnitTest() {
 
 
             val performance = PerformanceTestDataGenerator.createPerformance(
-                place = place
+                place = place,
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
 
             val performanceDateTime = performance.performanceDateTime[0]
             val reservatedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
 
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
+
             every {
                 performanceDateReader.getReservatedSeatUids(
                     performance.performancePlace.id,
@@ -123,6 +126,9 @@ class PerformanceServiceTest : UnitTest() {
                 )
             } returns reservatedUids
 
+            every {
+                performanceDateReader.findByUid(performanceDateTime.uid)
+            } returns performanceDateTime
 
             val actual =
                 performanceService.getPerformanceSeatInfo(performance.uid, performanceDateTime.uid)

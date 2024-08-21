@@ -3,9 +3,9 @@ package com.flab.ticketing.performance.service
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
-import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
@@ -58,17 +58,40 @@ class PerformanceService(
             performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performanceUid) ?: throw NotFoundException(
                 PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
             )
+        val performanceDateTime = performanceDateReader.findByUid(performanceDateUid)
 
-        if (!performance.performanceDateTime.map { it.uid }.contains(performanceDateUid)) {
+        if (performanceDateTime?.performance != performance) {
             throw BadRequestException(PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
         }
+        if (performanceDateTime.isExpired()) {
+            throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
+        }
 
-        val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateDetailResponse.SeatInfo>>()
 
-        val dateSeatUids =
+        val reservatedSeatUidList =
             performanceDateReader.getReservatedSeatUids(performance.performancePlace.id, performanceDateUid)
 
-        performance.performancePlace.seats.sortedWith(
+        val seatTable = createSeatTable(
+            performanceSeats = performance.performancePlace.seats,
+            reservatedSeatUidList = reservatedSeatUidList
+        )
+
+
+        return PerformanceDateDetailResponse(
+            performanceDateUid,
+            performance.price,
+            seatTable
+        )
+    }
+
+
+    private fun createSeatTable(
+        performanceSeats: List<PerformancePlaceSeat>,
+        reservatedSeatUidList: List<String>
+    ): List<List<PerformanceDateDetailResponse.SeatInfo>> {
+        val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateDetailResponse.SeatInfo>>()
+
+        performanceSeats.sortedWith(
             compareBy<PerformancePlaceSeat> { it.rowNum }
                 .thenBy { it.columnNum })
             .forEach {
@@ -79,16 +102,10 @@ class PerformanceService(
                     PerformanceDateDetailResponse.SeatInfo(
                         it.uid,
                         it.name,
-                        dateSeatUids.contains(it.uid)
+                        reservatedSeatUidList.contains(it.uid)
                     )
                 )
             }
-
-        return PerformanceDateDetailResponse(
-            performanceDateUid,
-            performance.price,
-            orderedDateSeatInfo
-        )
+        return orderedDateSeatInfo
     }
-
 }

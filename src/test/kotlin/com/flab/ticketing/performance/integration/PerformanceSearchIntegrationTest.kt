@@ -560,7 +560,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
             val performance = PerformanceTestDataGenerator.createPerformance(
                 place = place,
-                numShowtimes = 2
+                numShowtimes = 2,
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
             val performanceDate = performance.performanceDateTime[0]
 
@@ -689,6 +690,37 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
                 then("400 BAD Request 오류를 반환한다.") {
                     checkError(mvcResult, HttpStatus.BAD_REQUEST, PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
+                }
+            }
+        }
+
+
+        given("이미 지난 공연 정보가 존재할 때") {
+
+            val performances = PerformanceTestDataGenerator.createPerformancesDatesIn(
+                dateIn = listOf(ZonedDateTime.of(LocalDateTime.MIN, ZoneId.of("Asia/Seoul"))),
+                numShowtimes = 1
+            )
+            val performance = performances[0]
+            val performanceDateTime = performance.performanceDateTime[0]
+            savePerformance(performances)
+
+            val user = UserTestDataGenerator.createUser()
+            userRepository.save(user)
+            val jwt = createJwt(user)
+
+            `when`("로그인한 사용자가 이미 지난 공연의 좌석 정보를 조회할 시") {
+                val uri = "/api/performances/${performance.uid}/dates/${performanceDateTime.uid}"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 BAD Request를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
                 }
             }
         }

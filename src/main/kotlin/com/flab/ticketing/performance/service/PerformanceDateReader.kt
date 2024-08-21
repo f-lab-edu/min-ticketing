@@ -2,6 +2,8 @@ package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.order.repository.ReservationRepository
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
+import com.flab.ticketing.performance.entity.PerformanceDateTime
+import com.flab.ticketing.performance.repository.PerformanceDateRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -11,9 +13,9 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PerformanceDateReader(
     private val performanceRepository: PerformanceRepository,
-    private val reservationRepository: ReservationRepository
+    private val reservationRepository: ReservationRepository,
+    private val performanceDateRepository: PerformanceDateRepository
 ) {
-
 
     fun getDateInfo(performanceUid: String): List<PerformanceDateSummaryResult> {
         return performanceRepository.getDateInfo(performanceUid)
@@ -22,4 +24,9 @@ class PerformanceDateReader(
     fun getReservatedSeatUids(performancePlaceId: Long, dateUid: String): List<String> {
         return reservationRepository.findReservatedSeatUids(performancePlaceId, dateUid)
     }
+
+    fun findByUid(uid: String): PerformanceDateTime? {
+        return performanceDateRepository.findByUid(uid)
+    }
+
 }
