@@ -19,7 +19,7 @@ class PerformanceDateTime(
 
     ) : BaseEntity() {
 
-    fun isExpired(time: ZonedDateTime = ZonedDateTime.now()): Boolean {
+    fun isExpired(time: ZonedDateTime): Boolean {
         return showTime.isBefore(time)
     }
 

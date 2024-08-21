@@ -3,13 +3,15 @@ package com.flab.ticketing.performance.service
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.order.service.reader.ReservationReader
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.performance.repository.PerformanceRepository
+import com.flab.ticketing.performance.service.reader.PerformanceReader
+import com.flab.ticketing.performance.service.verifier.PerformanceVerifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -21,10 +23,11 @@ import java.time.ZonedDateTime
 
 class PerformanceServiceTest : UnitTest() {
 
-    private val performanceRepository: PerformanceRepository = mockk()
-    private val performanceDateReader: PerformanceDateReader = mockk()
+    private val performanceVerifier: PerformanceVerifier = mockk()
+    private val performanceReader: PerformanceReader = mockk()
+    private val reservationReader: ReservationReader = mockk()
     private val performanceService: PerformanceService =
-        PerformanceService(performanceRepository, performanceDateReader)
+        PerformanceService(performanceVerifier, performanceReader, reservationReader)
 
     init {
         "Performance Detail 정보를 검색할 수 있다." {
@@ -54,8 +57,8 @@ class PerformanceServiceTest : UnitTest() {
                 )
             }
 
-            every { performanceRepository.findByUid(performance.uid) } returns givenPerformanceInfo
-            every { performanceDateReader.getDateInfo(performance.uid) } returns givenDateInfos
+            every { performanceReader.findPerformanceDetailDto(performance.uid) } returns givenPerformanceInfo
+            every { performanceReader.findDateSummaryDto(performance.uid) } returns givenDateInfos
 
             val (actualUid, actualImage, actualTitle, actualRegion, actualPlace, actualPrice, actualDesc, actualDateInfo) = performanceService.searchDetail(
                 performance.uid
@@ -85,7 +88,9 @@ class PerformanceServiceTest : UnitTest() {
 
         "performance Detail 정보 조회 실패시 NotFoundException을 throw한다." {
 
-            every { performanceRepository.findByUid(any()) } returns null
+            every { performanceReader.findPerformanceDetailDto(any()) } throws NotFoundException(
+                PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
+            )
 
             val e = shouldThrow<NotFoundException> {
                 performanceService.searchDetail("uid")
@@ -117,17 +122,18 @@ class PerformanceServiceTest : UnitTest() {
             val performanceDateTime = performance.performanceDateTime[0]
             val reservatedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
 
-            every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
-
+            every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
+            every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
             every {
-                performanceDateReader.getReservatedSeatUids(
+                reservationReader.findReservateUidInPlace(
                     performance.performancePlace.id,
                     performanceDateTime.uid
                 )
             } returns reservatedUids
+            every { performanceVerifier.checkIsExpired(any(), any()) } returns Unit
 
             every {
-                performanceDateReader.findByUid(performanceDateTime.uid)
+                performanceReader.findDateEntityByUid(performanceDateTime.uid)
             } returns performanceDateTime
 
             val actual =

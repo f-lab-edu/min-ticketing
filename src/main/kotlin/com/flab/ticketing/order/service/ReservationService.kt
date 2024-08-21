@@ -1,15 +1,13 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.common.exception.DuplicatedException
-import com.flab.ticketing.common.exception.InvalidValueException
-import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
-import com.flab.ticketing.order.repository.CartRepository
-import com.flab.ticketing.order.repository.ReservationRepository
-import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.performance.repository.PerformanceDateRepository
-import com.flab.ticketing.performance.repository.PerformanceRepository
+import com.flab.ticketing.order.service.reader.ReservationReader
+import com.flab.ticketing.order.service.writer.CartWriter
+import com.flab.ticketing.performance.service.reader.PerformanceReader
+import com.flab.ticketing.performance.service.verifier.PerformanceVerifier
+import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.service.reader.UserReader
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
@@ -18,10 +16,10 @@ import org.springframework.stereotype.Service
 @Service
 class ReservationService(
     private val userReader: UserReader,
-    private val reservationRepository: ReservationRepository,
-    private val performanceRepository: PerformanceRepository,
-    private val performanceDateRepository: PerformanceDateRepository,
-    private val cartRepository: CartRepository
+    private val reservationReader: ReservationReader,
+    private val performanceReader: PerformanceReader,
+    private val performanceVerifier: PerformanceVerifier,
+    private val cartWriter: CartWriter
 ) {
 
     fun reservate(
@@ -31,35 +29,29 @@ class ReservationService(
         seatUid: String
     ) {
         val user = userReader.findByUid(userUid)
+        val performance = performanceReader.findPerformanceEntityByUidJoinWithPlace(performanceUid)
+        val performanceDateTime = performanceReader.findDateEntityByUid(dateUid)
 
-        val performance =
-            performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performanceUid)
-                ?: throw NotFoundException(PerformanceErrorInfos.PERFORMANCE_NOT_FOUND)
+        performanceVerifier.checkDateTimeInPerformance(performance, performanceDateTime)
+        performanceVerifier.checkIsSeatInPlace(performance.performancePlace, seatUid)
 
-        val performanceDateTime = performanceDateRepository.findByUid(dateUid)
-            ?: throw NotFoundException(PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
-
-        // performance에 performanceDate가 속했는지 검증
-        if (performanceDateTime.performance != performance) {
-            throw InvalidValueException(PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
-        }
-
-        // performancePlace에 seat가 속했는지 검증
-        if (!performance.performancePlace.seats.map { it.uid }.contains(seatUid)) {
-            throw InvalidValueException(PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID)
-        }
-
-        // 예약이 존재하는지 확인
-        if (reservationRepository.findReservationBySeatUidAndDateUid(seatUid, dateUid) != null) {
+        if (reservationReader.isReservateExists(seatUid, dateUid)) {
             throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVATED)
         }
 
+        saveProcess(user, dateUid, seatUid)
+    }
+
+
+    private fun saveProcess(
+        user: User,
+        dateUid: String,
+        seatUid: String
+    ) {
         try {
-            cartRepository.save(Cart(seatUid, dateUid, user))
+            cartWriter.save(Cart(seatUid, dateUid, user))
         } catch (e: DataIntegrityViolationException) {
             throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVATED)
         }
-
     }
-
 }
