@@ -17,7 +17,7 @@ import com.flab.ticketing.order.repository.ReservationRepository
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceDateRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.service.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -28,13 +28,13 @@ import org.springframework.dao.DataIntegrityViolationException
 class ReservationServiceTest : UnitTest() {
     private val performanceRepository: PerformanceRepository = mockk()
     private val performanceDateRepository: PerformanceDateRepository = mockk()
-    private val userRepository: UserRepository = mockk()
+    private val userReader: UserReader = mockk()
     private val cartRepository: CartRepository = mockk()
     private val reservationRepository: ReservationRepository = mockk()
 
     private val reservationService =
         ReservationService(
-            userRepository,
+            userReader,
             reservationRepository,
             performanceRepository,
             performanceDateRepository,
@@ -49,7 +49,7 @@ class ReservationServiceTest : UnitTest() {
             val seatUid = performance.performancePlace.seats[0].uid
 
 
-            every { userRepository.findByUid(user.uid) } returns user
+            every { userReader.findByUid(user.uid) } returns user
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
             every { performanceDateRepository.findByUid(performanceDateTime.uid) } returns performanceDateTime
             every { cartRepository.save(any()) } returns Unit
@@ -73,7 +73,7 @@ class ReservationServiceTest : UnitTest() {
             val dateUid = "date001"
             val seatUid = "seat001"
 
-            every { userRepository.findByUid(userUid) } returns null
+            every { userReader.findByUid(userUid) } throws UnAuthorizedException(AuthErrorInfos.USER_INFO_NOT_FOUND)
 
             val e = shouldThrow<UnAuthorizedException> {
                 reservationService.reservate(userUid, performanceUid, dateUid, seatUid)
@@ -88,7 +88,7 @@ class ReservationServiceTest : UnitTest() {
             val dateUid = "date001"
             val seatUid = "seat001"
 
-            every { userRepository.findByUid(user.uid) } returns user
+            every { userReader.findByUid(user.uid) } returns user
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performanceUid) } returns null
 
             val e = shouldThrow<NotFoundException> {
@@ -104,7 +104,7 @@ class ReservationServiceTest : UnitTest() {
             val dateUid = "date001"
             val seatUid = "seat001"
 
-            every { userRepository.findByUid(user.uid) } returns user
+            every { userReader.findByUid(user.uid) } returns user
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
             every { performanceDateRepository.findByUid(dateUid) } returns null
 
@@ -122,7 +122,7 @@ class ReservationServiceTest : UnitTest() {
             val seatUid = "invalidUid"
 
 
-            every { userRepository.findByUid(user.uid) } returns user
+            every { userReader.findByUid(user.uid) } returns user
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
             every { performanceDateRepository.findByUid(performanceDateTime.uid) } returns performanceDateTime
 
@@ -145,7 +145,7 @@ class ReservationServiceTest : UnitTest() {
                 OrderTestDataGenerator.createOrder(user = user)
             )
 
-            every { userRepository.findByUid(user.uid) } returns user
+            every { userReader.findByUid(user.uid) } returns user
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
             every { performanceDateRepository.findByUid(performanceDateTime.uid) } returns performanceDateTime
             every { cartRepository.save(any()) } returns Unit
@@ -170,7 +170,7 @@ class ReservationServiceTest : UnitTest() {
             val seatUid = performance.performancePlace.seats[0].uid
 
 
-            every { userRepository.findByUid(user.uid) } returns user
+            every { userReader.findByUid(user.uid) } returns user
             every { performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performance.uid) } returns performance
             every { performanceDateRepository.findByUid(performanceDateTime.uid) } returns performanceDateTime
             every { cartRepository.save(any()) } returns Unit
@@ -182,7 +182,7 @@ class ReservationServiceTest : UnitTest() {
             } returns null
             every { cartRepository.save(any()) } throws DataIntegrityViolationException("중복!")
 
-            
+
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
             }

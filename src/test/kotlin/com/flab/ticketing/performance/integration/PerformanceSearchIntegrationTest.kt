@@ -21,7 +21,7 @@ import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainExactly

@@ -1,10 +1,8 @@
 package com.flab.ticketing.order.service
 
-import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
-import com.flab.ticketing.common.exception.UnAuthorizedException
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
@@ -12,14 +10,14 @@ import com.flab.ticketing.order.repository.ReservationRepository
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceDateRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.service.reader.UserReader
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 
 
 @Service
 class ReservationService(
-    private val userRepository: UserRepository,
+    private val userReader: UserReader,
     private val reservationRepository: ReservationRepository,
     private val performanceRepository: PerformanceRepository,
     private val performanceDateRepository: PerformanceDateRepository,
@@ -32,7 +30,7 @@ class ReservationService(
         dateUid: String,
         seatUid: String
     ) {
-        val user = userRepository.findByUid(userUid) ?: throw UnAuthorizedException(AuthErrorInfos.USER_INFO_NOT_FOUND)
+        val user = userReader.findByUid(userUid)
 
         val performance =
             performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performanceUid)
