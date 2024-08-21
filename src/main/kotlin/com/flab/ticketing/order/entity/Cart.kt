@@ -1,5 +1,6 @@
 package com.flab.ticketing.order.entity
 
+import com.flab.ticketing.common.entity.BaseEntity
 import com.flab.ticketing.user.entity.User
 import jakarta.persistence.*
 
@@ -13,14 +14,10 @@ import jakarta.persistence.*
     )]
 )
 class Cart(
-
-    @Id @GeneratedValue
-    val id: Long,
-
     val seatUid: String,
     val dateUid: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     val user: User,
-)
+) : BaseEntity()
