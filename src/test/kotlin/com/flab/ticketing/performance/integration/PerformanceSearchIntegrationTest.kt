@@ -9,15 +9,13 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.order.entity.Order
-import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.repository.ReservationRepository
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
-import com.flab.ticketing.performance.entity.PerformanceDateTime
-import com.flab.ticketing.performance.entity.PerformancePlaceSeat
+import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
@@ -545,14 +543,23 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
 
         given("공연 정보가 존재할 때") {
-            val placeSeatCnt = 10
+            val place = PerformancePlace(PerformanceTestDataGenerator.createRegion(), "장소")
+            val seatRowColumn = listOf(
+                1 to 1,
+                1 to 2,
+                2 to 1,
+                2 to 2,
+                3 to 1
+            )
+
+            seatRowColumn.forEachIndexed { index, (row, col) ->
+                place.addSeat("seat$index", row, col)
+            }
 
             val user = UserTestDataGenerator.createUser()
 
             val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(
-                    numSeats = placeSeatCnt
-                ),
+                place = place,
                 numShowtimes = 2
             )
             val performanceDate = performance.performanceDateTime[0]
@@ -585,11 +592,42 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andReturn()
 
                 then("해당 공연 날짜의 좌석 정보들을 반환한다.") {
-                    val expected = createDateSeatInfoExpected(
-                        performance.performancePlace.seats,
-                        reservations,
-                        performance,
-                        performanceDate
+                    val expected = PerformanceDateDetailResponse(
+                        performanceDate.uid,
+                        performance.price,
+                        listOf(
+                            listOf(
+                                PerformanceDateDetailResponse.SeatInfo(
+                                    place.seats[0].uid,
+                                    place.seats[0].name,
+                                    true
+                                ),
+                                PerformanceDateDetailResponse.SeatInfo(
+                                    place.seats[1].uid,
+                                    place.seats[1].name,
+                                    true
+                                )
+                            ),
+                            listOf(
+                                PerformanceDateDetailResponse.SeatInfo(
+                                    place.seats[2].uid,
+                                    place.seats[2].name,
+                                    true
+                                ),
+                                PerformanceDateDetailResponse.SeatInfo(
+                                    place.seats[3].uid,
+                                    place.seats[3].name,
+                                    false
+                                )
+                            ),
+                            listOf(
+                                PerformanceDateDetailResponse.SeatInfo(
+                                    place.seats[4].uid,
+                                    place.seats[4].name,
+                                    false
+                                )
+                            )
+                        )
                     )
 
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
@@ -721,43 +759,6 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         )
     }
 
-    private fun createDateSeatInfoExpected(
-        seats: List<PerformancePlaceSeat>,
-        reservations: List<Reservation>,
-        performance: Performance,
-        performanceDateTime: PerformanceDateTime
-    ): PerformanceDateDetailResponse {
-        val seatInfos: MutableList<MutableList<PerformanceDateDetailResponse.SeatInfo>> = mutableListOf()
-        val reservedSeatIds = reservations.map { it.seat.id }
-
-
-        val sortedSeats = seats.sortedWith { s1, s2 ->
-            if (s1.rowNum == s2.rowNum) {
-                return@sortedWith s1.columnNum - s2.columnNum
-            }
-
-            s1.rowNum - s2.rowNum
-        }
-
-        sortedSeats.forEach {
-            if (seatInfos.size <= it.rowNum - 1) {
-                seatInfos.add(mutableListOf())
-            }
-            seatInfos[it.rowNum - 1].add(
-                PerformanceDateDetailResponse.SeatInfo(
-                    it.uid,
-                    it.name,
-                    reservedSeatIds.contains(it.id)
-                )
-            )
-        }
-
-        return PerformanceDateDetailResponse(
-            performanceDateTime.uid,
-            performance.price,
-            seatInfos
-        )
-    }
 
     private fun createJwt(user: User): String {
         return jwtTokenProvider.sign(
