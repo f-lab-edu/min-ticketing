@@ -12,13 +12,7 @@ import java.time.ZonedDateTime
 
 @Component
 class PerformanceVerifier {
-
-    fun checkDateTimeInPerformance(performance: Performance, performanceDateTime: PerformanceDateTime) {
-        if (performanceDateTime.performance != performance) {
-            throw BadRequestException(PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
-        }
-    }
-
+    
     fun checkIsExpired(performanceDateTime: PerformanceDateTime, compareTime: ZonedDateTime = ZonedDateTime.now()) {
         if (performanceDateTime.isExpired(compareTime)) {
             throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)

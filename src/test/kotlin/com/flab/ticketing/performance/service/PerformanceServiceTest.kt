@@ -123,7 +123,6 @@ class PerformanceServiceTest : UnitTest() {
             val reservedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
 
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
-            every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
             every {
                 reservationReader.findReserveUidInPlace(
                     performance.performancePlace.id,
