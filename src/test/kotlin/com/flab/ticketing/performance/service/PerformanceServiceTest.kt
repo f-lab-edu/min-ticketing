@@ -36,7 +36,7 @@ class PerformanceServiceTest : UnitTest() {
                 numShowtimes = 2
             )
 
-            val reservatedSeats = 2L
+            val reservedSeats = 2L
 
             val givenPerformanceInfo = PerformanceDetailSearchResult(
                 uid = performance.uid,
@@ -53,7 +53,7 @@ class PerformanceServiceTest : UnitTest() {
                     it.uid,
                     it.showTime,
                     performance.performancePlace.seats.size.toLong(),
-                    reservatedSeats
+                    reservedSeats
                 )
             }
 
@@ -70,7 +70,7 @@ class PerformanceServiceTest : UnitTest() {
                     it.uid,
                     it.showTime.toLocalDateTime(),
                     totalSeatSize,
-                    totalSeatSize - reservatedSeats
+                    totalSeatSize - reservedSeats
                 )
             }
 
@@ -120,16 +120,16 @@ class PerformanceServiceTest : UnitTest() {
             )
 
             val performanceDateTime = performance.performanceDateTime[0]
-            val reservatedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
+            val reservedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
 
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
             every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
             every {
-                reservationReader.findReservateUidInPlace(
+                reservationReader.findReserveUidInPlace(
                     performance.performancePlace.id,
                     performanceDateTime.uid
                 )
-            } returns reservatedUids
+            } returns reservedUids
             every { performanceVerifier.checkIsExpired(any(), any()) } returns Unit
 
             every {

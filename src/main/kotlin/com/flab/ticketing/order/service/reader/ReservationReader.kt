@@ -11,11 +11,11 @@ class ReservationReader(
     private val reservationRepository: ReservationRepository
 ) {
 
-    fun findReservateUidInPlace(performancePlaceId: Long, dateUid: String): List<String> {
-        return reservationRepository.findReservatedSeatUids(performancePlaceId, dateUid)
+    fun findReserveUidInPlace(performancePlaceId: Long, dateUid: String): List<String> {
+        return reservationRepository.findReservedSeatUids(performancePlaceId, dateUid)
     }
 
-    fun isReservateExists(seatUid: String, dateUid: String): Boolean {
+    fun isReservationExists(seatUid: String, dateUid: String): Boolean {
         return reservationRepository.findReservationBySeatUidAndDateUid(seatUid, dateUid)?.let { true } ?: false
     }
 }

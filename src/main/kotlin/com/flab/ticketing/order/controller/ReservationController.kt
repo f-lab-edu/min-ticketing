@@ -15,13 +15,13 @@ class ReservationController(
 
     @PostMapping("/{performanceUid}/dates/{dateUid}/seats/{seatUid}")
     @ResponseStatus(HttpStatus.CREATED)
-    fun reservate(
+    fun reserve(
         @LoginUser user: AuthenticatedUserDto,
         @PathVariable performanceUid: String,
         @PathVariable dateUid: String,
         @PathVariable seatUid: String
     ) {
-        reservationService.reservate(
+        reservationService.reserve(
             user.uid,
             performanceUid,
             dateUid,

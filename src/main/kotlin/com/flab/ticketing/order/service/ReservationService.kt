@@ -22,7 +22,7 @@ class ReservationService(
     private val cartWriter: CartWriter
 ) {
 
-    fun reservate(
+    fun reserve(
         userUid: String,
         performanceUid: String,
         dateUid: String,
@@ -34,8 +34,8 @@ class ReservationService(
 
         performanceVerifier.checkIsSeatInPlace(performance.performancePlace, seatUid)
 
-        if (reservationReader.isReservateExists(seatUid, dateUid)) {
-            throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVATED)
+        if (reservationReader.isReservationExists(seatUid, dateUid)) {
+            throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)
         }
 
         saveProcess(user, dateUid, seatUid)
@@ -50,7 +50,7 @@ class ReservationService(
         try {
             cartWriter.save(Cart(seatUid, dateUid, user))
         } catch (e: DataIntegrityViolationException) {
-            throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVATED)
+            throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)
         }
     }
 }

@@ -53,12 +53,12 @@ class PerformanceService(
         performanceVerifier.checkDateTimeInPerformance(performance, performanceDateTime)
         performanceVerifier.checkIsExpired(performanceDateTime)
 
-        val reservatedSeatUidList =
-            reservationReader.findReservateUidInPlace(performance.performancePlace.id, performanceDateUid)
+        val reservedSeatUidList =
+            reservationReader.findReserveUidInPlace(performance.performancePlace.id, performanceDateUid)
 
         val seatTable = createSeatTable(
             performanceSeats = performance.performancePlace.seats,
-            reservatedSeatUidList = reservatedSeatUidList
+            reservedSeatUidList = reservedSeatUidList
         )
 
         return PerformanceDateDetailResponse(
@@ -71,7 +71,7 @@ class PerformanceService(
 
     private fun createSeatTable(
         performanceSeats: List<PerformancePlaceSeat>,
-        reservatedSeatUidList: List<String>
+        reservedSeatUidList: List<String>
     ): List<List<PerformanceDateDetailResponse.SeatInfo>> {
         val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateDetailResponse.SeatInfo>>()
 
@@ -86,7 +86,7 @@ class PerformanceService(
                     PerformanceDateDetailResponse.SeatInfo(
                         it.uid,
                         it.name,
-                        reservatedSeatUidList.contains(it.uid)
+                        reservedSeatUidList.contains(it.uid)
                     )
                 )
             }
@@ -99,7 +99,7 @@ class PerformanceService(
                 it.uid,
                 it.showTime.toLocalDateTime(),
                 it.totalSeats,
-                it.totalSeats - it.reservatedSeats
+                it.totalSeats - it.reservedSeats
             )
         }
     }

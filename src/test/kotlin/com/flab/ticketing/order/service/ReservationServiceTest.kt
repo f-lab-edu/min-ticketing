@@ -56,12 +56,12 @@ class ReservationServiceTest : UnitTest() {
                 )
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
-            every { reservationReader.isReservateExists(seatUid, performanceDateTime.uid) } returns false
+            every { reservationReader.isReservationExists(seatUid, performanceDateTime.uid) } returns false
             every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
             every { performanceVerifier.checkIsSeatInPlace(any(), any()) } returns Unit
 
 
-            reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
+            reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
 
             verify { cartWriter.save(Cart(seatUid, performanceDateTime.uid, user)) }
 
@@ -76,7 +76,7 @@ class ReservationServiceTest : UnitTest() {
             every { userReader.findByUid(userUid) } throws UnAuthorizedException(AuthErrorInfos.USER_INFO_NOT_FOUND)
 
             val e = shouldThrow<UnAuthorizedException> {
-                reservationService.reservate(userUid, performanceUid, dateUid, seatUid)
+                reservationService.reserve(userUid, performanceUid, dateUid, seatUid)
             }
 
             e.info shouldBe AuthErrorInfos.USER_INFO_NOT_FOUND
@@ -94,7 +94,7 @@ class ReservationServiceTest : UnitTest() {
             )
 
             val e = shouldThrow<NotFoundException> {
-                reservationService.reservate(user.uid, performanceUid, dateUid, seatUid)
+                reservationService.reserve(user.uid, performanceUid, dateUid, seatUid)
             }
 
             e.info shouldBe PerformanceErrorInfos.PERFORMANCE_NOT_FOUND
@@ -113,7 +113,7 @@ class ReservationServiceTest : UnitTest() {
             )
 
             val e = shouldThrow<NotFoundException> {
-                reservationService.reservate(user.uid, performance.uid, dateUid, seatUid)
+                reservationService.reserve(user.uid, performance.uid, dateUid, seatUid)
             }
 
             e.info shouldBe PerformanceErrorInfos.PERFORMANCE_DATE_NOT_FOUND
@@ -140,7 +140,7 @@ class ReservationServiceTest : UnitTest() {
 
 
             val e = shouldThrow<InvalidValueException> {
-                reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
+                reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
             }
 
             e.info shouldBe PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID
@@ -163,16 +163,16 @@ class ReservationServiceTest : UnitTest() {
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every {
-                reservationReader.isReservateExists(seatUid, performanceDateTime.uid)
+                reservationReader.isReservationExists(seatUid, performanceDateTime.uid)
             } returns true
             every { performanceVerifier.checkIsSeatInPlace(any(), any()) } returns Unit
             every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
 
             val e = shouldThrow<DuplicatedException> {
-                reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
+                reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
             }
 
-            e.info shouldBe OrderErrorInfos.ALREADY_RESERVATED
+            e.info shouldBe OrderErrorInfos.ALREADY_RESERVED
         }
 
         "예약시 이미 저장된 Cart가 존재한다면  DuplicatedException을 throw한다." {
@@ -192,17 +192,17 @@ class ReservationServiceTest : UnitTest() {
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every {
-                reservationReader.isReservateExists(seatUid, performanceDateTime.uid)
+                reservationReader.isReservationExists(seatUid, performanceDateTime.uid)
             } returns false
             every { cartWriter.save(any()) } throws DataIntegrityViolationException("중복!")
             every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
             every { performanceVerifier.checkIsSeatInPlace(any(), any()) } returns Unit
 
             val e = shouldThrow<DuplicatedException> {
-                reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
+                reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
             }
 
-            e.info shouldBe OrderErrorInfos.ALREADY_RESERVATED
+            e.info shouldBe OrderErrorInfos.ALREADY_RESERVED
 
         }
     }
