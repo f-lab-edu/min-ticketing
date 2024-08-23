@@ -4,6 +4,8 @@ import com.flab.ticketing.auth.entity.EmailVerifyInfo
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.common.exception.BusinessIllegalStateException
+import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.exception.NotFoundException
 import org.springframework.stereotype.Component
 import kotlin.jvm.optionals.getOrNull
 
@@ -17,21 +19,18 @@ class EmailVerifier(
         emailVerifyInfoRepository.save(EmailVerifyInfo(email, code))
     }
 
-    fun getCode(email: String): String? {
-        val verifyInfoOptional = getVerifyCodeEntity(email) ?: return null
+    fun verifyCode(email: String, code: String) {
+        val verifyInfo =
+            getVerifyCodeEntity(email) ?: throw NotFoundException(AuthErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND)
 
-        return verifyInfoOptional.code
-    }
-
-    fun setVerifySuccess(email: String) {
-        val verifyInfo = getVerifyCodeEntity(email) ?: return
+        if (verifyInfo.code != code) {
+            throw InvalidValueException(AuthErrorInfos.EMAIL_VERIFYCODE_INVALID)
+        }
 
         verifyInfo.isVerified = true
         emailVerifyInfoRepository.save(verifyInfo)
-
-
     }
-
+    
     private fun getVerifyCodeEntity(email: String): EmailVerifyInfo? {
         val verifyInfoOptional = emailVerifyInfoRepository.findById(email)
 

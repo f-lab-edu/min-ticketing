@@ -21,7 +21,7 @@ import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainExactly
@@ -688,8 +688,8 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("400 BAD Request 오류를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, PerformanceErrorInfos.INVALID_PERFORMANCE_DATE)
+                then("404 Not Found 오류를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.NOT_FOUND, PerformanceErrorInfos.PERFORMANCE_DATE_NOT_FOUND)
                 }
             }
         }

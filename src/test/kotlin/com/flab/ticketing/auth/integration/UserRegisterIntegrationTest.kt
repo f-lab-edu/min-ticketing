@@ -9,7 +9,7 @@ import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
 import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.data.forAll
 import io.kotest.data.row
 import io.kotest.matchers.equals.shouldBeEqual
@@ -376,6 +376,9 @@ class UserRegisterIntegrationTest : IntegrationTest() {
 
         afterContainer {
             greenMail.reset()
+        }
+
+        afterEach {
             userRepository.deleteAll()
         }
 

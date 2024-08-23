@@ -14,7 +14,7 @@ class Order(
     @JoinColumn(name = "ordered_user_id")
     val user: User,
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "order", cascade = [CascadeType.ALL])
     val reservations: MutableList<Reservation> = mutableListOf(),
 
     @Embedded

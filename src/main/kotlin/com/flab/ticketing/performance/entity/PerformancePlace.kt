@@ -2,6 +2,8 @@ package com.flab.ticketing.performance.entity
 
 import com.flab.ticketing.common.entity.BaseEntity
 import com.flab.ticketing.common.entity.Region
+import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import jakarta.persistence.*
 
 
@@ -25,6 +27,12 @@ class PerformancePlace(
     ) {
         val seat = PerformancePlaceSeat(uid, row, column, this)
         this.seats.add(seat)
+    }
+
+    fun checkSeatIn(seatUid: String) {
+        if (!seats.map { it.uid }.contains(seatUid)) {
+            throw InvalidValueException(PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID)
+        }
     }
 
 }
