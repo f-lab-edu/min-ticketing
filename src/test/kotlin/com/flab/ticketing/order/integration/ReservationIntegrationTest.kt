@@ -7,6 +7,7 @@ import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.order.dto.response.CartListResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
@@ -20,6 +21,7 @@ import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +31,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class ReservationIntegrationTest : IntegrationTest() {
@@ -163,6 +166,71 @@ class ReservationIntegrationTest : IntegrationTest() {
                 }
             }
         }
+
+        given("장바구니의 요소가 존재할 때") {
+            val user = UserTestDataGenerator.createUser()
+            userRepository.save(user)
+
+            val performance = PerformanceTestDataGenerator.createPerformance()
+            val performanceDateTime = performance.performanceDateTime[0]
+
+            val carts = listOf(
+                Cart(
+                    uid = "cart001",
+                    user = user,
+                    seat = performance.performancePlace.seats[0],
+                    performanceDateTime = performanceDateTime
+                ),
+
+                Cart(
+                    uid = "cart002",
+                    user = user,
+                    seat = performance.performancePlace.seats[1],
+                    performanceDateTime = performanceDateTime
+                )
+            )
+
+            savePerformance(listOf(performance))
+            cartRepository.saveAll(carts)
+            val jwt = createJwt(user)
+            `when`("장바구니를 조회할 시") {
+                val uri = "/api/orders/carts"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("자신이 담은 장바구니를 반환한다.") {
+                    val actual =
+                        objectMapper.readValue(mvcResult.response.contentAsString, CartListResponse::class.java)
+                    val expected = CartListResponse(
+                        listOf(
+                            CartListResponse.CartInfo(
+                                "cart001",
+                                performanceDateTime.showTime.withZoneSameInstant(ZoneOffset.UTC),
+                                performance.name,
+                                performance.price,
+                                performance.performancePlace.seats[0].name
+                            ),
+                            CartListResponse.CartInfo(
+                                "cart002",
+                                performanceDateTime.showTime.withZoneSameInstant(ZoneOffset.UTC),
+                                performance.name,
+                                performance.price,
+                                performance.performancePlace.seats[1].name
+                            ),
+                        )
+                    )
+
+                    mvcResult.response.status shouldBe HttpStatus.OK.value()
+                    actual.data shouldContainAll expected.data
+                }
+            }
+        }
+
     }
 
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {

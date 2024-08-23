@@ -11,6 +11,9 @@ interface CartRepository : JpaRepository<Cart, Long> {
 
     fun save(cart: Cart)
 
+    @Query("SELECT c FROM Cart c WHERE c.user.uid = :userUid")
+    fun findByUserUid(@Param("userUid") userUid: String): List<Cart>
+
     @Query("SELECT c FROM Cart c WHERE c.performanceDateTime.uid = :dateUid AND c.seat.uid = :seatUid")
     fun findByDateUidAndSeatUid(@Param("dateUid") dateUid: String, @Param("seatUid") seatUid: String): Cart?
 }

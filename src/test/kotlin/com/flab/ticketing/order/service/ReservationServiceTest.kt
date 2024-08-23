@@ -11,6 +11,7 @@ import com.flab.ticketing.common.exception.UnAuthorizedException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
+import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
@@ -27,6 +28,7 @@ class ReservationServiceTest : UnitTest() {
 
     private val performanceReader: PerformanceReader = mockk()
     private val userReader: UserReader = mockk()
+    private val cartReader: CartReader = mockk()
     private val cartWriter: CartWriter = mockk()
     private val reservationReader: ReservationReader = mockk()
     private val nanoIdGenerator: NanoIdGenerator = mockk()
@@ -37,6 +39,7 @@ class ReservationServiceTest : UnitTest() {
             userReader,
             reservationReader,
             performanceReader,
+            cartReader,
             cartWriter,
             nanoIdGenerator
         )
@@ -212,5 +215,4 @@ class ReservationServiceTest : UnitTest() {
 
         }
     }
-
 }
