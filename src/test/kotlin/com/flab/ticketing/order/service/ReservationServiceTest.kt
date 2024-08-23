@@ -49,7 +49,12 @@ class ReservationServiceTest : UnitTest() {
 
             every { userReader.findByUid(user.uid) } returns user
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
-            every { performanceReader.findDateEntityByUid(performanceDateTime.uid) } returns performanceDateTime
+            every {
+                performanceReader.findDateEntityByUid(
+                    performance.uid,
+                    performanceDateTime.uid
+                )
+            } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every { reservationReader.isReservateExists(seatUid, performanceDateTime.uid) } returns false
             every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
@@ -103,7 +108,7 @@ class ReservationServiceTest : UnitTest() {
 
             every { userReader.findByUid(user.uid) } returns user
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
-            every { performanceReader.findDateEntityByUid(dateUid) } throws NotFoundException(
+            every { performanceReader.findDateEntityByUid(performance.uid, dateUid) } throws NotFoundException(
                 PerformanceErrorInfos.PERFORMANCE_DATE_NOT_FOUND
             )
 
@@ -122,7 +127,12 @@ class ReservationServiceTest : UnitTest() {
 
             every { userReader.findByUid(user.uid) } returns user
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
-            every { performanceReader.findDateEntityByUid(performanceDateTime.uid) } returns performanceDateTime
+            every {
+                performanceReader.findDateEntityByUid(
+                    performance.uid,
+                    performanceDateTime.uid
+                )
+            } returns performanceDateTime
             every { performanceVerifier.checkDateTimeInPerformance(any(), any()) } returns Unit
             every { performanceVerifier.checkIsSeatInPlace(any(), any()) } throws InvalidValueException(
                 PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID
@@ -145,7 +155,12 @@ class ReservationServiceTest : UnitTest() {
 
             every { userReader.findByUid(user.uid) } returns user
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
-            every { performanceReader.findDateEntityByUid(performanceDateTime.uid) } returns performanceDateTime
+            every {
+                performanceReader.findDateEntityByUid(
+                    performance.uid,
+                    performanceDateTime.uid
+                )
+            } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every {
                 reservationReader.isReservateExists(seatUid, performanceDateTime.uid)
@@ -169,7 +184,12 @@ class ReservationServiceTest : UnitTest() {
 
             every { userReader.findByUid(user.uid) } returns user
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
-            every { performanceReader.findDateEntityByUid(performanceDateTime.uid) } returns performanceDateTime
+            every {
+                performanceReader.findDateEntityByUid(
+                    performance.uid,
+                    performanceDateTime.uid
+                )
+            } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every {
                 reservationReader.isReservateExists(seatUid, performanceDateTime.uid)

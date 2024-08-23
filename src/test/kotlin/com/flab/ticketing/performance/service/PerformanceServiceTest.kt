@@ -133,7 +133,7 @@ class PerformanceServiceTest : UnitTest() {
             every { performanceVerifier.checkIsExpired(any(), any()) } returns Unit
 
             every {
-                performanceReader.findDateEntityByUid(performanceDateTime.uid)
+                performanceReader.findDateEntityByUid(performance.uid, performanceDateTime.uid)
             } returns performanceDateTime
 
             val actual =

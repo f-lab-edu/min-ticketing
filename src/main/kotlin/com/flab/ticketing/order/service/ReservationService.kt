@@ -30,9 +30,8 @@ class ReservationService(
     ) {
         val user = userReader.findByUid(userUid)
         val performance = performanceReader.findPerformanceEntityByUidJoinWithPlace(performanceUid)
-        val performanceDateTime = performanceReader.findDateEntityByUid(dateUid)
+        performanceReader.findDateEntityByUid(performanceUid, dateUid)
 
-        performanceVerifier.checkDateTimeInPerformance(performance, performanceDateTime)
         performanceVerifier.checkIsSeatInPlace(performance.performancePlace, seatUid)
 
         if (reservationReader.isReservateExists(seatUid, dateUid)) {

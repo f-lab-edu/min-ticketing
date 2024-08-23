@@ -48,7 +48,7 @@ class PerformanceService(
 
     fun getPerformanceSeatInfo(performanceUid: String, performanceDateUid: String): PerformanceDateDetailResponse {
         val performance = performanceReader.findPerformanceEntityByUidJoinWithPlace(performanceUid)
-        val performanceDateTime = performanceReader.findDateEntityByUid(performanceDateUid)
+        val performanceDateTime = performanceReader.findDateEntityByUid(performanceUid, performanceDateUid)
 
         performanceVerifier.checkDateTimeInPerformance(performance, performanceDateTime)
         performanceVerifier.checkIsExpired(performanceDateTime)
