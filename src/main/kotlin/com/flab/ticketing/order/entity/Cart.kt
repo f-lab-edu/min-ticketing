@@ -9,7 +9,7 @@ import jakarta.persistence.*
 @Table(
     name = "carts",
     uniqueConstraints = [UniqueConstraint(
-        name = "reservate_unique",
+        name = "ux_seat_uid_date_uid",
         columnNames = ["seat_uid", "date_uid"]
     )]
 )
