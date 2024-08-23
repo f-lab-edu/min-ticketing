@@ -9,7 +9,6 @@ import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.service.reader.PerformanceReader
-import com.flab.ticketing.performance.service.verifier.PerformanceVerifier
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class PerformanceService(
-    private val performanceVerifier: PerformanceVerifier,
     private val performanceReader: PerformanceReader,
     private val reservationReader: ReservationReader
 ) {

@@ -6,7 +6,6 @@ import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.service.reader.ReservationReader
 import com.flab.ticketing.order.service.writer.CartWriter
 import com.flab.ticketing.performance.service.reader.PerformanceReader
-import com.flab.ticketing.performance.service.verifier.PerformanceVerifier
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.service.reader.UserReader
 import org.springframework.dao.DataIntegrityViolationException
@@ -18,7 +17,6 @@ class ReservationService(
     private val userReader: UserReader,
     private val reservationReader: ReservationReader,
     private val performanceReader: PerformanceReader,
-    private val performanceVerifier: PerformanceVerifier,
     private val cartWriter: CartWriter
 ) {
 
@@ -30,9 +28,9 @@ class ReservationService(
     ) {
         val user = userReader.findByUid(userUid)
         val performance = performanceReader.findPerformanceEntityByUidJoinWithPlace(performanceUid)
+        
         performanceReader.findDateEntityByUid(performanceUid, dateUid)
-
-        performanceVerifier.checkIsSeatInPlace(performance.performancePlace, seatUid)
+        performance.performancePlace.checkSeatIn(seatUid)
 
         if (reservationReader.isReservationExists(seatUid, dateUid)) {
             throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)

@@ -11,7 +11,6 @@ import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.service.reader.PerformanceReader
-import com.flab.ticketing.performance.service.verifier.PerformanceVerifier
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
@@ -23,11 +22,10 @@ import java.time.ZonedDateTime
 
 class PerformanceServiceTest : UnitTest() {
 
-    private val performanceVerifier: PerformanceVerifier = mockk()
     private val performanceReader: PerformanceReader = mockk()
     private val reservationReader: ReservationReader = mockk()
     private val performanceService: PerformanceService =
-        PerformanceService(performanceVerifier, performanceReader, reservationReader)
+        PerformanceService(performanceReader, reservationReader)
 
     init {
         "Performance Detail 정보를 검색할 수 있다." {

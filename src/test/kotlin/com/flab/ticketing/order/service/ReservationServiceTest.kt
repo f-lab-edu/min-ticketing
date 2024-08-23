@@ -14,7 +14,6 @@ import com.flab.ticketing.order.service.reader.ReservationReader
 import com.flab.ticketing.order.service.writer.CartWriter
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.service.reader.PerformanceReader
-import com.flab.ticketing.performance.service.verifier.PerformanceVerifier
 import com.flab.ticketing.user.service.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
@@ -28,14 +27,12 @@ class ReservationServiceTest : UnitTest() {
     private val userReader: UserReader = mockk()
     private val cartWriter: CartWriter = mockk()
     private val reservationReader: ReservationReader = mockk()
-    private val performanceVerifier: PerformanceVerifier = mockk()
 
     private val reservationService =
         ReservationService(
             userReader,
             reservationReader,
             performanceReader,
-            performanceVerifier,
             cartWriter
         )
 
@@ -57,7 +54,6 @@ class ReservationServiceTest : UnitTest() {
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every { reservationReader.isReservationExists(seatUid, performanceDateTime.uid) } returns false
-            every { performanceVerifier.checkIsSeatInPlace(any(), any()) } returns Unit
 
 
             reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
@@ -132,9 +128,6 @@ class ReservationServiceTest : UnitTest() {
                     performanceDateTime.uid
                 )
             } returns performanceDateTime
-            every { performanceVerifier.checkIsSeatInPlace(any(), any()) } throws InvalidValueException(
-                PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID
-            )
 
 
             val e = shouldThrow<InvalidValueException> {
@@ -163,7 +156,6 @@ class ReservationServiceTest : UnitTest() {
             every {
                 reservationReader.isReservationExists(seatUid, performanceDateTime.uid)
             } returns true
-            every { performanceVerifier.checkIsSeatInPlace(any(), any()) } returns Unit
 
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
@@ -192,7 +184,6 @@ class ReservationServiceTest : UnitTest() {
                 reservationReader.isReservationExists(seatUid, performanceDateTime.uid)
             } returns false
             every { cartWriter.save(any()) } throws DataIntegrityViolationException("중복!")
-            every { performanceVerifier.checkIsSeatInPlace(any(), any()) } returns Unit
 
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
