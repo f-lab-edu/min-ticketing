@@ -88,8 +88,9 @@ class ReservationIntegrationTest : IntegrationTest() {
                     val actual = cartRepository.findByDateUidAndSeatUid(performanceDateTime.uid, reserveSeat.uid)
 
                     actual!!.user shouldBeEqual user
-                    actual.dateUid shouldBeEqual performanceDateTime.uid
-                    actual.seatUid shouldBeEqual reserveSeat.uid
+
+                    actual.performanceDateTime shouldBeEqual performanceDateTime
+                    actual.seat shouldBeEqual reserveSeat
                 }
             }
         }
@@ -106,7 +107,8 @@ class ReservationIntegrationTest : IntegrationTest() {
 
             savePerformance(listOf(performance))
             userRepository.save(user)
-            cartRepository.save(Cart(reservedSeat.uid, performanceDateTime.uid, user))
+            cartRepository.save(Cart("cart001", reservedSeat, performanceDateTime, user))
+
 
             val jwt = createJwt(user)
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {

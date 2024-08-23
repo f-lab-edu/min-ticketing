@@ -29,10 +29,11 @@ class PerformancePlace(
         this.seats.add(seat)
     }
 
-    fun checkSeatIn(seatUid: String) {
-        if (!seats.map { it.uid }.contains(seatUid)) {
-            throw InvalidValueException(PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID)
-        }
+    fun findSeatIn(seatUid: String): PerformancePlaceSeat {
+        val seat = seats.find { it.uid == seatUid }
+            ?: throw InvalidValueException(PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID)
+
+        return seat
     }
 
 }
