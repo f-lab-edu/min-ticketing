@@ -1,4 +1,4 @@
-package com.flab.ticketing.performance.service.reader
+package com.flab.ticketing.performance.repository.reader
 
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.NotFoundException

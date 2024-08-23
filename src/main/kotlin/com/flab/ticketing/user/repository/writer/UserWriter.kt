@@ -1,4 +1,4 @@
-package com.flab.ticketing.user.service.writer
+package com.flab.ticketing.user.repository.writer
 
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository

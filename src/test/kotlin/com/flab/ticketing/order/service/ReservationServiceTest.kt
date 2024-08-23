@@ -10,11 +10,11 @@ import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.common.exception.UnAuthorizedException
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
-import com.flab.ticketing.order.service.reader.ReservationReader
-import com.flab.ticketing.order.service.writer.CartWriter
+import com.flab.ticketing.order.repository.reader.ReservationReader
+import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.performance.service.reader.PerformanceReader
-import com.flab.ticketing.user.service.reader.UserReader
+import com.flab.ticketing.performance.repository.reader.PerformanceReader
+import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import io.mockk.every

@@ -7,11 +7,10 @@ import com.flab.ticketing.auth.utils.EmailSender
 import com.flab.ticketing.auth.utils.EmailVerifier
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
-import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.service.reader.UserReader
-import com.flab.ticketing.user.service.writer.UserWriter
+import com.flab.ticketing.user.repository.reader.UserReader
+import com.flab.ticketing.user.repository.writer.UserWriter
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -59,7 +58,7 @@ class AuthService(
     @Transactional
     fun updatePassword(email: String, currentPassword: String, newPassword: String) {
         val user = userReader.findByEmail(email)
-        
+
         if (!passwordEncoder.matches(currentPassword, user.password)) {
             throw InvalidValueException(AuthErrorInfos.PASSWORD_INVALID)
         }

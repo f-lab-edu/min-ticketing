@@ -5,7 +5,7 @@ import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.UnAuthorizedException
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.service.reader.UserReader
+import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.fail
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe

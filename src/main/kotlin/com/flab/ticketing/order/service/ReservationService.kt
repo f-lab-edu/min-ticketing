@@ -3,11 +3,11 @@ package com.flab.ticketing.order.service
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
-import com.flab.ticketing.order.service.reader.ReservationReader
-import com.flab.ticketing.order.service.writer.CartWriter
-import com.flab.ticketing.performance.service.reader.PerformanceReader
+import com.flab.ticketing.order.repository.reader.ReservationReader
+import com.flab.ticketing.order.repository.writer.CartWriter
+import com.flab.ticketing.performance.repository.reader.PerformanceReader
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.service.reader.UserReader
+import com.flab.ticketing.user.repository.reader.UserReader
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 
@@ -28,7 +28,7 @@ class ReservationService(
     ) {
         val user = userReader.findByUid(userUid)
         val performance = performanceReader.findPerformanceEntityByUidJoinWithPlace(performanceUid)
-        
+
         performanceReader.findDateEntityByUid(performanceUid, dateUid)
         performance.performancePlace.checkSeatIn(seatUid)
 

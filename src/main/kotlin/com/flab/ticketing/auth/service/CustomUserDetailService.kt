@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.service
 
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.user.service.reader.UserReader
+import com.flab.ticketing.user.repository.reader.UserReader
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException

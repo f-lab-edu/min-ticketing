@@ -7,8 +7,8 @@ import com.flab.ticketing.auth.utils.EmailVerifier
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.service.reader.UserReader
-import com.flab.ticketing.user.service.writer.UserWriter
+import com.flab.ticketing.user.repository.reader.UserReader
+import com.flab.ticketing.user.repository.writer.UserWriter
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every

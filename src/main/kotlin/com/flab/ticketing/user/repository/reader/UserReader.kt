@@ -1,4 +1,4 @@
-package com.flab.ticketing.user.service.reader
+package com.flab.ticketing.user.repository.reader
 
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.exception.UnAuthorizedException

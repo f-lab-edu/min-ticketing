@@ -1,4 +1,4 @@
-package com.flab.ticketing.order.service.reader
+package com.flab.ticketing.order.repository.reader
 
 import com.flab.ticketing.order.repository.ReservationRepository
 import org.springframework.stereotype.Component

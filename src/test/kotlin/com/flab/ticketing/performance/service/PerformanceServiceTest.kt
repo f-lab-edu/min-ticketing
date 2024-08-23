@@ -3,14 +3,14 @@ package com.flab.ticketing.performance.service
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
-import com.flab.ticketing.order.service.reader.ReservationReader
+import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.performance.service.reader.PerformanceReader
+import com.flab.ticketing.performance.repository.reader.PerformanceReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly

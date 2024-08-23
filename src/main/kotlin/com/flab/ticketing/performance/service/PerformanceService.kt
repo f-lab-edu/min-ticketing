@@ -1,14 +1,14 @@
 package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.dto.service.CursorInfoDto
-import com.flab.ticketing.order.service.reader.ReservationReader
+import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
-import com.flab.ticketing.performance.service.reader.PerformanceReader
+import com.flab.ticketing.performance.repository.reader.PerformanceReader
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

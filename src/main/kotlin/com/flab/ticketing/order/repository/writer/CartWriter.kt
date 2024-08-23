@@ -1,4 +1,4 @@
-package com.flab.ticketing.order.service.writer
+package com.flab.ticketing.order.repository.writer
 
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.repository.CartRepository
