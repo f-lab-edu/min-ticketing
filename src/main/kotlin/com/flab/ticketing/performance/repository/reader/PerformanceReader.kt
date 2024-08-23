@@ -46,7 +46,7 @@ class PerformanceReader(
     }
 
     fun findDateEntityByUid(performanceUid: String, dateUid: String): PerformanceDateTime {
-        return performanceRepository.findPerformanceDateTime(performanceUid, dateUid) ?: throw NotFoundException(
+        return performanceDateRepository.findPerformanceDateTime(performanceUid, dateUid) ?: throw NotFoundException(
             PerformanceErrorInfos.PERFORMANCE_DATE_NOT_FOUND
         )
     }

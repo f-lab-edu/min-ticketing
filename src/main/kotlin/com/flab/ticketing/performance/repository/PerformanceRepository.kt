@@ -3,7 +3,6 @@ package com.flab.ticketing.performance.repository
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.entity.Performance
-import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.repository.dsl.CustomPerformanceRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -46,15 +45,5 @@ interface PerformanceRepository : CustomPerformanceRepository,
     )
     fun findPerformanceByUidJoinWithPlaceAndSeat(@Param("uid") uid: String): Performance?
 
-
-    @Query(
-        "SELECT pd FROM PerformanceDateTime pd " +
-                "WHERE pd.performance.uid = :performanceUid " +
-                "AND pd.uid = :dateUid"
-    )
-    fun findPerformanceDateTime(
-        @Param("performanceUid") performanceUid: String,
-        @Param("dateUid") dateUid: String
-    ): PerformanceDateTime?
 
 }
