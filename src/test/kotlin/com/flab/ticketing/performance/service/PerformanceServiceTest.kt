@@ -129,7 +129,6 @@ class PerformanceServiceTest : UnitTest() {
                     performanceDateTime.uid
                 )
             } returns reservedUids
-            every { performanceVerifier.checkIsExpired(any(), any()) } returns Unit
 
             every {
                 performanceReader.findDateEntityByUid(performance.uid, performanceDateTime.uid)

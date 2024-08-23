@@ -1,6 +1,8 @@
 package com.flab.ticketing.performance.entity
 
 import com.flab.ticketing.common.entity.BaseEntity
+import com.flab.ticketing.common.exception.BusinessIllegalStateException
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import jakarta.persistence.*
 import java.time.ZonedDateTime
 
@@ -19,8 +21,10 @@ class PerformanceDateTime(
 
     ) : BaseEntity() {
 
-    fun isExpired(time: ZonedDateTime): Boolean {
-        return showTime.isBefore(time)
+    fun checkPassed(time: ZonedDateTime = ZonedDateTime.now()) {
+        if (showTime.isBefore(time)) {
+            throw BusinessIllegalStateException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
+        }
     }
 
 

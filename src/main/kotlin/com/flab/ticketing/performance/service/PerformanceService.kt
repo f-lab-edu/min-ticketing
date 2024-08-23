@@ -50,7 +50,7 @@ class PerformanceService(
         val performance = performanceReader.findPerformanceEntityByUidJoinWithPlace(performanceUid)
         val performanceDateTime = performanceReader.findDateEntityByUid(performanceUid, performanceDateUid)
 
-        performanceVerifier.checkIsExpired(performanceDateTime)
+        performanceDateTime.checkPassed()
 
         val reservedSeatUidList =
             reservationReader.findReserveUidInPlace(performance.performancePlace.id, performanceDateUid)
