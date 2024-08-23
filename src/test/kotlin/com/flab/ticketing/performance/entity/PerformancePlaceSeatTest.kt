@@ -37,7 +37,7 @@ class PerformancePlaceSeatTest : UnitTest() {
 
 
             val e = shouldThrow<InvalidValueException> {
-                place.checkSeatIn(invalidSeatUid)
+                place.findSeatIn(invalidSeatUid)
             }
 
             e.info shouldBe PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID
@@ -49,7 +49,7 @@ class PerformancePlaceSeatTest : UnitTest() {
             val seatUid = place.seats[0].uid
 
 
-            shouldNotThrow<Exception> { place.checkSeatIn(seatUid) }
+            shouldNotThrow<Exception> { place.findSeatIn(seatUid) }
         }
     }
 

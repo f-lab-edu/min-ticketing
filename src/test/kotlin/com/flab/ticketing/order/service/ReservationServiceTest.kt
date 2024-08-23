@@ -8,6 +8,7 @@ import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.common.exception.UnAuthorizedException
+import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.reader.ReservationReader
@@ -23,17 +24,21 @@ import io.mockk.verify
 import org.springframework.dao.DataIntegrityViolationException
 
 class ReservationServiceTest : UnitTest() {
+
     private val performanceReader: PerformanceReader = mockk()
     private val userReader: UserReader = mockk()
     private val cartWriter: CartWriter = mockk()
     private val reservationReader: ReservationReader = mockk()
+    private val nanoIdGenerator: NanoIdGenerator = mockk()
+
 
     private val reservationService =
         ReservationService(
             userReader,
             reservationReader,
             performanceReader,
-            cartWriter
+            cartWriter,
+            nanoIdGenerator
         )
 
     init {
@@ -54,12 +59,20 @@ class ReservationServiceTest : UnitTest() {
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every { reservationReader.isReservationExists(seatUid, performanceDateTime.uid) } returns false
-
+            every { nanoIdGenerator.createNanoId() } returns "cart-001"
 
             reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
 
-            verify { cartWriter.save(Cart(seatUid, performanceDateTime.uid, user)) }
-
+            verify {
+                cartWriter.save(
+                    Cart(
+                        "cart-001",
+                        performance.performancePlace.seats[0],
+                        performanceDateTime,
+                        user
+                    )
+                )
+            }
         }
 
         "예약시 사용자가 DB에 저장되어 있지 않다면 UnauthorizedException을 throw한다." {
@@ -151,11 +164,14 @@ class ReservationServiceTest : UnitTest() {
                     performance.uid,
                     performanceDateTime.uid
                 )
+
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every {
                 reservationReader.isReservationExists(seatUid, performanceDateTime.uid)
             } returns true
+            every { nanoIdGenerator.createNanoId() } returns "cart-001"
+
 
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
@@ -178,12 +194,15 @@ class ReservationServiceTest : UnitTest() {
                     performance.uid,
                     performanceDateTime.uid
                 )
+
             } returns performanceDateTime
             every { cartWriter.save(any()) } returns Unit
             every {
                 reservationReader.isReservationExists(seatUid, performanceDateTime.uid)
             } returns false
             every { cartWriter.save(any()) } throws DataIntegrityViolationException("중복!")
+            every { nanoIdGenerator.createNanoId() } returns "cart-001"
+
 
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seatUid)
