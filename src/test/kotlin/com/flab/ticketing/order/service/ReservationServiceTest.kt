@@ -9,6 +9,7 @@ import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.common.exception.UnAuthorizedException
+import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.exception.OrderErrorInfos
@@ -31,6 +32,7 @@ class ReservationServiceTest : UnitTest() {
     private val userRepository: UserRepository = mockk()
     private val cartRepository: CartRepository = mockk()
     private val reservationRepository: ReservationRepository = mockk()
+    private val nanoIdGenerator: NanoIdGenerator = mockk()
 
     private val reservationService =
         ReservationService(
@@ -38,7 +40,8 @@ class ReservationServiceTest : UnitTest() {
             reservationRepository,
             performanceRepository,
             performanceDateRepository,
-            cartRepository
+            cartRepository,
+            nanoIdGenerator
         )
 
     init {
@@ -59,11 +62,20 @@ class ReservationServiceTest : UnitTest() {
                     performanceDateTime.uid
                 )
             } returns null
-
+            every { nanoIdGenerator.createNanoId() } returns "cart-001"
 
             reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
 
-            verify { cartRepository.save(Cart(seatUid, performanceDateTime.uid, user)) }
+            verify {
+                cartRepository.save(
+                    Cart(
+                        "cart-001",
+                        performance.performancePlace.seats[0],
+                        performanceDateTime,
+                        user
+                    )
+                )
+            }
 
         }
 
@@ -155,6 +167,8 @@ class ReservationServiceTest : UnitTest() {
                     performanceDateTime.uid
                 )
             } returns reservation
+            every { nanoIdGenerator.createNanoId() } returns "cart-001"
+
 
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
@@ -181,8 +195,8 @@ class ReservationServiceTest : UnitTest() {
                 )
             } returns null
             every { cartRepository.save(any()) } throws DataIntegrityViolationException("중복!")
+            every { nanoIdGenerator.createNanoId() } returns "cart-001"
 
-            
             val e = shouldThrow<DuplicatedException> {
                 reservationService.reservate(user.uid, performance.uid, performanceDateTime.uid, seatUid)
             }

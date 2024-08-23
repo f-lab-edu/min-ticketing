@@ -5,6 +5,7 @@ import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.common.exception.UnAuthorizedException
+import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
@@ -23,7 +24,8 @@ class ReservationService(
     private val reservationRepository: ReservationRepository,
     private val performanceRepository: PerformanceRepository,
     private val performanceDateRepository: PerformanceDateRepository,
-    private val cartRepository: CartRepository
+    private val cartRepository: CartRepository,
+    private val nanoIdGenerator: NanoIdGenerator
 ) {
 
     fun reservate(
@@ -47,9 +49,8 @@ class ReservationService(
         }
 
         // performancePlace에 seat가 속했는지 검증
-        if (!performance.performancePlace.seats.map { it.uid }.contains(seatUid)) {
-            throw InvalidValueException(PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID)
-        }
+        val seat = performance.performancePlace.seats.find { it.uid == seatUid }
+            ?: throw InvalidValueException(PerformanceErrorInfos.PERFORMANCE_SEAT_INFO_INVALID)
 
         // 예약이 존재하는지 확인
         if (reservationRepository.findReservationBySeatUidAndDateUid(seatUid, dateUid) != null) {
@@ -57,7 +58,7 @@ class ReservationService(
         }
 
         try {
-            cartRepository.save(Cart(seatUid, dateUid, user))
+            cartRepository.save(Cart(nanoIdGenerator.createNanoId(), seat, performanceDateTime, user))
         } catch (e: DataIntegrityViolationException) {
             throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVATED)
         }
