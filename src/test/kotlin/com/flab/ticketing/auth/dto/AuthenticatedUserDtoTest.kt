@@ -1,5 +1,7 @@
 package com.flab.ticketing.auth.dto
 
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.common.UnitTest
 import io.kotest.matchers.equals.shouldBeEqual
 
@@ -12,9 +14,9 @@ class AuthenticatedUserDtoTest : UnitTest() {
             val userPW = "12321421asdafd@"
             val nickname = "nickname"
 
-            val customUserDetails = CustomUserDetails(uid, email, userPW, nickname)
+            val customUserDetailsDto = CustomUserDetailsDto(uid, email, userPW, nickname)
 
-            val actual = AuthenticatedUserDto.of(customUserDetails)
+            val actual = AuthenticatedUserDto.of(customUserDetailsDto)
 
             actual.uid shouldBeEqual uid
             actual.email shouldBeEqual email

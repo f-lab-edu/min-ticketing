@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.utils
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.auth.dto.UserLoginDto
+import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.InvalidValueException
@@ -27,11 +27,11 @@ class UserLoginInfoConverterTest : UnitTest() {
             val charSet = StandardCharsets.UTF_8
 
             val inputStream = """{email : "$email", password : "$userPW"}""".byteInputStream(charSet)
-            every { objectMapper.readValue(any<String>(), UserLoginDto::class.java) } returns mockk()
+            every { objectMapper.readValue(any<String>(), UserLoginRequest::class.java) } returns mockk()
 
             userLoginInfoConverter.convert(inputStream, charSet)
 
-            verify { objectMapper.readValue(any<String>(), UserLoginDto::class.java) }
+            verify { objectMapper.readValue(any<String>(), UserLoginRequest::class.java) }
         }
 
         "RequestBody의 문자열이 올바르지 않은 경우 InvalidValueException을 throw 한다." {
@@ -41,7 +41,7 @@ class UserLoginInfoConverterTest : UnitTest() {
             every {
                 objectMapper.readValue(
                     any<String>(),
-                    UserLoginDto::class.java
+                    UserLoginRequest::class.java
                 )
             } throws JsonMappingException("에러 메시지")
 

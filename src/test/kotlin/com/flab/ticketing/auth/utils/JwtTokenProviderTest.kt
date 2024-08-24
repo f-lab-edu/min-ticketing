@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.utils
 
-import com.flab.ticketing.auth.dto.AuthenticatedUserDto
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.common.UnitTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual

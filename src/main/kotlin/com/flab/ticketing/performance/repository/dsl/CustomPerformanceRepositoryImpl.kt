@@ -1,9 +1,9 @@
 package com.flab.ticketing.performance.repository.dsl
 
-import com.flab.ticketing.common.dto.CursorInfo
+import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.entity.Region
-import com.flab.ticketing.performance.dto.PerformanceSearchConditions
-import com.flab.ticketing.performance.dto.PerformanceSearchResult
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlace
@@ -17,15 +17,15 @@ class CustomPerformanceRepositoryImpl(
 ) : CustomPerformanceRepository {
     override fun search(
         searchConditions: PerformanceSearchConditions,
-        cursorInfo: CursorInfo
-    ): List<PerformanceSearchResult?> {
+        cursorInfoDto: CursorInfoDto
+    ): List<PerformanceSummarySearchResult?> {
 
-        val searchResult = kotlinJdslJpqlExecutor.findPage(PageRequest.of(0, cursorInfo.limit)) {
+        val searchResult = kotlinJdslJpqlExecutor.findPage(PageRequest.of(0, cursorInfoDto.limit)) {
 
             val cursorSubQuery = select<Long>(path(Performance::id))
                 .from(entity(Performance::class))
                 .where(
-                    path(Performance::uid).eq(cursorInfo.cursor)
+                    path(Performance::uid).eq(cursorInfoDto.cursor)
                 ).asSubquery()
 
             val searchShowTime = searchConditions.showTime
@@ -40,7 +40,7 @@ class CustomPerformanceRepositoryImpl(
                 )
                 .asSubquery()
 
-            selectNew<PerformanceSearchResult>(
+            selectNew<PerformanceSummarySearchResult>(
                 path(Performance::uid),
                 path(Performance::image),
                 path(Performance::name).`as`(expression("title")),
@@ -83,7 +83,7 @@ class CustomPerformanceRepositoryImpl(
                         searchConditions.q?.let {
                             path(Performance::name).like("%${it}%")
                         },
-                        cursorInfo.cursor?.let {
+                        cursorInfoDto.cursor?.let {
                             path(Performance::id).lessThanOrEqualTo(cursorSubQuery)
                         }
                     )

@@ -17,4 +17,11 @@ class PerformanceDateTime(
     @JoinColumn(name = "performance_id")
     val performance: Performance,
 
-    ) : BaseEntity()
+    ) : BaseEntity() {
+
+    fun isExpired(time: ZonedDateTime = ZonedDateTime.now()): Boolean {
+        return showTime.isBefore(time)
+    }
+
+
+}

@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.resolver
 
-import com.flab.ticketing.auth.dto.AuthenticatedUserDto
+import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.resolver.annotation.LoginUser
 import com.flab.ticketing.common.exception.UnAuthorizedException

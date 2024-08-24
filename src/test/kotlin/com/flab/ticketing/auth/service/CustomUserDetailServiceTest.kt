@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.entity.repository.UserRepository
@@ -26,7 +26,7 @@ class CustomUserDetailServiceTest : UnitTest() {
 
             every { userRepository.findByEmail(email) } returns createUser(email, userPW, uid, nickname)
 
-            val userDetails = userDetailService.loadUserByUsername(email) as? CustomUserDetails
+            val userDetails = userDetailService.loadUserByUsername(email) as? CustomUserDetailsDto
                 ?: fail("리턴 타입은 CustomUserDetail 구현체 여야 합니다.")
 
             userDetails.uid shouldBe uid

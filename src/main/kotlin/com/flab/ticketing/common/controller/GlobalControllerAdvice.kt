@@ -1,6 +1,6 @@
 package com.flab.ticketing.common.controller
 
-import com.flab.ticketing.common.dto.ErrorResponse
+import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +17,7 @@ class GlobalControllerAdvice {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.CONFLICT)
     }
 
-    @ExceptionHandler(InvalidValueException::class, BusinessIllegalStateException::class)
+    @ExceptionHandler(InvalidValueException::class, BusinessIllegalStateException::class, BadRequestException::class)
     fun handleBadRequestException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.BAD_REQUEST)
     }

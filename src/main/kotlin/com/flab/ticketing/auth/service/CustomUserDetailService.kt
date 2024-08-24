@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.service
 
-import com.flab.ticketing.auth.dto.CustomUserDetails
+import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.user.entity.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -21,6 +21,6 @@ class CustomUserDetailService(private val userRepository: UserRepository) : User
         val user =
             userRepository.findByEmail(username) ?: throw UsernameNotFoundException("유저 정보를 조회할 수 없습니다.")
 
-        return CustomUserDetails(user.uid, user.email, user.password, user.nickname)
+        return CustomUserDetailsDto(user.uid, user.email, user.password, user.nickname)
     }
 }

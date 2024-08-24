@@ -19,16 +19,13 @@ class PerformancePlaceSeat(
     val place: PerformancePlace
 ) : BaseEntity() {
 
-
-    @Transient
-    lateinit var name: String
-        private set
+    val name: String
 
     init {
-        initializeName()
+        name = initializeName()
     }
 
-    private fun initializeName() {
+    private fun initializeName(): String {
         val sb = StringBuilder()
         var n = rowNum
         while (n > 0) {
@@ -37,6 +34,6 @@ class PerformancePlaceSeat(
             sb.insert(0, charCode)
             n /= 26
         }
-        name = sb.append(columnNum).toString()
+        return sb.append(columnNum).toString()
     }
 }

@@ -1,4 +1,4 @@
-package com.flab.ticketing.performance.dto
+package com.flab.ticketing.performance.dto.service
 
 data class PerformanceDetailSearchResult(
     val uid: String,

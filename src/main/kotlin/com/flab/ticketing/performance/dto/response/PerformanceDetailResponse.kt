@@ -1,6 +1,5 @@
-package com.flab.ticketing.performance.dto
+package com.flab.ticketing.performance.dto.response
 
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class PerformanceDetailResponse(

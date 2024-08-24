@@ -1,4 +1,4 @@
-package com.flab.ticketing.common.dto
+package com.flab.ticketing.common.dto.response
 
 import com.flab.ticketing.common.exception.ErrorInfo
 
