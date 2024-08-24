@@ -15,5 +15,16 @@ interface ReservationRepository : CrudRepository<Reservation, Long> {
                 "WHERE r.performanceDateTime.uid = :dateUid " +
                 "AND r.seat.place.id = :placeId"
     )
-    fun findReservatedSeatUids(@Param("placeId") id: Long, @Param("dateUid") dateUid: String): List<String>
+    fun findReservatedSeatUids(@Param("placeId") placeId: Long, @Param("dateUid") dateUid: String): List<String>
+
+
+    @Query(
+        "SELECT r FROM Reservation r " +
+                "WHERE r.performanceDateTime.uid = :dateUid " +
+                "AND r.seat.uid = :seatId"
+    )
+    fun findReservationBySeatUidAndDateUid(
+        @Param("seatId") seatId: String,
+        @Param("dateUid") dateUid: String
+    ): Reservation?
 }
