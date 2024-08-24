@@ -7,7 +7,8 @@ import com.flab.ticketing.auth.utils.EmailVerifier
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.repository.reader.UserReader
+import com.flab.ticketing.user.repository.writer.UserWriter
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
@@ -19,11 +20,21 @@ class AuthServiceTest : UnitTest() {
     private val emailCodeGenerator: EmailCodeGenerator = mockk()
     private val emailSender: EmailSender = mockk()
     private val emailVerifier: EmailVerifier = mockk()
-    private val userRepository: UserRepository = mockk()
+    private val userReader: UserReader = mockk()
+    private val userWriter: UserWriter = mockk()
     private val userPWEncoder: PasswordEncoder = mockk()
     private val nanoIdGenerator: NanoIdGenerator = mockk()
+
     private val authService: AuthService =
-        AuthService(emailCodeGenerator, emailSender, emailVerifier, userRepository, userPWEncoder, nanoIdGenerator)
+        AuthService(
+            emailCodeGenerator,
+            emailSender,
+            emailVerifier,
+            userReader,
+            userWriter,
+            userPWEncoder,
+            nanoIdGenerator
+        )
 
 
     init {
@@ -33,7 +44,7 @@ class AuthServiceTest : UnitTest() {
             every { emailCodeGenerator.createEmailCode() } returns code
             every { emailSender.sendEmail(any(), any(), any()) } returns Unit
             every { emailVerifier.saveCode(any(), any()) } returns Unit
-            every { userRepository.findByEmail(any()) } returns null
+            every { userReader.isEmailExists(email) } returns false
 
             authService.sendEmailVerifyCode(email)
 
@@ -50,13 +61,11 @@ class AuthServiceTest : UnitTest() {
         "email 인증 정보가 저장된 유저가 인증 코드 검증 요청시 exception을 throw하지 않고 검증을 완료한다." {
             val email = "email@email.com"
             val code = "123abc"
-            every { emailVerifier.getCode(email) } returns code
-            every { emailVerifier.setVerifySuccess(email) } returns Unit
+            every { emailVerifier.verifyCode(email, code) } returns Unit
 
             shouldNotThrow<Exception> {
                 authService.verifyEmailCode(email, code)
             }
-            verify { emailVerifier.setVerifySuccess(email) }
 
         }
 
@@ -72,7 +81,7 @@ class AuthServiceTest : UnitTest() {
             every { emailVerifier.checkVerified(email) } returns Unit
             every { userPWEncoder.encode(userPW) } returns encryptedUserPW
             every { nanoIdGenerator.createNanoId() } returns uid
-            every { userRepository.save(any()) } returns expectedUser
+            every { userWriter.save(any()) } returns Unit
 
             authService.saveVerifiedUserInfo(
                 UserRegisterRequest(
@@ -83,7 +92,7 @@ class AuthServiceTest : UnitTest() {
                 )
             )
 
-            verify { userRepository.save(expectedUser) }
+            verify { userWriter.save(expectedUser) }
         }
 
         "DB에 저장된 사용자는 비밀번호 정보를 업데이트 할 수 있다." {
@@ -96,7 +105,7 @@ class AuthServiceTest : UnitTest() {
 
             val user = User("notUsed", email, encryptedPW, "notUsed")
 
-            every { userRepository.findByEmail(email) } returns user
+            every { userReader.findByEmail(email) } returns user
             every { userPWEncoder.matches(userPW, encryptedPW) } returns true
             every { userPWEncoder.encode(newUserPW) } returns newEncryptedPW
 

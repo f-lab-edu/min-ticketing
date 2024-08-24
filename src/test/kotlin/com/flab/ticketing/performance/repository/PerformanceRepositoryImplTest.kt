@@ -4,8 +4,8 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
-import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -349,7 +349,7 @@ class PerformanceRepositoryImplTest(
                     uid = it.uid,
                     showTime = it.showTime.withZoneSameInstant(ZoneOffset.ofHours(9)),
                     totalSeats = placeSeats.toLong(),
-                    reservatedSeats = 0
+                    reservedSeats = 0
                 )
             }
 

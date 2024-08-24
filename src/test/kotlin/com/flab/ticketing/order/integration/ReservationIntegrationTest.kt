@@ -17,7 +17,7 @@ import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.entity.repository.UserRepository
+import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.equals.shouldBeEqual
@@ -70,10 +70,10 @@ class ReservationIntegrationTest : IntegrationTest() {
 
             val jwt = createJwt(user)
             `when`("로그인된 사용자가 에약되지 않은 좌석에 예약을 시도할 시") {
-                val reservateSeat = place.seats[0]
+                val reserveSeat = place.seats[0]
 
                 val uri =
-                    "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservateSeat.uid}"
+                    "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reserveSeat.uid}"
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -85,11 +85,12 @@ class ReservationIntegrationTest : IntegrationTest() {
                 then("201 CREATED를 반환하고 DB에 예약 정보를 저장한다.") {
                     mvcResult.response.status shouldBe HttpStatus.CREATED.value()
 
-                    val actual = cartRepository.findByDateUidAndSeatUid(performanceDateTime.uid, reservateSeat.uid)
+                    val actual = cartRepository.findByDateUidAndSeatUid(performanceDateTime.uid, reserveSeat.uid)
 
                     actual!!.user shouldBeEqual user
+
                     actual.performanceDateTime shouldBeEqual performanceDateTime
-                    actual.seat shouldBeEqual reservateSeat
+                    actual.seat shouldBeEqual reserveSeat
                 }
             }
         }
@@ -100,18 +101,19 @@ class ReservationIntegrationTest : IntegrationTest() {
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
-            val reservateSeat = place.seats[0]
+            val reservedSeat = place.seats[0]
 
             val user = UserTestDataGenerator.createUser()
 
             savePerformance(listOf(performance))
             userRepository.save(user)
-            cartRepository.save(Cart("cart001", reservateSeat, performanceDateTime, user))
+            cartRepository.save(Cart("cart001", reservedSeat, performanceDateTime, user))
+
 
             val jwt = createJwt(user)
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
                 val uri =
-                    "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservateSeat.uid}"
+                    "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservedSeat.uid}"
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -120,7 +122,7 @@ class ReservationIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("409 conflict 오류를 throw한다.") {
-                    checkError(mvcResult, HttpStatus.CONFLICT, OrderErrorInfos.ALREADY_RESERVATED)
+                    checkError(mvcResult, HttpStatus.CONFLICT, OrderErrorInfos.ALREADY_RESERVED)
                 }
             }
         }
@@ -131,7 +133,7 @@ class ReservationIntegrationTest : IntegrationTest() {
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
-            val reservateSeat = place.seats[0]
+            val reservedSeat = place.seats[0]
 
             val user = UserTestDataGenerator.createUser()
 
@@ -148,7 +150,7 @@ class ReservationIntegrationTest : IntegrationTest() {
             val jwt = createJwt(user)
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
                 val uri =
-                    "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservateSeat.uid}"
+                    "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservedSeat.uid}"
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.post(uri)
@@ -157,7 +159,7 @@ class ReservationIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
                 then("409 conflict 오류를 throw한다.") {
-                    checkError(mvcResult, HttpStatus.CONFLICT, OrderErrorInfos.ALREADY_RESERVATED)
+                    checkError(mvcResult, HttpStatus.CONFLICT, OrderErrorInfos.ALREADY_RESERVED)
                 }
             }
         }

@@ -45,4 +45,5 @@ interface PerformanceRepository : CustomPerformanceRepository,
     )
     fun findPerformanceByUidJoinWithPlaceAndSeat(@Param("uid") uid: String): Performance?
 
+
 }
