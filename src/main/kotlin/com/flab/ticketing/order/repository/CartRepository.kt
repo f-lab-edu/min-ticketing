@@ -16,4 +16,13 @@ interface CartRepository : JpaRepository<Cart, Long> {
 
     @Query("SELECT c FROM Cart c WHERE c.performanceDateTime.uid = :dateUid AND c.seat.uid = :seatUid")
     fun findByDateUidAndSeatUid(@Param("dateUid") dateUid: String, @Param("seatUid") seatUid: String): Cart?
+
+    @Query(
+        "SELECT c.seat.uid FROM Cart c " +
+                "WHERE c.performanceDateTime.uid = :dateUid " +
+                "AND EXISTS(" +
+                " SELECT 1 FROM PerformancePlaceSeat s WHERE s = c.seat " +
+                " AND s.place.id = :placeId)"
+    )
+    fun findSeatUidByDateUidAndPlaceIn(@Param("dateUid") dateUid: String, @Param("placeId") placeId: Long): List<String>
 }

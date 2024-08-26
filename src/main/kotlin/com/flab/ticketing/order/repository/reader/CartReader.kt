@@ -13,4 +13,8 @@ class CartReader(
     fun findByUser(userUid: String): List<Cart> {
         return cartRepository.findByUserUid(userUid)
     }
+
+    fun findSeatUidInPlace(placeId: Long, performanceDateTimeUid: String): List<String> {
+        return cartRepository.findSeatUidByDateUidAndPlaceIn(performanceDateTimeUid, placeId)
+    }
 }

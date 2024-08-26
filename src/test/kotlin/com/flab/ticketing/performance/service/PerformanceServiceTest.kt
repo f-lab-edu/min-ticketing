@@ -3,6 +3,7 @@ package com.flab.ticketing.performance.service
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.exception.NotFoundException
+import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
@@ -24,8 +25,9 @@ class PerformanceServiceTest : UnitTest() {
 
     private val performanceReader: PerformanceReader = mockk()
     private val reservationReader: ReservationReader = mockk()
+    private val cartReader: CartReader = mockk()
     private val performanceService: PerformanceService =
-        PerformanceService(performanceReader, reservationReader)
+        PerformanceService(performanceReader, reservationReader, cartReader)
 
     init {
         "Performance Detail 정보를 검색할 수 있다." {
@@ -121,6 +123,7 @@ class PerformanceServiceTest : UnitTest() {
 
             val performanceDateTime = performance.performanceDateTime[0]
             val reservedUids = performance.performancePlace.seats.subList(1, 3).map { it.uid }
+            val cartSeatUids = performance.performancePlace.seats.subList(3, 4).map { it.uid }
 
             every { performanceReader.findPerformanceEntityByUidJoinWithPlace(performance.uid) } returns performance
             every {
@@ -133,6 +136,10 @@ class PerformanceServiceTest : UnitTest() {
             every {
                 performanceReader.findDateEntityByUid(performance.uid, performanceDateTime.uid)
             } returns performanceDateTime
+            every {
+                cartReader.findSeatUidInPlace(performance.performancePlace.id, performanceDateTime.uid)
+            } returns cartSeatUids
+
 
             val actual =
                 performanceService.getPerformanceSeatInfo(performance.uid, performanceDateTime.uid)
@@ -159,7 +166,7 @@ class PerformanceServiceTest : UnitTest() {
                     PerformanceDateDetailResponse.SeatInfo(
                         place.seats[3].uid,
                         place.seats[3].name,
-                        false
+                        true
                     ),
                     PerformanceDateDetailResponse.SeatInfo(
                         place.seats[4].uid,
