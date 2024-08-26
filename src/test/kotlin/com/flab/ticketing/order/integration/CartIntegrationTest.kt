@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
-class ReservationIntegrationTest : IntegrationTest() {
+class CartIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var performanceRepository: PerformanceRepository
