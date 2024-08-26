@@ -6,5 +6,6 @@ data class PerformanceDateSummaryResult(
     val uid: String,
     val showTime: ZonedDateTime,
     val totalSeats: Long,
-    val reservedSeats: Long
+    val reservedSeats: Long,
+    val cartSeats: Long,
 )

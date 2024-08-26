@@ -349,7 +349,8 @@ class PerformanceRepositoryImplTest(
                     uid = it.uid,
                     showTime = it.showTime.withZoneSameInstant(ZoneOffset.ofHours(9)),
                     totalSeats = placeSeats.toLong(),
-                    reservedSeats = 0
+                    reservedSeats = 0,
+                    cartSeats = 0
                 )
             }
 

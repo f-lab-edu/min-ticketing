@@ -35,6 +35,7 @@ class PerformanceServiceTest : UnitTest() {
             )
 
             val reservedSeats = 2L
+            val cartedSeats = 3L
 
             val givenPerformanceInfo = PerformanceDetailSearchResult(
                 uid = performance.uid,
@@ -51,7 +52,8 @@ class PerformanceServiceTest : UnitTest() {
                     it.uid,
                     it.showTime,
                     performance.performancePlace.seats.size.toLong(),
-                    reservedSeats
+                    reservedSeats,
+                    cartedSeats
                 )
             }
 
@@ -68,7 +70,7 @@ class PerformanceServiceTest : UnitTest() {
                     it.uid,
                     it.showTime.toLocalDateTime(),
                     totalSeatSize,
-                    totalSeatSize - reservedSeats
+                    totalSeatSize - reservedSeats - cartedSeats
                 )
             }
 

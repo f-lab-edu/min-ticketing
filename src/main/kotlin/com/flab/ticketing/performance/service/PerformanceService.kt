@@ -96,7 +96,7 @@ class PerformanceService(
                 it.uid,
                 it.showTime.toLocalDateTime(),
                 it.totalSeats,
-                it.totalSeats - it.reservedSeats
+                it.totalSeats - it.reservedSeats - it.cartSeats
             )
         }
     }

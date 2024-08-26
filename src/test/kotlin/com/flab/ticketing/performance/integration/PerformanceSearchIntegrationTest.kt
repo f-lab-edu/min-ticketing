@@ -8,14 +8,18 @@ import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
+import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.repository.ReservationRepository
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
+import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlace
+import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
@@ -60,6 +64,9 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var jwtTokenProvider: JwtTokenProvider
+
+    @Autowired
+    private lateinit var cartRepository: CartRepository
 
     init {
 
@@ -470,7 +477,11 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         }
 
         given("공연 정보가 존재할 때 - 상세 조회 검색") {
+            val user = UserTestDataGenerator.createUser()
+
+
             val placeSeatCnt = 10
+
 
             val place = PerformanceTestDataGenerator.createPerformancePlace(
                 numSeats = placeSeatCnt
@@ -478,8 +489,6 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
             val showTimes = listOf(
                 ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 10, 0, 0), ZoneId.of("Asia/Seoul")),
-                ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 12, 0, 0), ZoneId.of("Asia/Seoul")),
-                ZonedDateTime.of(LocalDateTime.of(2024, 1, 2, 9, 0, 0), ZoneId.of("Asia/Seoul"))
             )
 
             val performance = PerformanceTestDataGenerator.createPerformance(
@@ -488,6 +497,14 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             )
 
             savePerformance(listOf(performance))
+            userRepository.save(user)
+
+            val carts = createCarts(
+                user,
+                performance.performanceDateTime[0],
+                performance.performancePlace.seats.subList(0, 3)
+            )
+            cartRepository.saveAll(carts)
 
             `when`("특정 공연의 UID를 가지고 공연 상세 정보를 검색할 시") {
                 val uri = "/api/performances/${performance.uid}"
@@ -509,7 +526,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                             uid = it.uid,
                             dateTime = it.showTime.toLocalDateTime(),
                             total = placeSeatCnt.toLong(),
-                            remaining = placeSeatCnt.toLong()
+                            remaining = placeSeatCnt.toLong() - carts.size
                         )
                     }
 
@@ -733,6 +750,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
         PerformanceTestDataGenerator.reset()
         withContext(Dispatchers.IO) {
+            cartRepository.deleteAll()
             reservationRepository.deleteAll()
             orderRepository.deleteAll()
             userRepository.deleteAll()
@@ -758,6 +776,15 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
         reservationRepository.saveAll(order.reservations)
     }
 
+    private fun createCarts(
+        user: User,
+        performanceDateTime: PerformanceDateTime,
+        seats: List<PerformancePlaceSeat>
+    ): List<Cart> {
+        return seats.mapIndexed { idx, seat ->
+            Cart("cart$idx", seat, performanceDateTime, user)
+        }
+    }
 
     private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSummarySearchResult> {
         val sorted = performances.sortedBy { it.id }.asReversed()
