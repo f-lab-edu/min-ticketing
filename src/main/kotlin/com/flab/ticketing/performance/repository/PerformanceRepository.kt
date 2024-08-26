@@ -31,7 +31,7 @@ interface PerformanceRepository : CustomPerformanceRepository,
                 "JOIN p.performancePlace pp " +
                 "JOIN pp.seats ss " +
                 "LEFT JOIN Reservation rs ON ss = rs.seat " +
-                "LEFT JOIN Cart c ON c.seat = ss " +
+                "LEFT JOIN Cart c ON ss = c.seat " +
                 "WHERE p.uid = :uid " +
                 "GROUP BY pd.uid"
     )
