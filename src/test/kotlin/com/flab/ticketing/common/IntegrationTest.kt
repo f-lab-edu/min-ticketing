@@ -7,10 +7,7 @@ import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetupTest
 import io.kotest.core.extensions.Extension
-import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
-import io.kotest.core.test.TestCase
-import io.kotest.core.test.TestResult
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
@@ -54,16 +51,6 @@ abstract class IntegrationTest : BehaviorSpec() {
         )
 
 
-    override suspend fun beforeSpec(spec: Spec) {
-        super.beforeSpec(spec)
-        mockServerUtils.runServer()
-    }
-
-    override suspend fun afterSpec(spec: Spec) {
-        super.afterSpec(spec)
-        mockServerUtils.shutDown()
-    }
-    
     protected fun checkError(mvcResult: MvcResult, expectedStatus: HttpStatus, expectedErrorInfo: ErrorInfo) {
         checkError(mvcResult, expectedStatus, expectedErrorInfo.code, expectedErrorInfo.message)
     }
