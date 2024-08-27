@@ -14,7 +14,7 @@ class MockServerUtils {
 
     @PostConstruct
     fun runServer() {
-        mockWebServer.start()
+        mockWebServer.start(port = 1010)
     }
 
     fun getHost(): String {
