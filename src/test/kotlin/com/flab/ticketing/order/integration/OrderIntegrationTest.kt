@@ -23,6 +23,7 @@ import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
@@ -95,7 +96,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("주문 정보를 생성하여 반환하며, DB에 임시 주문 정보를 저장한다.") {
+                then("주문 정보를 생성하여 반환하며, DB에 임시 주문 정보를 저장하며 Cart 정보를 DB에서 제거한다.") {
                     mvcResult.response.status shouldBe HttpStatus.CREATED.value()
                     val actual =
                         objectMapper.readValue(mvcResult.response.contentAsString, OrderInfoResponse::class.java)
@@ -123,6 +124,7 @@ class OrderIntegrationTest : IntegrationTest() {
                         )
                     } shouldContainAll expectedReservedSeatAndDateTime
 
+                    cartRepository.findByUserUid(user.uid).map { it.uid } shouldNotContainAll orderCartUidList
                 }
             }
 
