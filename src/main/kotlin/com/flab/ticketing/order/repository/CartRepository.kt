@@ -26,6 +26,6 @@ interface CartRepository : JpaRepository<Cart, Long> {
     )
     fun findSeatUidByDateUidAndPlaceIn(@Param("dateUid") dateUid: String, @Param("placeId") placeId: Long): List<String>
 
-    @Query("SELECT c FROM Cart c JOIN FETCH c.performanceDateTime pd JOIN FETCH pd.performance WHERE c.uid IN :uidList")
-    fun findByUidListInJoinWithPlace(@Param("uidList") uidList: List<String>): List<Cart>
+    @Query("SELECT c FROM Cart c JOIN FETCH c.performanceDateTime pd JOIN FETCH pd.performance JOIN FETCH c.seat WHERE c.uid IN :uidList")
+    fun findByUidListInJoinWith(@Param("uidList") uidList: List<String>): List<Cart>
 }

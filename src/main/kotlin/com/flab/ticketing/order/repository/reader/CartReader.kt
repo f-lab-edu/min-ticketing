@@ -19,6 +19,6 @@ class CartReader(
     }
 
     fun findByUidList(uidList: List<String>): List<Cart> {
-        return cartRepository.findByUidListInJoinWithPlace(uidList)
+        return cartRepository.findByUidListInJoinWith(uidList)
     }
 }
