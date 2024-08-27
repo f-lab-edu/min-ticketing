@@ -1,6 +1,7 @@
 package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
@@ -17,7 +18,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PerformanceService(
     private val performanceReader: PerformanceReader,
-    private val reservationReader: ReservationReader
+    private val reservationReader: ReservationReader,
+    private val cartReader: CartReader
 ) {
 
     fun search(
@@ -53,9 +55,12 @@ class PerformanceService(
         val reservedSeatUidList =
             reservationReader.findReserveUidInPlace(performance.performancePlace.id, performanceDateUid)
 
+        val cartSeatUidList = cartReader.findSeatUidInPlace(performance.performancePlace.id, performanceDateUid)
+
         val seatTable = createSeatTable(
             performanceSeats = performance.performancePlace.seats,
-            reservedSeatUidList = reservedSeatUidList
+            reservedSeatUidList = reservedSeatUidList,
+            cartSeatUidList = cartSeatUidList
         )
 
         return PerformanceDateDetailResponse(
@@ -68,7 +73,8 @@ class PerformanceService(
 
     private fun createSeatTable(
         performanceSeats: List<PerformancePlaceSeat>,
-        reservedSeatUidList: List<String>
+        reservedSeatUidList: List<String>,
+        cartSeatUidList: List<String>
     ): List<List<PerformanceDateDetailResponse.SeatInfo>> {
         val orderedDateSeatInfo = mutableListOf<MutableList<PerformanceDateDetailResponse.SeatInfo>>()
 
@@ -83,7 +89,7 @@ class PerformanceService(
                     PerformanceDateDetailResponse.SeatInfo(
                         it.uid,
                         it.name,
-                        reservedSeatUidList.contains(it.uid)
+                        reservedSeatUidList.contains(it.uid) || cartSeatUidList.contains(it.uid)
                     )
                 )
             }

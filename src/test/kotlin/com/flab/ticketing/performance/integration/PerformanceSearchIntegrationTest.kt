@@ -592,10 +592,13 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                 performance.performancePlace.seats.subList(0, 3),
                 order
             )
+            val carts = createCarts(user, performanceDate, performance.performancePlace.seats.subList(3, 4))
+
 
             userRepository.save(user)
             savePerformance(listOf(performance))
             saveOrder(order)
+            cartRepository.saveAll(carts)
 
             val jwt = createJwt(user)
 
@@ -635,7 +638,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
                                 PerformanceDateDetailResponse.SeatInfo(
                                     place.seats[3].uid,
                                     place.seats[3].name,
-                                    false
+                                    true
                                 )
                             ),
                             listOf(
