@@ -55,9 +55,10 @@ class OrderService(
 
     fun confirmOrder(userUid: String, orderConfirmRequest: OrderConfirmRequest) {
         val order = orderReader.findByUid(orderConfirmRequest.orderId)
+        checkValidOrderConfirmRequest(userUid, order)
 
         tossPaymentClient.confirm(orderConfirmRequest)
-        
+
         order.status = Order.OrderStatus.COMPLETED
     }
 
@@ -65,6 +66,12 @@ class OrderService(
     private fun checkValidOrderRequest(orderInfoRequest: OrderInfoRequest, carts: List<Cart>) {
         if (orderInfoRequest.carts.size != carts.size) {
             throw InvalidValueException(OrderErrorInfos.INVALID_CART_INFO)
+        }
+    }
+
+    private fun checkValidOrderConfirmRequest(userUid: String, order: Order) {
+        if (order.user.uid != userUid) {
+            throw InvalidValueException(OrderErrorInfos.INVALID_USER)
         }
     }
 

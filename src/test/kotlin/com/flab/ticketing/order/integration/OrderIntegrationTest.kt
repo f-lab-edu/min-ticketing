@@ -221,6 +221,58 @@ class OrderIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("주문 생성이 완료 되었을 때 - 잘못된 유저 요청") {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+
+            val order = OrderTestDataGenerator.createOrder(
+                user = user,
+                payment = Order.Payment(performance.price * 2, "카드")
+            )
+
+            order.addReservation(performanceDateTime, seats[0])
+            order.addReservation(performanceDateTime, seats[1])
+
+            orderRepository.save(order)
+
+            val orderConfirmRequest = OrderConfirmRequest(
+                paymentType = "카드",
+                orderId = order.uid,
+                paymentKey = "payment001",
+                amount = order.payment.totalPrice
+            )
+            `when`("다른 유저로 Order 주문 확정 API 호출 시") {
+                val user2 = UserTestDataGenerator.createUser(
+                    uid = "user002",
+                    email = "email2@email.com"
+                )
+                userRepository.save(user)
+                val jwt = createJwt(user2)
+
+                val uri = "/api/orders/toss/confirm"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(orderConfirmRequest))
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 BAD Request와 적절한 오류 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, OrderErrorInfos.INVALID_USER)
+                }
+            }
+        }
+
     }
 
 
