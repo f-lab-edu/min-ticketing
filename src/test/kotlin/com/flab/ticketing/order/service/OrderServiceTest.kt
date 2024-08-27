@@ -5,17 +5,22 @@ import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.entity.Cart
+import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.user.repository.reader.UserReader
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.util.*
 
 class OrderServiceTest : UnitTest() {
     private val userReader: UserReader = mockk()
@@ -76,6 +81,26 @@ class OrderServiceTest : UnitTest() {
             actual.customerName shouldBeEqual user.nickname
             actual.customerEmail shouldBeEqual user.email
             actual.orderName shouldBeEqual performance.name + " 좌석 외 1건"
+        }
+
+        "Parameter Cart UID의 갯수와 Repository에서 조회한 Cart의 갯수가 다르면 InvalidValueException을 throw한다." {
+            val user = UserTestDataGenerator.createUser()
+
+            every { userReader.findByUid(user.uid) } returns user
+            every { cartReader.findByUidList(listOf("cart001", "cart002")) } returns Collections.emptyList()
+            every { nanoIdGenerator.createNanoId() } returns "order001"
+            every { orderWriter.save(any()) } returns Unit
+            every { cartWriter.deleteAll(any()) } returns Unit
+
+
+            val e = shouldThrow<InvalidValueException> {
+                orderService.saveRequestedOrderInfo(
+                    AuthenticatedUserDto.of(CustomUserDetailsDto(user.uid, user.email, user.password, user.nickname)),
+                    OrderInfoRequest("토스 페이", listOf("cart001", "cart002"))
+                )
+            }
+            
+            e.info shouldBe OrderErrorInfos.INVALID_CART_INFO
         }
     }
 

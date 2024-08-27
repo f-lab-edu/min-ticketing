@@ -9,6 +9,7 @@ import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.entity.Cart
+import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.performance.entity.Performance
@@ -125,6 +126,45 @@ class OrderIntegrationTest : IntegrationTest() {
                 }
             }
 
+        }
+
+        given("사용자의 장바구니 정보가 존재할 때 - 잘못된 Cart UID 포함") {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val performancePlace = performance.performancePlace
+
+
+            val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
+
+            savePerformance(listOf(performance))
+            userRepository.save(user)
+            cartRepository.saveAll(carts)
+
+            `when`("존재하지 않는 Cart UID로 주문 정보 생성 API 호출 시") {
+                val uri = "/api/orders/toss/info"
+                val orderCartUidList = carts.subList(0, 3).map { it.uid }.toMutableList()
+                orderCartUidList.add("invalidCart001")
+
+                val orderRequest = OrderInfoRequest("토스 뱅크", orderCartUidList)
+                val jwt = createJwt(user)
+
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(orderRequest))
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("400 Bad Request를 출력한다.") {
+                    checkError(mvcResult, HttpStatus.BAD_REQUEST, OrderErrorInfos.INVALID_CART_INFO)
+                }
+            }
         }
     }
 
