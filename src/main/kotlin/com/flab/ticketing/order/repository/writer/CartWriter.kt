@@ -15,4 +15,8 @@ class CartWriter(
     fun save(cart: Cart) {
         cartRepository.save(cart)
     }
+
+    fun deleteAll(carts: List<Cart>) {
+        cartRepository.deleteAll(carts)
+    }
 }
