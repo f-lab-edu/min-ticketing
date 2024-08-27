@@ -2,6 +2,7 @@ package com.flab.ticketing.order.controller
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.resolver.annotation.LoginUser
+import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.CartListResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
@@ -27,6 +28,13 @@ class OrderController(
         return orderService.saveRequestedOrderInfo(userInfo, orderInfoRequest)
     }
 
+    @PostMapping("/toss/confirm")
+    fun confirmOrder(
+        @LoginUser userInfo: AuthenticatedUserDto,
+        @RequestBody orderConfirmRequest: OrderConfirmRequest
+    ) {
+        orderService.confirmOrder(userInfo.uid, orderConfirmRequest)
+    }
 
     @GetMapping("/carts")
     fun getCarts(@LoginUser userInfo: AuthenticatedUserDto): CartListResponse {

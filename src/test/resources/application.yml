@@ -11,8 +11,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-        show_sql: true
+  #       format_sql: true
+  #       show_sql: true
   mail:
     sender: noreply@minticketing.com
     host: 127.0.0.1
@@ -34,3 +34,9 @@ jwt:
   secret: SECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEY
   access-token:
     time: 1000000
+
+service:
+  toss:
+    url: http://localhost:1010
+    confirm-uri: /v1/payments/confirm
+    access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg==

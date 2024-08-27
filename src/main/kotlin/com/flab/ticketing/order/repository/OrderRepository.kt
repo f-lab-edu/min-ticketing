@@ -12,4 +12,6 @@ interface OrderRepository : CrudRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.user.uid = :userUid")
     fun findByUser(@Param("userUid") userUid: String): List<Order>
 
+    fun findByUid(uid: String): Order?
+
 }

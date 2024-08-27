@@ -11,7 +11,7 @@ class MockServerUtils {
     private val mockWebServer = MockWebServer()
 
     fun runServer() {
-        mockWebServer.start()
+        mockWebServer.start(port = 1010)
     }
 
     fun getHost(): String {
