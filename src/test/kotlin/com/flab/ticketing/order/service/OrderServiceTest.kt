@@ -66,7 +66,6 @@ class OrderServiceTest : UnitTest() {
             every { cartReader.findByUidList(listOf("cart001", "cart002")) } returns carts
             every { nanoIdGenerator.createNanoId() } returns orderUid
             every { orderWriter.save(any()) } returns Unit
-            every { cartWriter.deleteAll(carts) } returns Unit
 
             val actual = orderService.saveRequestedOrderInfo(
                 AuthenticatedUserDto.of(CustomUserDetailsDto(user.uid, user.email, user.password, user.nickname)),
@@ -74,7 +73,6 @@ class OrderServiceTest : UnitTest() {
             )
 
             verify { orderWriter.save(any()) }
-            verify { cartWriter.deleteAll(carts) }
 
             actual.orderId shouldBeEqual orderUid
             actual.amount shouldBeEqual performance.price * 2
@@ -90,7 +88,6 @@ class OrderServiceTest : UnitTest() {
             every { cartReader.findByUidList(listOf("cart001", "cart002")) } returns Collections.emptyList()
             every { nanoIdGenerator.createNanoId() } returns "order001"
             every { orderWriter.save(any()) } returns Unit
-            every { cartWriter.deleteAll(any()) } returns Unit
 
 
             val e = shouldThrow<InvalidValueException> {
@@ -99,7 +96,7 @@ class OrderServiceTest : UnitTest() {
                     OrderInfoRequest("토스 페이", listOf("cart001", "cart002"))
                 )
             }
-            
+
             e.info shouldBe OrderErrorInfos.INVALID_CART_INFO
         }
     }

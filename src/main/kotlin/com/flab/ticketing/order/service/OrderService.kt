@@ -44,8 +44,6 @@ class OrderService(
         }
 
         orderWriter.save(order)
-        cartWriter.deleteAll(carts)
-
         return OrderInfoResponse.of(user, order)
     }
 
