@@ -7,14 +7,18 @@ import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
+import com.flab.ticketing.order.dto.service.TossPayErrorResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.enums.TossPayErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
+import com.flab.ticketing.order.service.client.TossPaymentClient.Companion.TOSS_EXCEPTION_PREFIX
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
@@ -273,6 +277,60 @@ class OrderIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("주문 생성이 완료 되었을 때 - 토스 페이 API 정상 응답이 아닌 경우") {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+
+            val order = OrderTestDataGenerator.createOrder(
+                user = user,
+                payment = Order.Payment(performance.price * 2, "카드")
+            )
+
+            order.addReservation(performanceDateTime, seats[0])
+            order.addReservation(performanceDateTime, seats[1])
+
+            orderRepository.save(order)
+
+            val orderConfirmRequest = OrderConfirmRequest(
+                paymentType = "카드",
+                orderId = order.uid,
+                paymentKey = "payment001",
+                amount = order.payment.totalPrice
+            )
+            val tossPayResponse = setUpTossPaymentFailResponse()
+
+            `when`("결제 승인 API를 호출 시") {
+                val uri = "/api/orders/toss/confirm"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(orderConfirmRequest))
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("토스 페이 API의 응답 정보를 반환한다.") {
+                    checkError(
+                        mvcResult,
+                        HttpStatus.NOT_FOUND,
+                        CommonErrorInfos.EXTERNAL_API_ERROR.code,
+                        TOSS_EXCEPTION_PREFIX + tossPayResponse.message
+                    )
+                }
+            }
+
+        }
+
     }
 
 
@@ -358,6 +416,17 @@ class OrderIntegrationTest : IntegrationTest() {
         )
 
 
+    }
+
+    private fun setUpTossPaymentFailResponse(): TossPayErrorResponse {
+        mockServerUtils.addMockResponse(
+            HttpStatus.BAD_REQUEST,
+            "{\n" +
+                    "  \"code\": \"NOT_FOUND_PAYMENT\",\n" +
+                    "  \"message\": \"존재하지 않는 결제 입니다.\"\n" +
+                    "}"
+        )
+        return TossPayErrorResponse(TossPayErrorCode.NOT_FOUND_PAYMENT, "존재하지 않는 결제 입니다.")
     }
 
     private fun savePerformance(performances: List<Performance>) {
