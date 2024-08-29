@@ -30,6 +30,7 @@ import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
@@ -319,13 +320,18 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("토스 페이 API의 응답 정보를 반환한다.") {
+                then("토스 페이 API의 응답 정보를 반환하고, 장바구니를 복구한다.") {
                     checkError(
                         mvcResult,
                         HttpStatus.NOT_FOUND,
                         CommonErrorInfos.EXTERNAL_API_ERROR.code,
                         TOSS_EXCEPTION_PREFIX + tossPayResponse.message
                     )
+                    val expectedCarts = order.reservations.map {
+                        Pair(it.seat, it.performanceDateTime)
+                    }
+                    cartRepository.findByUserUid(user.uid)
+                        .map { Pair(it.seat, it.performanceDateTime) } shouldContainExactly expectedCarts
                 }
             }
 

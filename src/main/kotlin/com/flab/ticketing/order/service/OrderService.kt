@@ -1,6 +1,7 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.common.exception.ExternalAPIException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
@@ -53,13 +54,22 @@ class OrderService(
         return OrderInfoResponse.of(user, order)
     }
 
+
+    @Transactional(noRollbackFor = [ExternalAPIException::class])
     fun confirmOrder(userUid: String, orderConfirmRequest: OrderConfirmRequest) {
         val order = orderReader.findByUid(orderConfirmRequest.orderId)
         checkValidOrderConfirmRequest(userUid, order)
 
-        tossPaymentClient.confirm(orderConfirmRequest)
+        runCatching {
+            tossPaymentClient.confirm(orderConfirmRequest)
+            order.status = Order.OrderStatus.COMPLETED
+        }.onFailure {
+            val recoveredCarts = orderToCart(order)
+            cartWriter.saveAll(recoveredCarts)
+            orderWriter.delete(order)
+            throw it
+        }
 
-        order.status = Order.OrderStatus.COMPLETED
     }
 
 
@@ -86,5 +96,10 @@ class OrderService(
         )
     }
 
+
+    private fun orderToCart(order: Order): List<Cart> {
+        val user = order.user
+        return order.reservations.map { Cart(nanoIdGenerator.createNanoId(), it.seat, it.performanceDateTime, user) }
+    }
 
 }
