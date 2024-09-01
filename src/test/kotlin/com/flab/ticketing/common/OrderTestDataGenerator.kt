@@ -16,7 +16,6 @@ object OrderTestDataGenerator {
         return Order(
             uid,
             user,
-            mutableListOf(),
             payment
         )
     }
@@ -37,7 +36,7 @@ object OrderTestDataGenerator {
             order.addReservation(reservation)
             result.add(reservation)
         }
-        
+
         return result
     }
 

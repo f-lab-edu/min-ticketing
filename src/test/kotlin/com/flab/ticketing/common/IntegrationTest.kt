@@ -27,7 +27,7 @@ import redis.embedded.RedisServer
 
 
 @SpringBootTest
-@Import(EmbeddedRedisServerConfig::class)
+@Import(EmbeddedRedisServerConfig::class, MockServerUtils::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 abstract class IntegrationTest : BehaviorSpec() {
@@ -38,6 +38,9 @@ abstract class IntegrationTest : BehaviorSpec() {
 
     @Autowired
     lateinit var objectMapper: ObjectMapper
+
+    @Autowired
+    lateinit var mockServerUtils: MockServerUtils
 
     val greenMail = GreenMail(ServerSetupTest.SMTP_IMAP)
         .withConfiguration(

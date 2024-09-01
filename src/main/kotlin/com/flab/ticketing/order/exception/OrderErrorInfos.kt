@@ -4,6 +4,7 @@ import com.flab.ticketing.common.exception.ErrorInfo
 
 enum class OrderErrorInfos(override val code: String, override val message: String) : ErrorInfo {
 
-    ALREADY_RESERVED("ORDER-001", "이미 예약되었습니다.")
+    ALREADY_RESERVED("ORDER-001", "이미 예약되었습니다."),
+    INVALID_CART_INFO("ORDER-002", "올바르지 않은 장바구니 정보가 존재합니다.")
 
 }

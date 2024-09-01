@@ -17,4 +17,8 @@ class CartReader(
     fun findSeatUidInPlace(placeId: Long, performanceDateTimeUid: String): List<String> {
         return cartRepository.findSeatUidByDateUidAndPlaceIn(performanceDateTimeUid, placeId)
     }
+
+    fun findByUidList(uidList: List<String>): List<Cart> {
+        return cartRepository.findByUidListInJoinWith(uidList)
+    }
 }
