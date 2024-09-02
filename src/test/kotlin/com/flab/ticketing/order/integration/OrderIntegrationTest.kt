@@ -32,7 +32,6 @@ import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
@@ -45,6 +44,8 @@ import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 
 
 @Transactional
@@ -335,7 +336,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
-        given("사용자의 주문 정보가 존재할 때"){
+        given("사용자의 주문 정보가 존재할 때") {
             val user = UserTestDataGenerator.createUser()
             val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 2,
@@ -348,26 +349,32 @@ class OrderIntegrationTest : IntegrationTest() {
                 uid = "order-002",
                 user = user
             )
-
+            val order3 = OrderTestDataGenerator.createOrder(
+                uid = "order-003",
+                user = user
+            )
             order1.addReservation(performances[0].performanceDateTime[0], performances[0].performancePlace.seats[0])
             order2.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[0])
+            order3.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[1])
 
 
             userRepository.save(user)
             savePerformance(performances)
             orderRepository.save(order1)
             orderRepository.save(order2)
-            `when`("주문 정보 리스트 조회시"){
+            orderRepository.save(order3)
+            `when`("주문 정보 리스트 조회시") {
                 val uri = "/api/orders"
                 val jwt = createJwt(user)
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
+                        .param("limit", "2")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                 )
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("사용자가 주문한 주문 정보 리스트를 주문 생성 순으로 정렬해 반환한다."){
+                then("사용자가 주문한 주문 정보 리스트를 주문 생성 순으로 정렬해 반환한다.") {
                     val actual = objectMapper.readValue<CursoredResponse<OrderSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
@@ -376,23 +383,32 @@ class OrderIntegrationTest : IntegrationTest() {
                         )
                     )
                     val expected = listOf(
-                        OrderSummarySearchResult(order2.uid,
+                        OrderSummarySearchResult(
+                            order3.uid,
+                            order3.name,
+                            order3.reservations[0].performanceDateTime.performance.image,
+                            order3.payment.totalPrice,
+                            order3.createdAt.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS)
+                        ),
+                        OrderSummarySearchResult(
+                            order2.uid,
                             order2.name,
                             order2.reservations[0].performanceDateTime.performance.image,
                             order2.payment.totalPrice,
-                            order2.createdAt
-                        ),
-                        OrderSummarySearchResult(order1.uid,
-                            order1.name,
-                            order1.reservations[0].performanceDateTime.performance.image,
-                            order1.payment.totalPrice,
-                            order1.createdAt
+                            order2.createdAt.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS)
                         )
                     )
 
 
-                    actual.cursor shouldBe null
-                    actual.data shouldContainExactly expected
+                    actual.cursor shouldBe order1.uid
+                    actual.data.forEachIndexed { index, actualResult ->
+                        val expectedResult = expected[index]
+                        actualResult.uid shouldBe expectedResult.uid
+                        actualResult.name shouldBe expectedResult.name
+                        actualResult.performanceImage shouldBe expectedResult.performanceImage
+                        actualResult.totalPrice shouldBe expectedResult.totalPrice
+                        actualResult.orderedTime.truncatedTo(ChronoUnit.SECONDS) shouldBe expectedResult.orderedTime
+                    }
 
                 }
             }

@@ -75,7 +75,17 @@ class OrderService(
 
     @Transactional(readOnly = true)
     fun getOrderList(userUid: String, cursorInfo: CursorInfoDto): List<OrderSummarySearchResult> {
-        TODO()
+        val orders = orderReader.findOrderByUser(userUid, cursorInfo)
+
+        return orders.map {
+            OrderSummarySearchResult(
+                it.uid,
+                it.name,
+                it.reservations[0].performanceDateTime.performance.image,
+                it.payment.totalPrice,
+                it.createdAt
+            )
+        }
     }
 
 

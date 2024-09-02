@@ -16,9 +16,19 @@ interface OrderRepository : CrudRepository<Order, Long> {
     fun findByUid(uid: String): Order?
 
 
-    @Query("SELECT o FROM Order o " +
-            "WHERE o.user.uid = :userUid " +
-            "ORDER BY o.createdAt DESC")
+    @Query(
+        "SELECT o FROM Order o " +
+                "WHERE o.user.uid = :userUid " +
+                "ORDER BY o.id DESC"
+    )
     fun findByUser(@Param("userUid") userUid: String, Pageable: Pageable): List<Order>
-    fun findByUser(userUid: String, cursor: String, Pageable: Pageable): List<Order>
+
+
+    @Query(
+        "SELECT o FROM Order o " +
+                "WHERE o.user.uid = :userUid AND " +
+                "o.id <= (SELECT o.id FROM Order o WHERE o.uid = :cursor) " +
+                "ORDER BY o.id DESC"
+    )
+    fun findByUser(@Param("userUid") userUid: String, @Param("cursor") cursor: String, Pageable: Pageable): List<Order>
 }

@@ -9,11 +9,15 @@ import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.user.repository.UserRepository
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainExactly
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
 
-class OrderRepositoryTest :RepositoryTest(){
+class OrderRepositoryTest : RepositoryTest() {
 
     @Autowired
     private lateinit var orderRepository: OrderRepository
@@ -31,7 +35,7 @@ class OrderRepositoryTest :RepositoryTest(){
     private lateinit var performanceRepository: PerformanceRepository
 
     init {
-        "커서가 존재하지 않을 때 사용자 별로 주문 최신순으로 정렬해 조회할 수 있다."{
+        "커서가 존재하지 않을 때 사용자 별로 주문 최신순으로 정렬해 조회할 수 있다." {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
@@ -46,17 +50,44 @@ class OrderRepositoryTest :RepositoryTest(){
 
             userRepository.save(user)
             savePerformance(listOf(performance))
-            orders.forEachIndexed{idx, order->
+            orders.forEachIndexed { idx, order ->
                 order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[idx])
                 orderRepository.save(order)
-                Thread.sleep(1000)
+                Thread.sleep(100)
             }
 
-            val actual = orderRepository.findByUser(user.uid, PageRequest.of(0,10))
+            val actual = orderRepository.findByUser(user.uid, PageRequest.of(0, 10))
 
-            val expectedUidList = orders.sortedBy { it.createdAt }.reversed().map { it.uid }
+            val expectedUidList = listOf("order-004", "order-003", "order-002", "order-001", "order-000")
 
             actual.map { it.uid } shouldContainExactly expectedUidList
+        }
+
+        "커서가 존재할 때 사용자 별로 주문 최신순으로 정렬해 조회할 수 있다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+
+            val orders = List(5) {
+                OrderTestDataGenerator.createOrder(
+                    uid = "order-00$it",
+                    user = user
+                )
+            }
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orders.forEachIndexed { idx, order ->
+                order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[idx])
+                orderRepository.save(order)
+            }
+
+            val actual = orderRepository.findByUser(user.uid, orders[3].uid, PageRequest.of(0, 10))
+            val expectedUidList = listOf("order-003", "order-002", "order-001", "order-000")
+
+            actual.map { it.uid } shouldContainExactly expectedUidList
+
         }
     }
 
@@ -67,6 +98,19 @@ class OrderRepositoryTest :RepositoryTest(){
 
         performances.forEach {
             performanceRepository.save(it)
+        }
+    }
+
+    override suspend fun afterEach(testCase: TestCase, result: TestResult) {
+        super.afterEach(testCase, result)
+
+        PerformanceTestDataGenerator.reset()
+        withContext(Dispatchers.IO) {
+            orderRepository.deleteAll()
+            userRepository.deleteAll()
+            performanceRepository.deleteAll()
+            placeRepository.deleteAll()
+            regionRepository.deleteAll()
         }
     }
 }

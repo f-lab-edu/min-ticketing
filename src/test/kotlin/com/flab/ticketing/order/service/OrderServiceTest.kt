@@ -6,10 +6,12 @@ import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
@@ -20,6 +22,7 @@ import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.every
@@ -83,7 +86,7 @@ class OrderServiceTest : UnitTest() {
 
             verify { orderWriter.save(any()) }
             verify { cartWriter.deleteAll(carts) }
-            
+
             actual.orderId shouldBeEqual orderUid
             actual.amount shouldBeEqual performance.price * 2
             actual.customerName shouldBeEqual user.nickname
@@ -140,7 +143,46 @@ class OrderServiceTest : UnitTest() {
             order.status shouldBe Order.OrderStatus.COMPLETED
             verify { tossPaymentClient.confirm(orderConfirmRequest) }
         }
+
+        "Order 객체를 조회하고 이를 OrderSummarySearchResult 객체로 변환해 반환할 수 있다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            val orders = List(2) {
+                OrderTestDataGenerator.createOrder(
+                    uid = "order-00${it + 1}",
+                    user = user,
+                    payment = Order.Payment((it + 1) * 1000, "카드")
+                )
+            }
+
+            orders.forEachIndexed { index, order -> order.addReservation(performanceDateTime, seats[index]) }
+
+            every { orderReader.findOrderByUser(user.uid, any()) } returns orders
+
+            val actual = orderService.getOrderList(user.uid, CursorInfoDto())
+            val expected = listOf(
+                OrderSummarySearchResult(
+                    "order-001",
+                    orders[0].name,
+                    performance.image,
+                    1000,
+                    orders[0].createdAt
+                ),
+                OrderSummarySearchResult(
+                    "order-002",
+                    orders[1].name,
+                    performance.image,
+                    2000,
+                    orders[1].createdAt
+                ),
+            )
+
+            actual shouldContainExactly expected
+        }
     }
-
-
 }
