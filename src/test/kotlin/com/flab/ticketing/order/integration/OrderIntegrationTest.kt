@@ -7,10 +7,12 @@ import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
+import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
@@ -328,6 +330,70 @@ class OrderIntegrationTest : IntegrationTest() {
                         TOSS_EXCEPTION_PREFIX + tossPayResponse.message
                     )
                     orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.PENDING
+                }
+            }
+
+        }
+
+        given("사용자의 주문 정보가 존재할 때"){
+            val user = UserTestDataGenerator.createUser()
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 2,
+                seatPerPlace = 5
+            )
+            val order1 = OrderTestDataGenerator.createOrder(
+                user = user
+            )
+            val order2 = OrderTestDataGenerator.createOrder(
+                uid = "order-002",
+                user = user
+            )
+
+            order1.addReservation(performances[0].performanceDateTime[0], performances[0].performancePlace.seats[0])
+            order2.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[0])
+
+
+            userRepository.save(user)
+            savePerformance(performances)
+            orderRepository.save(order1)
+            orderRepository.save(order2)
+            `when`("주문 정보 리스트 조회시"){
+                val uri = "/api/orders"
+                val jwt = createJwt(user)
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("사용자가 주문한 주문 정보 리스트를 주문 생성 순으로 정렬해 반환한다."){
+                    val actual = objectMapper.readValue<CursoredResponse<OrderSummarySearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            OrderSummarySearchResult::class.java
+                        )
+                    )
+                    val expected = listOf(
+                        OrderSummarySearchResult(order2.uid,
+                            order2.name,
+                            order2.reservations[0].performanceDateTime.performance.image,
+                            order2.payment.totalPrice,
+                            order2.createdAt
+                        ),
+                        OrderSummarySearchResult(order1.uid,
+                            order1.name,
+                            order1.reservations[0].performanceDateTime.performance.image,
+                            order1.payment.totalPrice,
+                            order1.createdAt
+                        )
+                    )
+
+
+                    actual.cursor shouldBe null
+                    actual.data shouldContainExactly expected
+
                 }
             }
 

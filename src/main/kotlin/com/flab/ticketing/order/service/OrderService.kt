@@ -1,12 +1,14 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.ExternalAPIException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
+import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.entity.Reservation
@@ -68,6 +70,12 @@ class OrderService(
             throw it
         }
 
+    }
+
+
+    @Transactional(readOnly = true)
+    fun getOrderList(userUid: String, cursorInfo: CursorInfoDto): List<OrderSummarySearchResult> {
+        TODO()
     }
 
 
