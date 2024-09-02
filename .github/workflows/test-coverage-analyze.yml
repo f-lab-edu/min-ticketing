@@ -34,6 +34,7 @@ jobs:
           min-coverage-overall: 60
           min-coverage-changed-files: 60
           fail-on-coverage-error: false
+          update-comment: true
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v3
@@ -43,23 +44,3 @@ jobs:
           path: |
             **/build/reports/jacoco/
             **/build/reports/tests/
-
-      - name: Create Coverage Comment
-        uses: actions/github-script@v6
-        if: always()
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Jacoco Test Coverage Report
-            
-            Overall coverage: ${{ steps.jacoco.outputs.coverage-overall }}%
-            Changed files coverage: ${{ steps.jacoco.outputs.coverage-changed-files }}%
-            
-            [Full report](${{ steps.jacoco.outputs.report-url }})
-            
-            Coverage reports have been uploaded as artifacts. You can download them from the Actions tab.`
-            })
