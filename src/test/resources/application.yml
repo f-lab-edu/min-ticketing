@@ -37,6 +37,6 @@ jwt:
 
 service:
   toss:
-    url: http://localhost:1010
+    url: http://localhost:2024
     confirm-uri: /v1/payments/confirm
     access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg==
