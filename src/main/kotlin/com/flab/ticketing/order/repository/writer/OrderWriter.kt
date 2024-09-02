@@ -14,4 +14,7 @@ class OrderWriter(
         orderRepository.save(order)
     }
 
+    fun delete(order: Order) {
+        orderRepository.delete(order)
+    }
 }

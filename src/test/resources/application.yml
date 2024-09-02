@@ -34,3 +34,9 @@ jwt:
   secret: SECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEY
   access-token:
     time: 1000000
+
+service:
+  toss:
+    url: http://localhost:1010
+    confirm-uri: /v1/payments/confirm
+    access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg==

@@ -20,7 +20,7 @@ class Order(
     val payment: Payment,
 
     @Enumerated(EnumType.STRING)
-    val status: OrderStatus = OrderStatus.REQUESTED
+    var status: OrderStatus = OrderStatus.REQUESTED
 
 ) : BaseEntity() {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order", cascade = [CascadeType.ALL])
@@ -64,6 +64,6 @@ class Order(
 
 
     enum class OrderStatus {
-        REQUESTED, COMPLETED, FAILED, CANCELED
+        REQUESTED, PENDING, COMPLETED, FAILED, CANCELED
     }
 }

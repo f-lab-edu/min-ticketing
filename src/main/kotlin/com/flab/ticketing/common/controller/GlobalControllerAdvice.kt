@@ -45,4 +45,10 @@ class GlobalControllerAdvice {
     fun handleForbiddenException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.FORBIDDEN)
     }
+
+    @ExceptionHandler(ExternalAPIException::class)
+    fun handleExternalAPIException(e: ExternalAPIException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(ErrorResponse(e.returnMessage, CommonErrorInfos.EXTERNAL_API_ERROR.code), e.status)
+    }
+
 }
