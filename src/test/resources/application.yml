@@ -36,6 +36,7 @@ jwt:
     time: 1000000
 
 service:
+  url: http://test.com
   toss:
     url: http://localhost:2024
     confirm-uri: /v1/payments/confirm
