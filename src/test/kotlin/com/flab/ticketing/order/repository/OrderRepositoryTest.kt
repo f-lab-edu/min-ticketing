@@ -4,14 +4,19 @@ import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.exception.BadRequestException
+import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.user.repository.UserRepository
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -87,6 +92,23 @@ class OrderRepositoryTest : RepositoryTest() {
             val expectedUidList = listOf("order-003", "order-002", "order-001", "order-000")
 
             actual.map { it.uid } shouldContainExactly expectedUidList
+
+        }
+
+        "주문을 저장할 때 주문의 Reservation 객체가 0개라면 exception을 throw한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance()
+
+            val order = Order("order-001", user, Order.Payment(0, "카드"))
+
+            userRepository.save(user)
+            performanceRepository.save(performance)
+
+            val e = shouldThrow<BadRequestException> {
+                orderRepository.save(order)
+            }
+
+            e.info shouldBe OrderErrorInfos.ORDER_MUST_MINIMUM_ONE_RESERVATION
 
         }
     }

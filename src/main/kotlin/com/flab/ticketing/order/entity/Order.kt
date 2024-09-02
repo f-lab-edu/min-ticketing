@@ -1,6 +1,8 @@
 package com.flab.ticketing.order.entity
 
 import com.flab.ticketing.common.entity.BaseEntity
+import com.flab.ticketing.common.exception.BadRequestException
+import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.user.entity.User
@@ -55,6 +57,13 @@ class Order(
 
     }
 
+
+    override fun prePersist() {
+        super.prePersist()
+        if (this.reservations.size == 0) {
+            throw BadRequestException(OrderErrorInfos.ORDER_MUST_MINIMUM_ONE_RESERVATION)
+        }
+    }
 
     @Embeddable
     class Payment(
