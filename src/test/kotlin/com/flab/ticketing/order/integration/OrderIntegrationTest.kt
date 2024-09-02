@@ -219,7 +219,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("토스 결제 승인 API를 호출하고, Order의 상태를 COMPLETED로 바꾸며, Cart 정보를 삭제한다.") {
+                then("토스 결제 승인 API를 호출하고, Order의 상태를 COMPLETED로 바꾼다.") {
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
                     orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.COMPLETED
                 }
@@ -320,18 +320,14 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("토스 페이 API의 응답 정보를 반환하고, 장바구니를 복구한다.") {
+                then("토스 페이 API의 응답 정보를 반환하고, 주문을 PENDING 상태로 변경한다.") {
                     checkError(
                         mvcResult,
                         HttpStatus.NOT_FOUND,
                         CommonErrorInfos.EXTERNAL_API_ERROR.code,
                         TOSS_EXCEPTION_PREFIX + tossPayResponse.message
                     )
-                    val expectedCarts = order.reservations.map {
-                        Pair(it.seat, it.performanceDateTime)
-                    }
-                    cartRepository.findByUserUid(user.uid)
-                        .map { Pair(it.seat, it.performanceDateTime) } shouldContainExactly expectedCarts
+                    orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.PENDING
                 }
             }
 

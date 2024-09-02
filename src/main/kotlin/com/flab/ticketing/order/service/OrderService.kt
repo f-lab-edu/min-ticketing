@@ -64,9 +64,7 @@ class OrderService(
             tossPaymentClient.confirm(orderConfirmRequest)
             order.status = Order.OrderStatus.COMPLETED
         }.onFailure {
-            val recoveredCarts = orderToCart(order)
-            cartWriter.saveAll(recoveredCarts)
-            orderWriter.delete(order)
+            order.status = Order.OrderStatus.PENDING
             throw it
         }
 

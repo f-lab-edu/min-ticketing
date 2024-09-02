@@ -64,6 +64,6 @@ class Order(
 
 
     enum class OrderStatus {
-        REQUESTED, COMPLETED, FAILED, CANCELED
+        REQUESTED, PENDING, COMPLETED, FAILED, CANCELED
     }
 }
