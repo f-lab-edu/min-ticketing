@@ -35,6 +35,14 @@ jobs:
           min-coverage-changed-files: 60
           fail-on-coverage-error: false
 
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: |
+            **/build/reports/jacoco/
+            **/build/reports/tests/
+
       - name: Create Coverage Comment
         uses: actions/github-script@v6
         if: always()
@@ -50,5 +58,7 @@ jobs:
             Overall coverage: ${{ steps.jacoco.outputs.coverage-overall }}%
             Changed files coverage: ${{ steps.jacoco.outputs.coverage-changed-files }}%
             
-            [Full report](${{ steps.jacoco.outputs.report-url }})`
+            [Full report](${{ steps.jacoco.outputs.report-url }})
+            
+            Coverage reports have been uploaded as artifacts. You can download them from the Actions tab.`
             })
