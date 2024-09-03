@@ -7,6 +7,7 @@ import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.CartListResponse
+import com.flab.ticketing.order.dto.response.OrderDetailSearchResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.service.OrderService
@@ -48,13 +49,21 @@ class OrderController(
     fun getOrderList(
         @LoginUser userInfo: AuthenticatedUserDto,
         @ModelAttribute cursorInfo: CursorInfoDto
-    ): CursoredResponse<OrderSummarySearchResult>{
+    ): CursoredResponse<OrderSummarySearchResult> {
         val orderList = orderService.getOrderList(userInfo.uid, CursorInfoDto(cursorInfo.cursor, cursorInfo.limit + 1))
 
-        if(orderList.size < cursorInfo.limit){
+        if (orderList.size < cursorInfo.limit) {
             return CursoredResponse(null, orderList)
         }
-        return CursoredResponse(orderList[orderList.size-1].uid, orderList.dropLast(1))
+        return CursoredResponse(orderList[orderList.size - 1].uid, orderList.dropLast(1))
+    }
+
+    @GetMapping("/{orderUid}")
+    fun getOrderDetail(
+        @LoginUser userInfo: AuthenticatedUserDto,
+        @PathVariable orderUid: String
+    ): OrderDetailSearchResponse {
+        return orderService.getOrderDetail(userInfo.uid, orderUid)
     }
 
 }

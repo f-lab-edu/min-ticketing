@@ -11,6 +11,7 @@ import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.response.OrderDetailSearchResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
@@ -410,6 +411,98 @@ class OrderIntegrationTest : IntegrationTest() {
                         actualResult.orderedTime.truncatedTo(ChronoUnit.SECONDS) shouldBe expectedResult.orderedTime
                     }
 
+                }
+            }
+
+        }
+
+
+        given("사용자의 주문 정보가 존재할 때 - 주문 상세 조회") {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val seats = performance.performancePlace.seats
+            val performanceDateTime = performance.performanceDateTime[0]
+
+            val order = OrderTestDataGenerator.createOrder(
+                user = user
+            )
+
+            for (i in 0..2) {
+                order.addReservation(performanceDateTime, seats[i])
+            }
+
+            order.reservations.forEach {
+                it.qrImageUrl = "http://qrImage.com/images/${it.id}"
+            }
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orderRepository.save(order)
+
+            `when`("주문 정보를 상세 조회할 시") {
+                val uri = "/api/orders/${order.uid}"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+
+                then("해당 주문 정보의 상세 정보를 반환한다.") {
+                    val actual = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        OrderDetailSearchResponse::class.java
+                    )
+
+                    val expectedReservationInfo = listOf(
+                        OrderDetailSearchResponse.ReservationDetailInfo(
+                            performanceName = performance.name,
+                            performanceTime = performanceDateTime.showTime.withZoneSameInstant(
+                                ZoneOffset.UTC
+                            ).truncatedTo(
+                                ChronoUnit.SECONDS
+                            ),
+                            qrImage = order.reservations[0].qrImageUrl!!,
+                            seatName = order.reservations[0].seat.name
+                        ),
+                        OrderDetailSearchResponse.ReservationDetailInfo(
+                            performanceName = performance.name,
+                            performanceTime = performanceDateTime.showTime.withZoneSameInstant(
+                                ZoneOffset.UTC
+                            ).truncatedTo(
+                                ChronoUnit.SECONDS
+                            ),
+                            qrImage = order.reservations[1].qrImageUrl!!,
+                            seatName = order.reservations[1].seat.name
+                        ), OrderDetailSearchResponse.ReservationDetailInfo(
+                            performanceName = performance.name,
+                            performanceTime = performanceDateTime.showTime.withZoneSameInstant(
+                                ZoneOffset.UTC
+                            ).truncatedTo(
+                                ChronoUnit.SECONDS
+                            ),
+                            qrImage = order.reservations[2].qrImageUrl!!,
+                            seatName = order.reservations[2].seat.name
+                        )
+                    )
+
+                    actual.uid shouldBeEqual order.uid
+                    actual.orderName shouldBeEqual order.name
+                    actual.orderTime.truncatedTo(ChronoUnit.SECONDS) shouldBeEqual order.createdAt.withZoneSameInstant(
+                        ZoneOffset.UTC
+                    ).truncatedTo(
+                        ChronoUnit.SECONDS
+                    )
+
+                    actual.totalPrice shouldBe order.payment.totalPrice
+                    actual.paymentMethod shouldBeEqual order.payment.paymentMethod
+                    actual.image shouldBeEqual order.reservations[0].performanceDateTime.performance.image
+                    actual.reservations shouldContainAll expectedReservationInfo
                 }
             }
 

@@ -12,6 +12,7 @@ import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.response.OrderDetailSearchResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
@@ -248,7 +249,40 @@ class OrderServiceTest : UnitTest() {
             val actual = orderService.getOrderList(user.uid, CursorInfoDto())
 
             actual.map { it.uid } shouldContainExactly listOf(orders[0].uid, orders[1].uid)
-            
+
+        }
+
+        "주문을 UID로 조회하고 Order 객체를 OrderDetailSearchResponse 객체로 변환할 수 있다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            val order = OrderTestDataGenerator.createOrder(user = user)
+
+            order.addReservation(performanceDateTime, seats[0])
+            order.reservations[0].qrImageUrl = "http://qrImage.com/image/1"
+
+            every { orderReader.findByUid(order.uid) } returns order
+
+            val actual = orderService.getOrderDetail(user.uid, order.uid)
+
+            actual.uid shouldBeEqual order.uid
+            actual.orderName shouldBeEqual order.name
+            actual.orderTime shouldBeEqual order.createdAt
+            actual.totalPrice shouldBe order.payment.totalPrice
+            actual.paymentMethod shouldBeEqual order.payment.paymentMethod
+            actual.image shouldBeEqual order.reservations[0].performanceDateTime.performance.image
+            actual.reservations shouldContainExactly listOf(
+                OrderDetailSearchResponse.ReservationDetailInfo(
+                    performance.name,
+                    performanceDateTime.showTime,
+                    order.reservations[0].qrImageUrl!!,
+                    order.reservations[0].seat.name
+                )
+            )
         }
     }
 }

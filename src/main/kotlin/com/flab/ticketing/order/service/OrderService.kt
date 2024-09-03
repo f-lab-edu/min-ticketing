@@ -9,6 +9,7 @@ import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.common.utils.QRCodeGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.response.OrderDetailSearchResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
@@ -125,6 +126,27 @@ class OrderService(
             it.qrImageUrl = savedImageUrl
         }
 
+    }
+
+    fun getOrderDetail(userUid: String, orderUid: String): OrderDetailSearchResponse {
+        val order = orderReader.findByUid(orderUid)
+
+        return OrderDetailSearchResponse(
+            order.uid,
+            order.name,
+            order.createdAt,
+            order.payment.totalPrice,
+            order.payment.paymentMethod,
+            order.reservations[0].performanceDateTime.performance.image,
+            order.reservations.map {
+                OrderDetailSearchResponse.ReservationDetailInfo(
+                    it.performanceDateTime.performance.name,
+                    it.performanceDateTime.showTime,
+                    it.qrImageUrl!!,
+                    it.seat.name
+                )
+            }
+        )
     }
 
 }
