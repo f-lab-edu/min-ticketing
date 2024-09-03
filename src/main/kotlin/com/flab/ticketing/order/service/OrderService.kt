@@ -4,7 +4,9 @@ import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.ExternalAPIException
 import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
+import com.flab.ticketing.common.utils.QRCodeGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
@@ -20,6 +22,7 @@ import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -33,7 +36,9 @@ class OrderService(
     private val orderReader: OrderReader,
     private val orderWriter: OrderWriter,
     private val nanoIdGenerator: NanoIdGenerator,
-    private val tossPaymentClient: TossPaymentClient
+    private val tossPaymentClient: TossPaymentClient,
+    private val fileService: FileService,
+    @Value("\${service.url}") private val serviceUrl: String
 ) {
 
     fun saveRequestedOrderInfo(
@@ -65,6 +70,7 @@ class OrderService(
         runCatching {
             tossPaymentClient.confirm(orderConfirmRequest)
             order.status = Order.OrderStatus.COMPLETED
+            createReservationQRCode(order)
         }.onFailure {
             order.status = Order.OrderStatus.PENDING
             throw it
@@ -112,10 +118,13 @@ class OrderService(
         )
     }
 
+    private fun createReservationQRCode(order: Order) {
+        order.reservations.forEach {
+            val qrCodeImage = QRCodeGenerator.gererateQR("$serviceUrl/orders/${it.id}/use")
+            val savedImageUrl = fileService.uploadImage(qrCodeImage)
+            it.qrImageUrl = savedImageUrl
+        }
 
-    private fun orderToCart(order: Order): List<Cart> {
-        val user = order.user
-        return order.reservations.map { Cart(nanoIdGenerator.createNanoId(), it.seat, it.performanceDateTime, user) }
     }
 
 }

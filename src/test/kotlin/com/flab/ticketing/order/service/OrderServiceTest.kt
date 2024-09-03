@@ -8,6 +8,7 @@ import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
@@ -28,6 +29,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import java.awt.image.BufferedImage
 import java.util.*
 
 class OrderServiceTest : UnitTest() {
@@ -38,6 +40,9 @@ class OrderServiceTest : UnitTest() {
     private val orderWriter: OrderWriter = mockk()
     private val nanoIdGenerator: NanoIdGenerator = mockk()
     private val tossPaymentClient: TossPaymentClient = mockk()
+    private val fileService: FileService = mockk()
+
+    private val serviceUrl = "http://test.com"
 
     private val orderService = OrderService(
         userReader = userReader,
@@ -46,7 +51,9 @@ class OrderServiceTest : UnitTest() {
         orderReader = orderReader,
         orderWriter = orderWriter,
         nanoIdGenerator = nanoIdGenerator,
-        tossPaymentClient = tossPaymentClient
+        tossPaymentClient = tossPaymentClient,
+        fileService = fileService,
+        serviceUrl = serviceUrl
     )
 
     init {
@@ -137,7 +144,9 @@ class OrderServiceTest : UnitTest() {
 
             every { orderReader.findByUid(order.uid) } returns order
             every { tossPaymentClient.confirm(orderConfirmRequest) } returns Unit
-
+            val qrImageUrl = "http://test.com/image/1"
+            every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
+            
             orderService.confirmOrder(user.uid, orderConfirmRequest)
 
             order.status shouldBe Order.OrderStatus.COMPLETED
@@ -183,6 +192,36 @@ class OrderServiceTest : UnitTest() {
             )
 
             actual shouldContainExactly expected
+        }
+
+        "주문을 확정할 때 Reservation의 QR 코드를 생성하여 이미지를 저장하고 DB에 이미지 URL을 저장한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+
+            val order = OrderTestDataGenerator.createOrder(
+                user = user,
+                payment = Order.Payment(performance.price * 2, "카드")
+            )
+
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+
+            val orderConfirmRequest = OrderConfirmRequest(
+                paymentType = "카드",
+                orderId = order.uid,
+                paymentKey = "payment001",
+                amount = order.payment.totalPrice
+            )
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every { tossPaymentClient.confirm(orderConfirmRequest) } returns Unit
+
+            val qrImageUrl = "http://test.com/image/1"
+            every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
+
+            orderService.confirmOrder(user.uid, orderConfirmRequest)
+            order.reservations[0].qrImageUrl!! shouldBeEqual qrImageUrl
         }
     }
 }
