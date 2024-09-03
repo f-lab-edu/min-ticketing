@@ -10,6 +10,7 @@ import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.exception.UnProcessableException
 import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
@@ -308,7 +309,21 @@ class OrderServiceTest : UnitTest() {
             }
 
             e.info shouldBe CommonErrorInfos.UNREACHABLE_RESOURCE
-            
+
+        }
+
+        "주문을 UID로 조회할 시 주문의 Reservation이 존재하지 않는다면 UnProcessableException과 적절한 ErrorInfo를 반환한다." {
+            val user = UserTestDataGenerator.createUser()
+
+            val order = OrderTestDataGenerator.createOrder(user = user)
+
+            every { orderReader.findByUid(order.uid) } returns order
+
+            val e = shouldThrow<UnProcessableException> {
+                orderService.getOrderDetail(user.uid, order.uid)
+            }
+
+            e.info shouldBe OrderErrorInfos.INVALID_ORDER
         }
     }
 }

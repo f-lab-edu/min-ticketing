@@ -51,4 +51,9 @@ class GlobalControllerAdvice {
         return ResponseEntity(ErrorResponse(e.returnMessage, CommonErrorInfos.EXTERNAL_API_ERROR.code), e.status)
     }
 
+    @ExceptionHandler(UnProcessableException::class)
+    fun handleUnProcessableException(e: UnProcessableException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.UNPROCESSABLE_ENTITY)
+    }
+
 }

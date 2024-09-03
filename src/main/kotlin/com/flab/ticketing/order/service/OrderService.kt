@@ -2,10 +2,7 @@ package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.common.dto.service.CursorInfoDto
-import com.flab.ticketing.common.exception.CommonErrorInfos
-import com.flab.ticketing.common.exception.ExternalAPIException
-import com.flab.ticketing.common.exception.ForbiddenException
-import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.common.exception.*
 import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.common.utils.QRCodeGenerator
@@ -156,6 +153,9 @@ class OrderService(
     fun checkOrderDetailInfo(order: Order, userUid: String) {
         if (order.user.uid != userUid) {
             throw ForbiddenException(CommonErrorInfos.UNREACHABLE_RESOURCE)
+        }
+        if (order.reservations.size <= 0) {
+            throw UnProcessableException(OrderErrorInfos.INVALID_ORDER)
         }
     }
 
