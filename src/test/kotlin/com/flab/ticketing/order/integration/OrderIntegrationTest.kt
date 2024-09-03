@@ -529,6 +529,48 @@ class OrderIntegrationTest : IntegrationTest() {
             }
         }
 
+        given("사용자의 주문 정보가 존재할 때 - 주문 상세 조회, 다른 사용자") {
+            val user = UserTestDataGenerator.createUser()
+            val user2 = UserTestDataGenerator.createUser(uid = "user-002", email = "email2@email.com")
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val seats = performance.performancePlace.seats
+            val performanceDateTime = performance.performanceDateTime[0]
+
+            val order = OrderTestDataGenerator.createOrder(
+                user = user
+            )
+
+            order.addReservation(performanceDateTime, seats[0])
+
+            order.reservations.forEach {
+                it.qrImageUrl = "http://qrImage.com/images/${it.id}"
+            }
+
+            userRepository.saveAll(listOf(user, user2))
+            savePerformance(listOf(performance))
+            orderRepository.save(order)
+
+            `when`("주문 정보를 상세 조회할 시") {
+                val uri = "/api/orders/${order.uid}"
+                val jwt = createJwt(user2)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("403 오류와 적절한 오류 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.FORBIDDEN, CommonErrorInfos.UNREACHABLE_RESOURCE)
+
+                }
+
+            }
+        }
+
     }
 
 

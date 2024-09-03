@@ -2,7 +2,9 @@ package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.ExternalAPIException
+import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
@@ -131,6 +133,8 @@ class OrderService(
     fun getOrderDetail(userUid: String, orderUid: String): OrderDetailSearchResponse {
         val order = orderReader.findByUid(orderUid)
 
+        checkOrderDetailInfo(order, userUid)
+
         return OrderDetailSearchResponse(
             order.uid,
             order.name,
@@ -147,6 +151,12 @@ class OrderService(
                 )
             }
         )
+    }
+
+    fun checkOrderDetailInfo(order: Order, userUid: String) {
+        if (order.user.uid != userUid) {
+            throw ForbiddenException(CommonErrorInfos.UNREACHABLE_RESOURCE)
+        }
     }
 
 }

@@ -7,6 +7,8 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.exception.CommonErrorInfos
+import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
@@ -283,6 +285,30 @@ class OrderServiceTest : UnitTest() {
                     order.reservations[0].seat.name
                 )
             )
+        }
+
+        "주문을 UID로 조회할 시 조회한 주체가 주문자가 아닐 경우 ForBiddenException과 적절한 ErrorInfo를 반환한다." {
+            val user = UserTestDataGenerator.createUser()
+            val user2 = UserTestDataGenerator.createUser(uid = "user-002", email = "email2@email.com")
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            val order = OrderTestDataGenerator.createOrder(user = user)
+
+            order.addReservation(performanceDateTime, seats[0])
+            order.reservations[0].qrImageUrl = "http://qrImage.com/image/1"
+
+            every { orderReader.findByUid(order.uid) } returns order
+
+            val e = shouldThrow<ForbiddenException> {
+                orderService.getOrderDetail(user2.uid, order.uid)
+            }
+
+            e.info shouldBe CommonErrorInfos.UNREACHABLE_RESOURCE
+            
         }
     }
 }
