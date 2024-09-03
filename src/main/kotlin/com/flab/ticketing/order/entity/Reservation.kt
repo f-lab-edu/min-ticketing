@@ -18,8 +18,7 @@ class Reservation(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    val order: Order
-) : BaseEntity() {
+    val order: Order,
 
     var qrImageUrl: String? = null
-}
+) : BaseEntity()
