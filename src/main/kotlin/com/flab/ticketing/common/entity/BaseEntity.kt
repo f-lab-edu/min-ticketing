@@ -30,7 +30,7 @@ abstract class BaseEntity {
     }
 
     @PrePersist
-    fun prePersist() {
+    open fun prePersist() {
         createdAt = ZonedDateTime.now()
         updatedAt = ZonedDateTime.now()
     }

@@ -34,21 +34,13 @@ jobs:
           min-coverage-overall: 60
           min-coverage-changed-files: 60
           fail-on-coverage-error: false
+          update-comment: true
 
-      - name: Create Coverage Comment
-        uses: actions/github-script@v6
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
         if: always()
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## Jacoco Test Coverage Report
-            
-            Overall coverage: ${{ steps.jacoco.outputs.coverage-overall }}%
-            Changed files coverage: ${{ steps.jacoco.outputs.coverage-changed-files }}%
-            
-            [Full report](${{ steps.jacoco.outputs.report-url }})`
-            })
+          name: coverage-reports
+          path: |
+            **/build/reports/jacoco/
+            **/build/reports/tests/
