@@ -508,6 +508,27 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
+        given("사용자의 주문 정보가 존재하지 않을 때 - 주문 상세 조회 불가") {
+            val user = UserTestDataGenerator.createUser()
+
+            userRepository.save(user)
+            `when`("주문 정보를 상세 조회할 시") {
+                val uri = "/api/orders/unknown001"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("404 오류와 적절한 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.NOT_FOUND, OrderErrorInfos.ORDER_INFO_NOT_FOUND)
+                }
+            }
+        }
+
     }
 
 
