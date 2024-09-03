@@ -146,7 +146,7 @@ class OrderServiceTest : UnitTest() {
             every { tossPaymentClient.confirm(orderConfirmRequest) } returns Unit
             val qrImageUrl = "http://test.com/image/1"
             every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
-            
+
             orderService.confirmOrder(user.uid, orderConfirmRequest)
 
             order.status shouldBe Order.OrderStatus.COMPLETED
@@ -222,6 +222,33 @@ class OrderServiceTest : UnitTest() {
 
             orderService.confirmOrder(user.uid, orderConfirmRequest)
             order.reservations[0].qrImageUrl!! shouldBeEqual qrImageUrl
+        }
+
+        "주문을 OrderSummarySearchResult 객체로 변환할 때 Order 객체에 Reservation 객체가 연관되어 있지 않은 경우 해당 Order 객체는 제외한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            val orders = List(3) {
+                OrderTestDataGenerator.createOrder(
+                    uid = "order-00${it + 1}",
+                    user = user,
+                    payment = Order.Payment((it + 1) * 1000, "카드")
+                )
+            }
+
+            orders[0].addReservation(performanceDateTime, seats[0])
+            orders[1].addReservation(performanceDateTime, seats[1])
+
+            every { orderReader.findOrderByUser(user.uid, any()) } returns orders
+
+            val actual = orderService.getOrderList(user.uid, CursorInfoDto())
+
+            actual.map { it.uid } shouldContainExactly listOf(orders[0].uid, orders[1].uid)
+            
         }
     }
 }

@@ -83,7 +83,7 @@ class OrderService(
     fun getOrderList(userUid: String, cursorInfo: CursorInfoDto): List<OrderSummarySearchResult> {
         val orders = orderReader.findOrderByUser(userUid, cursorInfo)
 
-        return orders.map {
+        return orders.filter { it.reservations.size > 0 }.map {
             OrderSummarySearchResult(
                 it.uid,
                 it.name,
