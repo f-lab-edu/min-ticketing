@@ -68,8 +68,9 @@ class OrderService(
         checkValidOrderConfirmRequest(userUid, order)
 
         runCatching {
-            tossPaymentClient.confirm(orderConfirmRequest)
+            val apiResponse = tossPaymentClient.confirm(orderConfirmRequest)
             order.status = Order.OrderStatus.COMPLETED
+            order.payment.paymentKey = apiResponse.paymentKey
             createReservationQRCode(order)
         }.onFailure {
             order.status = Order.OrderStatus.PENDING

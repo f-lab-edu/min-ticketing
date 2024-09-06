@@ -13,6 +13,7 @@ import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
+import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
@@ -143,7 +144,7 @@ class OrderServiceTest : UnitTest() {
             )
 
             every { orderReader.findByUid(order.uid) } returns order
-            every { tossPaymentClient.confirm(orderConfirmRequest) } returns Unit
+            every { tossPaymentClient.confirm(orderConfirmRequest) } returns createConfirmResponse()
             val qrImageUrl = "http://test.com/image/1"
             every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
 
@@ -215,7 +216,7 @@ class OrderServiceTest : UnitTest() {
             )
 
             every { orderReader.findByUid(order.uid) } returns order
-            every { tossPaymentClient.confirm(orderConfirmRequest) } returns Unit
+            every { tossPaymentClient.confirm(orderConfirmRequest) } returns createConfirmResponse()
 
             val qrImageUrl = "http://test.com/image/1"
             every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
@@ -250,5 +251,109 @@ class OrderServiceTest : UnitTest() {
             actual.map { it.uid } shouldContainExactly listOf(orders[0].uid, orders[1].uid)
             
         }
+
+
+        "결제 승인시 반환 받는 payment key를 DB에 저장한다."{
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+            val performanceDateTime = performance.performanceDateTime[0]
+            val seats = performance.performancePlace.seats
+
+            val order = OrderTestDataGenerator.createOrder(
+                user = user,
+                payment = Order.Payment(performance.price * 2, "카드")
+            )
+
+            order.addReservation(performanceDateTime, seats[0])
+
+            val orderConfirmRequest = OrderConfirmRequest(
+                paymentType = "카드",
+                orderId = order.uid,
+                paymentKey = "payment001",
+                amount = order.payment.totalPrice
+            )
+            val orderConfirmResponse = createConfirmResponse()
+
+            every { orderReader.findByUid(order.uid) } returns order
+
+            every { tossPaymentClient.confirm(orderConfirmRequest) } returns orderConfirmResponse
+            val qrImageUrl = "http://test.com/image/1"
+            every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
+
+            orderService.confirmOrder(user.uid, orderConfirmRequest)
+
+            order.status shouldBe Order.OrderStatus.COMPLETED
+            order.payment.paymentKey!! shouldBeEqual orderConfirmResponse.paymentKey
+            verify { tossPaymentClient.confirm(orderConfirmRequest) }
+        }
     }
+
+
+    fun createConfirmResponse(): TossPayConfirmResponse {
+        return TossPayConfirmResponse(
+            mId = "tosspayments",
+            lastTransactionKey = "9C62B18EEF0DE3EB7F4422EB6D14BC6E",
+            paymentKey = "5EnNZRJGvaBX7zk2yd8ydw26XvwXkLrx9POLqKQjmAw4b0e1",
+            orderId = "a4CWyWY5m89PNh7xJwhk1",
+            orderName = "토스 티셔츠 외 2건",
+            taxExemptionAmount = 0,
+            status = "DONE",
+            requestedAt = "2024-02-13T12:17:57+09:00",
+            approvedAt = "2024-02-13T12:18:14+09:00",
+            useEscrow = false,
+            cultureExpense = false,
+            card = TossPayConfirmResponse.Card(
+                issuerCode = "71",
+                acquirerCode = "71",
+                number = "12345678****000*",
+                installmentPlanMonths = 0,
+                isInterestFree = false,
+                interestPayer = null,
+                approveNo = "00000000",
+                useCardPoint = false,
+                cardType = "신용",
+                ownerType = "개인",
+                acquireStatus = "READY",
+                receiptUrl = "https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX",
+                amount = 1000
+            ),
+            virtualAccount = null,
+            transfer = null,
+            mobilePhone = null,
+            giftCertificate = null,
+            cashReceipt = null,
+            cashReceipts = null,
+            discount = null,
+            cancels = null,
+            secret = null,
+            type = "NORMAL",
+            easyPay = TossPayConfirmResponse.EasyPay(
+                provider = "토스페이",
+                amount = 0,
+                discountAmount = 0
+            ),
+            easyPayAmount = 0,
+            easyPayDiscountAmount = 0,
+            country = "KR",
+            failure = null,
+            isPartialCancelable = true,
+            receipt = TossPayConfirmResponse.Receipt(
+                url = "https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX"
+            ),
+            checkout = TossPayConfirmResponse.Checkout(
+                url = "https://api.tosspayments.com/v1/payments/5EnNZRJGvaBX7zk2yd8ydw26XvwXkLrx9POLqKQjmAw4b0e1/checkout"
+            ),
+            currency = "KRW",
+            totalAmount = 1000,
+            balanceAmount = 1000,
+            suppliedAmount = 909,
+            vat = 91,
+            taxFreeAmount = 0,
+            method = "카드",
+            version = "2022-11-16"
+        )
+    }
+
 }
