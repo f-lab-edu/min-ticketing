@@ -3,10 +3,7 @@ package com.flab.ticketing.order.integration
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.OrderTestDataGenerator
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.*
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
@@ -46,6 +43,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 
@@ -419,6 +417,40 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
+        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때"){
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orderRepository.save(order)
+
+            setUpTossPaymentCancelResponse()
+            `when`("주문 취소를 시도할 시"){
+                val uri = "/api/orders/${order.uid}/cancel"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("주문의 상태를 CANCEL로 바꾸고 200 코드를 반환한다."){
+                    mvcResult.response.status shouldBe HttpStatus.OK.value()
+
+                    orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.CANCELED
+                }
+            }
+
+        }
+
     }
 
 
@@ -516,6 +548,48 @@ class OrderIntegrationTest : IntegrationTest() {
                     "}"
         )
         return TossPayErrorResponse(TossPayErrorCode.NOT_FOUND_PAYMENT, "존재하지 않는 결제 입니다.")
+    }
+
+    private fun setUpTossPaymentCancelResponse(){
+        val body = "{\n" +
+                "  \"mId\": \"tosspayments\",\n" +
+                "  \"version\": \"2022-11-16\",\n" +
+                "  \"lastTransactionKey\": \"GOtuE_rpkelaDwxW_ULZj\",\n" +
+                "  \"paymentKey\": \"Zrmyj5eoBkWaVldAqO-i6\",\n" +
+                "  \"orderId\": \"frEwn_vLxqeg3l5MhCsph\",\n" +
+                "  \"orderName\": \"토스 티셔츠 외 2건\",\n" +
+                "  \"currency\": \"KRW\",\n" +
+                "  \"method\": \"카드\",\n" +
+                "  \"status\": \"CANCELED\",\n" +
+                "  //...\n" +
+                "  \"cancels\": [\n" +
+                "    {\n" +
+                "      \"cancelReason\": \"고객이 취소를 원함\",\n" +
+                "      \"canceledAt\": \"2022-01-01T11:32:04+09:00\",\n" +
+                "      \"cancelAmount\": 10000,\n" +
+                "      \"taxFreeAmount\": 0,\n" +
+                "      \"taxExemptionAmount\": 0,\n" +
+                "      \"refundableAmount\": 0,\n" +
+                "      \"easyPayDiscountAmount\": 0,\n" +
+                "      \"transactionKey\": \"8B4F646A829571D870A3011A4E13D640\",\n" +
+                "      \"receiptKey\": \"V4AJ6AhSWsGN0RocizZQlagPLN8s2IahJLXpfSHzQBTKoDG7\",\n" +
+                "      \"cancelStatus\": \"DONE\",\n" +
+                "      \"cancelRequestId\": null\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"secret\": null,\n" +
+                "  \"type\": \"NORMAL\",\n" +
+                "  \"easyPay\": \"토스페이\",\n" +
+                "  \"country\": \"KR\",\n" +
+                "  \"failure\": null,\n" +
+                "  \"totalAmount\": 10000,\n" +
+                "  \"balanceAmount\": 0,\n" +
+                "  \"suppliedAmount\": 0,\n" +
+                "  \"vat\": 0,\n" +
+                "  \"taxFreeAmount\": 0,\n" +
+                "  \"taxExemptionAmount\": 0\n" +
+                "}"
+        mockServerUtils.addMockResponse(HttpStatus.OK, body)
     }
 
     private fun savePerformance(performances: List<Performance>) {

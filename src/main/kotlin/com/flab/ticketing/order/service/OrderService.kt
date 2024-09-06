@@ -14,6 +14,7 @@ import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.entity.Reservation
+import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.OrderReader
@@ -95,6 +96,14 @@ class OrderService(
         }
     }
 
+    fun cancelOrder(userUid: String, orderUid: String, reason: OrderCancelReasons) {
+        val order = orderReader.findByUid(orderUid)
+
+        tossPaymentClient.cancel(order.payment.paymentKey!!, reason.reason)
+
+        order.status = Order.OrderStatus.CANCELED
+    }
+
 
     private fun checkValidOrderRequest(orderInfoRequest: OrderInfoRequest, carts: List<Cart>) {
         if (orderInfoRequest.carts.size != carts.size) {
@@ -127,5 +136,6 @@ class OrderService(
         }
 
     }
+
 
 }

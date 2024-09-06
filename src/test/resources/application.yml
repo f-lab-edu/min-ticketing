@@ -40,4 +40,5 @@ service:
   toss:
     url: http://localhost:2024
     confirm-uri: /v1/payments/confirm
+    cancel-uri: /v1/payments/%s/cancel
     access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg==

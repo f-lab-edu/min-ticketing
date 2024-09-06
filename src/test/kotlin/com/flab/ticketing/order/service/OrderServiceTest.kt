@@ -16,6 +16,7 @@ import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.OrderReader
@@ -31,6 +32,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.awt.image.BufferedImage
+import java.time.ZonedDateTime
 import java.util.*
 
 class OrderServiceTest : UnitTest() {
@@ -287,6 +289,23 @@ class OrderServiceTest : UnitTest() {
             order.status shouldBe Order.OrderStatus.COMPLETED
             order.payment.paymentKey!! shouldBeEqual orderConfirmResponse.paymentKey
             verify { tossPaymentClient.confirm(orderConfirmRequest) }
+        }
+
+        "아직 시작되지 않은 공연의 취소 요청이 들어왔을 시 토스 취소 API를 호출하고 공연을 취소한다."{
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every { tossPaymentClient.cancel(order.payment.paymentKey!!, OrderCancelReasons.CUSTOMER_WANTS.reason) } returns Unit
+
+            orderService.cancelOrder(user.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
+
+            order.status shouldBe Order.OrderStatus.CANCELED
         }
     }
 

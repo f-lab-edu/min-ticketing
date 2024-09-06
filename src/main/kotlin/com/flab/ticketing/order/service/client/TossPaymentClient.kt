@@ -23,6 +23,7 @@ class TossPaymentClient(
     private val objectMapper: ObjectMapper,
     @Value("\${service.toss.url}") private val tossServerUrl: String,
     @Value("\${service.toss.confirm-uri}") private val confirmUri: String,
+    @Value("\${service.toss.cancel-uri}") private val cancelUriFormat: String,
     @Value("\${service.toss.access-token}") private val tossAccessToken: String
 ) {
 
@@ -65,10 +66,23 @@ class TossPaymentClient(
         return response
     }
 
+    fun cancel(paymentKey: String, reason: String) {
+        restClient.post()
+            .uri(URI.create("$tossServerUrl${String.format(cancelUriFormat, paymentKey)}"))
+            .header(HttpHeaders.AUTHORIZATION, "Basic $tossAccessToken")
+            .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            .body(TossOrderCancelRequest(reason))
+            .retrieve()
+            .toBodilessEntity()
+    }
+
     internal data class TossOrderConfirmRequest(
         val orderId: String,
         val paymentKey: String,
         val amount: Int
     )
 
+    internal data class TossOrderCancelRequest(
+        val cancelReason: String
+    )
 }
