@@ -68,7 +68,8 @@ class Order(
     @Embeddable
     class Payment(
         val totalPrice: Int,
-        val paymentMethod: String
+        val paymentMethod: String,
+        var paymentKey: String? = null
     )
 
 
