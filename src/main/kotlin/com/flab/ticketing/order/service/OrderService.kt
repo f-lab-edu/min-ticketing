@@ -124,6 +124,7 @@ class OrderService(
     private fun checkValidOrderCancelRequest(userUid: String, order: Order) {
         checkUser(userUid, order.user.uid)
         checkPerformancePassed(order.reservations)
+        checkReservationUsed(order.reservations)
     }
 
     private fun checkUser(actualUserUid: String, expectedSameUserUid: String) {
@@ -135,12 +136,23 @@ class OrderService(
     private fun checkPerformancePassed(reservations: List<Reservation>) {
         val now = ZonedDateTime.now()
 
-        val passedReservation = reservations.filter {
-            it.performanceDateTime.showTime.isBefore(now)
-        }.firstOrNull()
+        reservations.forEach {
+            val showTime = it.performanceDateTime.showTime
+            if (showTime.isBefore(now)) {
+                throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
+            }
 
-        if (passedReservation != null) {
-            throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
+        }
+
+
+    }
+
+    private fun checkReservationUsed(reservations: List<Reservation>) {
+        reservations.forEach {
+            if (it.isUsed) {
+                throw ForbiddenException(OrderErrorInfos.RESERVATION_ALREADY_USED)
+            }
+
         }
     }
 

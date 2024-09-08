@@ -325,9 +325,7 @@ class OrderServiceTest : UnitTest() {
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
 
             every { orderReader.findByUid(order.uid) } returns order
-            every {
-                tossPaymentClient.cancel(any(), any())
-            } returns Unit
+            every { tossPaymentClient.cancel(any(), any()) } returns Unit
 
 
             val e = shouldThrow<BadRequestException> {
@@ -349,15 +347,34 @@ class OrderServiceTest : UnitTest() {
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
 
             every { orderReader.findByUid(order.uid) } returns order
-            every {
-                tossPaymentClient.cancel(any(), any())
-            } returns Unit
+            every { tossPaymentClient.cancel(any(), any()) } returns Unit
 
             val e = shouldThrow<ForbiddenException> {
                 orderService.cancelOrder(cancelUser.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
             }
 
             e.info shouldBe OrderErrorInfos.INVALID_USER
+        }
+
+        "Reservation 중 사용이 완료된 주문이 있다면 ForbiddenException과 적절한 오류 코드를 반환한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+            order.reservations[0].isUsed = true
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every { tossPaymentClient.cancel(any(), any()) } returns Unit
+
+            val e = shouldThrow<ForbiddenException> {
+                orderService.cancelOrder(user.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
+            }
+
+            e.info shouldBe OrderErrorInfos.RESERVATION_ALREADY_USED
+
         }
     }
 
