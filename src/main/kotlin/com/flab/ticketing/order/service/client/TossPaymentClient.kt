@@ -7,6 +7,7 @@ import com.flab.ticketing.common.exception.InternalServerException
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
+import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.enums.TossPayErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -31,7 +32,7 @@ class TossPaymentClient(
         val TOSS_EXCEPTION_PREFIX = "토스 결제 오류 : "
     }
 
-    private val log = LoggerFactory.getLogger(TossPayErrorResponse::class.java)
+    private val log = LoggerFactory.getLogger(TossPaymentClient::class.java)
 
     fun confirm(orderConfirmRequest: OrderConfirmRequest): TossPayConfirmResponse {
         val tossOrderConfirmRequest = TossOrderConfirmRequest(
@@ -46,15 +47,7 @@ class TossPaymentClient(
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(tossOrderConfirmRequest)
             .retrieve()
-            .onStatus(HttpStatusCode::isError) { _, res ->
-                val resBody = runCatching {
-                    objectMapper.readValue(res.body.readAllBytes(), TossPayErrorResponse::class.java)
-                }.getOrElse {
-                    throw ExternalAPIException(TossPayErrorCode.UNKNOWN_TOSS_MESSAGE.responseStatus, "통신에 실패했습니다.")
-                }
-
-                throw ExternalAPIException(resBody.code.responseStatus, TOSS_EXCEPTION_PREFIX + resBody.message)
-            }
+            .checkError(TossPayErrorCode.Types.CONFIRM)
             .body(TossPayConfirmResponse::class.java)
 
 
@@ -73,7 +66,27 @@ class TossPaymentClient(
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(TossOrderCancelRequest(reason))
             .retrieve()
+            .checkError(TossPayErrorCode.Types.CANCEL)
             .toBodilessEntity()
+    }
+
+
+    private fun RestClient.ResponseSpec.checkError(type: String): RestClient.ResponseSpec {
+        return this.onStatus(HttpStatusCode::isError) { _, res ->
+            val resBody = runCatching {
+                val map = objectMapper.readValue(res.body.readAllBytes(), Map::class.java).toMutableMap()
+                map["type"] = type
+
+                val s = objectMapper.writeValueAsString(map)
+                objectMapper.readValue(s, TossPayErrorResponse::class.java)
+
+            }.getOrElse {
+                log.warn("Toss Payments 응답 객체 반환 중 오류가 발생하였습니다.")
+                throw ExternalAPIException(TossPayConfirmErrorCode.UNKNOWN_TOSS_MESSAGE.responseStatus, "내부 서버 처리 중 오류가 있습니다.")
+            }
+
+            throw ExternalAPIException(resBody.code.responseStatus, TOSS_EXCEPTION_PREFIX + resBody.message)
+        }
     }
 
     internal data class TossOrderConfirmRequest(

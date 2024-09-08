@@ -5,6 +5,7 @@ import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.common.*
 import com.flab.ticketing.common.dto.response.CursoredResponse
+import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
@@ -14,7 +15,8 @@ import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
-import com.flab.ticketing.order.enums.TossPayErrorCode
+import com.flab.ticketing.order.enums.TossPayCancelErrorCode
+import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
@@ -310,7 +312,7 @@ class OrderIntegrationTest : IntegrationTest() {
                 paymentKey = "payment001",
                 amount = order.payment.totalPrice
             )
-            val tossPayResponse = setUpTossPaymentFailResponse()
+            val tossPayResponse = setUpTossPaymentFailConfirmResponse()
 
             `when`("결제 승인 API를 호출 시") {
                 val uri = "/api/orders/toss/confirm"
@@ -451,6 +453,44 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
+        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류"){
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orderRepository.save(order)
+
+            val tossErrorResponse = setUpTossPaymentFailCancelResponse()
+
+            `when`("주문 취소를 시도할 시"){
+                val uri = "/api/orders/${order.uid}/cancel"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("토스 페이먼츠 오류에 따른 적절한 상태코드와 메시지를 반환한다."){
+                    checkError(
+                        mvcResult,
+                        tossErrorResponse.code.responseStatus,
+                        CommonErrorInfos.EXTERNAL_API_ERROR.code,
+                        TOSS_EXCEPTION_PREFIX + tossErrorResponse.message
+                    )
+                }
+            }
+
+
+        }
     }
 
 
@@ -539,15 +579,12 @@ class OrderIntegrationTest : IntegrationTest() {
         return objectMapper.readValue(body, TossPayConfirmResponse::class.java)
     }
 
-    private fun setUpTossPaymentFailResponse(): TossPayErrorResponse {
-        mockServerUtils.addMockResponse(
-            HttpStatus.BAD_REQUEST,
-            "{\n" +
-                    "  \"code\": \"NOT_FOUND_PAYMENT\",\n" +
-                    "  \"message\": \"존재하지 않는 결제 입니다.\"\n" +
-                    "}"
-        )
-        return TossPayErrorResponse(TossPayErrorCode.NOT_FOUND_PAYMENT, "존재하지 않는 결제 입니다.")
+    private fun setUpTossPaymentFailConfirmResponse(): TossPayErrorResponse {
+        val errorResponse = mapOf(Pair("code", "NOT_FOUND_PAYMENT"), Pair("message", "존재하지 않는 결제 입니다."))
+
+        setUpTossPaymentFailResponse(HttpStatus.BAD_REQUEST, errorResponse)
+        return TossPayErrorResponse(TossPayConfirmErrorCode.NOT_FOUND_PAYMENT, "존재하지 않는 결제 입니다.")
+
     }
 
     private fun setUpTossPaymentCancelResponse(){
@@ -590,6 +627,19 @@ class OrderIntegrationTest : IntegrationTest() {
                 "  \"taxExemptionAmount\": 0\n" +
                 "}"
         mockServerUtils.addMockResponse(HttpStatus.OK, body)
+    }
+
+    private fun setUpTossPaymentFailCancelResponse() : TossPayErrorResponse{
+        val errorResponse = mapOf(Pair("code", "ALREADY_CANCELED_PAYMENT"), Pair("message", "이미 취소된 결제 입니다."))
+        setUpTossPaymentFailResponse(HttpStatus.BAD_REQUEST, errorResponse)
+
+        return TossPayErrorResponse(TossPayCancelErrorCode.ALREADY_CANCELED_PAYMENT, "이미 취소된 결제 입니다.")
+    }
+
+
+    private fun setUpTossPaymentFailResponse(expectStatus: HttpStatus, resp : Map<String, String>){
+        val body = objectMapper.writeValueAsString(resp)
+        mockServerUtils.addMockResponse(expectStatus, body)
     }
 
     private fun savePerformance(performances: List<Performance>) {
