@@ -12,6 +12,7 @@ import com.flab.ticketing.order.enums.TossPayErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -74,20 +75,34 @@ class TossPaymentClient(
     private fun RestClient.ResponseSpec.checkError(type: String): RestClient.ResponseSpec {
         return this.onStatus(HttpStatusCode::isError) { _, res ->
             val resBody = runCatching {
-                val map = objectMapper.readValue(res.body.readAllBytes(), Map::class.java).toMutableMap()
-                map["type"] = type
-
-                val s = objectMapper.writeValueAsString(map)
+                val s = convertDeserializableTossPayErrorResponse(res.body.readAllBytes(), type)
                 objectMapper.readValue(s, TossPayErrorResponse::class.java)
 
             }.getOrElse {
                 log.warn("Toss Payments 응답 객체 반환 중 오류가 발생하였습니다.")
-                throw ExternalAPIException(TossPayConfirmErrorCode.UNKNOWN_TOSS_MESSAGE.responseStatus, "내부 서버 처리 중 오류가 있습니다.")
+                throw ExternalAPIException(
+                    TossPayConfirmErrorCode.UNKNOWN_TOSS_MESSAGE.responseStatus,
+                    "내부 서버 처리 중 오류가 있습니다."
+                )
             }
 
             throw ExternalAPIException(resBody.code.responseStatus, TOSS_EXCEPTION_PREFIX + resBody.message)
         }
+
+
     }
+
+    private fun convertDeserializableTossPayErrorResponse(responseBody: ByteArray, type: String): String? {
+        val map = objectMapper.readValue(responseBody, Map::class.java).toMutableMap()
+        val code = map.replace("code", listOf(type, map["code"]))
+
+        if (code !is String) {
+            throw ExternalAPIException(HttpStatus.INTERNAL_SERVER_ERROR, "내부 서버 처리 중 오류가 발생했습니다.")
+        }
+
+        return objectMapper.writeValueAsString(map)
+    }
+
 
     internal data class TossOrderConfirmRequest(
         val orderId: String,
@@ -98,4 +113,5 @@ class TossPaymentClient(
     internal data class TossOrderCancelRequest(
         val cancelReason: String
     )
+
 }

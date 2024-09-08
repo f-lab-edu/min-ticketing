@@ -3,9 +3,11 @@ package com.flab.ticketing.order.integration
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.common.*
+import com.flab.ticketing.common.IntegrationTest
+import com.flab.ticketing.common.OrderTestDataGenerator
+import com.flab.ticketing.common.PerformanceTestDataGenerator
+import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
-import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
@@ -419,7 +421,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
-        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때"){
+        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때") {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
@@ -433,7 +435,7 @@ class OrderIntegrationTest : IntegrationTest() {
             orderRepository.save(order)
 
             setUpTossPaymentCancelResponse()
-            `when`("주문 취소를 시도할 시"){
+            `when`("주문 취소를 시도할 시") {
                 val uri = "/api/orders/${order.uid}/cancel"
                 val jwt = createJwt(user)
 
@@ -444,7 +446,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("주문의 상태를 CANCEL로 바꾸고 200 코드를 반환한다."){
+                then("주문의 상태를 CANCEL로 바꾸고 200 코드를 반환한다.") {
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
 
                     orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.CANCELED
@@ -453,7 +455,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
-        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류"){
+        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류") {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
@@ -468,7 +470,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
             val tossErrorResponse = setUpTossPaymentFailCancelResponse()
 
-            `when`("주문 취소를 시도할 시"){
+            `when`("주문 취소를 시도할 시") {
                 val uri = "/api/orders/${order.uid}/cancel"
                 val jwt = createJwt(user)
 
@@ -479,7 +481,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("토스 페이먼츠 오류에 따른 적절한 상태코드와 메시지를 반환한다."){
+                then("토스 페이먼츠 오류에 따른 적절한 상태코드와 메시지를 반환한다.") {
                     checkError(
                         mvcResult,
                         tossErrorResponse.code.responseStatus,
@@ -587,7 +589,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
     }
 
-    private fun setUpTossPaymentCancelResponse(){
+    private fun setUpTossPaymentCancelResponse() {
         val body = "{\n" +
                 "  \"mId\": \"tosspayments\",\n" +
                 "  \"version\": \"2022-11-16\",\n" +
@@ -629,7 +631,7 @@ class OrderIntegrationTest : IntegrationTest() {
         mockServerUtils.addMockResponse(HttpStatus.OK, body)
     }
 
-    private fun setUpTossPaymentFailCancelResponse() : TossPayErrorResponse{
+    private fun setUpTossPaymentFailCancelResponse(): TossPayErrorResponse {
         val errorResponse = mapOf(Pair("code", "ALREADY_CANCELED_PAYMENT"), Pair("message", "이미 취소된 결제 입니다."))
         setUpTossPaymentFailResponse(HttpStatus.BAD_REQUEST, errorResponse)
 
@@ -637,7 +639,7 @@ class OrderIntegrationTest : IntegrationTest() {
     }
 
 
-    private fun setUpTossPaymentFailResponse(expectStatus: HttpStatus, resp : Map<String, String>){
+    private fun setUpTossPaymentFailResponse(expectStatus: HttpStatus, resp: Map<String, String>) {
         val body = objectMapper.writeValueAsString(resp)
         mockServerUtils.addMockResponse(expectStatus, body)
     }
