@@ -2,7 +2,9 @@ package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.ExternalAPIException
+import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
@@ -21,11 +23,13 @@ import com.flab.ticketing.order.repository.reader.OrderReader
 import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.ZonedDateTime
 
 
 @Service
@@ -99,6 +103,8 @@ class OrderService(
     fun cancelOrder(userUid: String, orderUid: String, reason: OrderCancelReasons) {
         val order = orderReader.findByUid(orderUid)
 
+        checkValidOrderCancelRequest(userUid, order)
+
         tossPaymentClient.cancel(order.payment.paymentKey!!, reason.reason)
 
         order.status = Order.OrderStatus.CANCELED
@@ -112,8 +118,29 @@ class OrderService(
     }
 
     private fun checkValidOrderConfirmRequest(userUid: String, order: Order) {
-        if (order.user.uid != userUid) {
-            throw InvalidValueException(OrderErrorInfos.INVALID_USER)
+        checkUser(userUid, order.user.uid)
+    }
+
+    private fun checkValidOrderCancelRequest(userUid: String, order: Order) {
+        checkUser(userUid, order.user.uid)
+        checkPerformancePassed(order.reservations)
+    }
+
+    private fun checkUser(actualUserUid: String, expectedSameUserUid: String) {
+        if (expectedSameUserUid != actualUserUid) {
+            throw ForbiddenException(OrderErrorInfos.INVALID_USER)
+        }
+    }
+
+    private fun checkPerformancePassed(reservations: List<Reservation>) {
+        val now = ZonedDateTime.now()
+
+        val passedReservation = reservations.filter {
+            it.performanceDateTime.showTime.isBefore(now)
+        }.firstOrNull()
+
+        if (passedReservation != null) {
+            throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
         }
     }
 

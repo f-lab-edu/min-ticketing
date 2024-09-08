@@ -281,8 +281,8 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("400 BAD Request와 적절한 오류 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, OrderErrorInfos.INVALID_USER)
+                then("403 BAD Request와 적절한 오류 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.FORBIDDEN, OrderErrorInfos.INVALID_USER)
                 }
             }
         }
