@@ -100,10 +100,10 @@ class OrderService(
         }
     }
 
-    fun cancelOrder(userUid: String, orderUid: String, reason: OrderCancelReasons) {
+    fun cancelOrder(userUid: String, orderUid: String, reason: OrderCancelReasons, compareTime: ZonedDateTime = ZonedDateTime.now()) {
         val order = orderReader.findByUid(orderUid)
 
-        checkValidOrderCancelRequest(userUid, order)
+        checkValidOrderCancelRequest(userUid, order, compareTime)
 
         tossPaymentClient.cancel(order.payment.paymentKey!!, reason.reason)
 
@@ -121,9 +121,9 @@ class OrderService(
         checkUser(userUid, order.user.uid)
     }
 
-    private fun checkValidOrderCancelRequest(userUid: String, order: Order) {
+    private fun checkValidOrderCancelRequest(userUid: String, order: Order, compareTime: ZonedDateTime) {
         checkUser(userUid, order.user.uid)
-        checkPerformancePassed(order.reservations)
+        checkPerformancePassed(order.reservations, compareTime)
         checkReservationUsed(order.reservations)
     }
 
@@ -133,12 +133,10 @@ class OrderService(
         }
     }
 
-    private fun checkPerformancePassed(reservations: List<Reservation>) {
-        val now = ZonedDateTime.now()
-
-        reservations.forEach {
+    private fun checkPerformancePassed(reservations: List<Reservation>, compareTime: ZonedDateTime) {
+       reservations.forEach {
             val showTime = it.performanceDateTime.showTime
-            if (showTime.isBefore(now)) {
+            if (showTime.isBefore(compareTime)) {
                 throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
             }
 
