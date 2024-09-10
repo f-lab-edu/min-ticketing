@@ -11,6 +11,7 @@ import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.common.utils.QRCodeGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.request.OrderSearchConditions
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
@@ -86,8 +87,8 @@ class OrderService(
 
 
     @Transactional(readOnly = true)
-    fun getOrderList(userUid: String, cursorInfo: CursorInfoDto): List<OrderSummarySearchResult> {
-        val orders = orderReader.findOrderByUser(userUid, cursorInfo)
+    fun getOrderList(userUid: String, searchConditions: OrderSearchConditions, cursorInfo: CursorInfoDto): List<OrderSummarySearchResult> {
+        val orders = orderReader.findOrderByUser(userUid, searchConditions, cursorInfo)
 
         return orders.filter { it.reservations.size > 0 }.map {
             OrderSummarySearchResult(

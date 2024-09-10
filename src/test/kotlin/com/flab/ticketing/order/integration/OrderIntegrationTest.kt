@@ -36,6 +36,7 @@ import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -44,7 +45,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.*
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -102,12 +105,12 @@ class OrderIntegrationTest : IntegrationTest() {
 
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderRequest))
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("주문 정보를 생성하여 반환하며, DB에 임시 주문 정보를 저장하며 Cart 정보를 DB에서 제거한다.") {
@@ -169,12 +172,12 @@ class OrderIntegrationTest : IntegrationTest() {
 
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderRequest))
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("400 Bad Request를 출력한다.") {
@@ -217,12 +220,12 @@ class OrderIntegrationTest : IntegrationTest() {
                 val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderConfirmRequest))
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("토스 결제 승인 API를 호출하고, Order의 상태를 COMPLETED로 바꾼다.") {
@@ -273,12 +276,12 @@ class OrderIntegrationTest : IntegrationTest() {
                 val uri = "/api/orders/toss/confirm"
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderConfirmRequest))
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("403 BAD Request와 적절한 오류 메시지를 반환한다.") {
@@ -321,12 +324,12 @@ class OrderIntegrationTest : IntegrationTest() {
                 val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderConfirmRequest))
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("토스 페이 API의 응답 정보를 반환하고, 주문을 PENDING 상태로 변경한다.") {
@@ -373,11 +376,11 @@ class OrderIntegrationTest : IntegrationTest() {
                 val uri = "/api/orders"
                 val jwt = createJwt(user)
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.get(uri)
+                    get(uri)
                         .param("limit", "2")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("사용자가 주문한 주문 정보 리스트를 주문 생성 순으로 정렬해 반환한다.") {
@@ -440,10 +443,10 @@ class OrderIntegrationTest : IntegrationTest() {
                 val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("주문의 상태를 CANCEL로 바꾸고 200 코드를 반환한다.") {
@@ -475,10 +478,10 @@ class OrderIntegrationTest : IntegrationTest() {
                 val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
-                    MockMvcRequestBuilders.post(uri)
+                    post(uri)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                 )
-                    .andDo(MockMvcResultHandlers.print())
+                    .andDo(print())
                     .andReturn()
 
                 then("토스 페이먼츠 오류에 따른 적절한 상태코드와 메시지를 반환한다.") {
@@ -493,6 +496,52 @@ class OrderIntegrationTest : IntegrationTest() {
 
 
         }
+
+
+        given("주문의 상태가 PENDING인 주문이 존재할 때"){
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance()
+
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            val pendingOrder = OrderTestDataGenerator.createOrder(uid = "order-002", user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            pendingOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
+            pendingOrder.status = Order.OrderStatus.PENDING
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orderRepository.saveAll(listOf(order, pendingOrder))
+
+            `when`("주문이 Pending 상태인 주문을 조회할 시"){
+                val uri = "/api/orders"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    get(uri)
+                        .param("status", Order.OrderStatus.PENDING.toString())
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                ).andDo(
+                    print()
+                ).andReturn()
+
+                then("PENDING 상태의 주문을 반환한다."){
+                    val actual = objectMapper.readValue<CursoredResponse<OrderSummarySearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            OrderSummarySearchResult::class.java
+                        )
+                    )
+                    
+                    actual.data.size shouldBe 1
+                    actual.data[0].uid shouldBe pendingOrder.uid
+                }
+            }
+
+        }
+
     }
 
 

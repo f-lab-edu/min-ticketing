@@ -14,6 +14,7 @@ import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.request.OrderSearchConditions
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.entity.Cart
@@ -177,9 +178,9 @@ class OrderServiceTest : UnitTest() {
 
             orders.forEachIndexed { index, order -> order.addReservation(performanceDateTime, seats[index]) }
 
-            every { orderReader.findOrderByUser(user.uid, any()) } returns orders
+            every { orderReader.findOrderByUser(user.uid, any(), any()) } returns orders
 
-            val actual = orderService.getOrderList(user.uid, CursorInfoDto())
+            val actual = orderService.getOrderList(user.uid, OrderSearchConditions(), CursorInfoDto())
             val expected = listOf(
                 OrderSummarySearchResult(
                     "order-001",
@@ -249,9 +250,9 @@ class OrderServiceTest : UnitTest() {
             orders[0].addReservation(performanceDateTime, seats[0])
             orders[1].addReservation(performanceDateTime, seats[1])
 
-            every { orderReader.findOrderByUser(user.uid, any()) } returns orders
+            every { orderReader.findOrderByUser(user.uid, any(), any()) } returns orders
 
-            val actual = orderService.getOrderList(user.uid, CursorInfoDto())
+            val actual = orderService.getOrderList(user.uid, OrderSearchConditions(), CursorInfoDto())
 
             actual.map { it.uid } shouldContainExactly listOf(orders[0].uid, orders[1].uid)
 
