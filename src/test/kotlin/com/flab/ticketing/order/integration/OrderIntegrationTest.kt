@@ -511,68 +511,71 @@ class OrderIntegrationTest : IntegrationTest() {
     }
 
     private fun setUpTossPaymentConfirmResponse(orderConfirmRequest: OrderConfirmRequest): TossPayConfirmResponse? {
-        val body = "{\n" +
-                "  \"mId\": \"tosspayments\",\n" +
-                "  \"lastTransactionKey\": \"9C62B18EEF0DE3EB7F4422EB6D14BC6E\",\n" +
-                "  \"paymentKey\": \"${orderConfirmRequest.paymentKey}\",\n" +
-                "  \"orderId\": \"${orderConfirmRequest.orderId}\",\n" +
-                "  \"orderName\": \"토스 티셔츠 외 2건\",\n" +
-                "  \"taxExemptionAmount\": 0,\n" +
-                "  \"status\": \"DONE\",\n" +
-                "  \"requestedAt\": \"2024-02-13T12:17:57+09:00\",\n" +
-                "  \"approvedAt\": \"2024-02-13T12:18:14+09:00\",\n" +
-                "  \"useEscrow\": false,\n" +
-                "  \"cultureExpense\": false,\n" +
-                "  \"card\": {\n" +
-                "    \"issuerCode\": \"71\",\n" +
-                "    \"acquirerCode\": \"71\",\n" +
-                "    \"number\": \"12345678****000*\",\n" +
-                "    \"installmentPlanMonths\": 0,\n" +
-                "    \"isInterestFree\": false,\n" +
-                "    \"interestPayer\": null,\n" +
-                "    \"approveNo\": \"00000000\",\n" +
-                "    \"useCardPoint\": false,\n" +
-                "    \"cardType\": \"신용\",\n" +
-                "    \"ownerType\": \"개인\",\n" +
-                "    \"acquireStatus\": \"READY\",\n" +
-                "    \"receiptUrl\": \"https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX\",\n" +
-                "    \"amount\": 1000\n" +
-                "  },\n" +
-                "  \"virtualAccount\": null,\n" +
-                "  \"transfer\": null,\n" +
-                "  \"mobilePhone\": null,\n" +
-                "  \"giftCertificate\": null,\n" +
-                "  \"cashReceipt\": null,\n" +
-                "  \"cashReceipts\": null,\n" +
-                "  \"discount\": null,\n" +
-                "  \"cancels\": null,\n" +
-                "  \"secret\": null,\n" +
-                "  \"type\": \"NORMAL\",\n" +
-                "  \"easyPay\": {\n" +
-                "    \"provider\": \"토스페이\",\n" +
-                "    \"amount\": 0,\n" +
-                "    \"discountAmount\": 0\n" +
-                "  },\n" +
-                "  \"easyPayAmount\": 0,\n" +
-                "  \"easyPayDiscountAmount\": 0,\n" +
-                "  \"country\": \"KR\",\n" +
-                "  \"failure\": null,\n" +
-                "  \"isPartialCancelable\": true,\n" +
-                "  \"receipt\": {\n" +
-                "    \"url\": \"https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX\"\n" +
-                "  },\n" +
-                "  \"checkout\": {\n" +
-                "    \"url\": \"https://api.tosspayments.com/v1/payments/5EnNZRJGvaBX7zk2yd8ydw26XvwXkLrx9POLqKQjmAw4b0e1/checkout\"\n" +
-                "  },\n" +
-                "  \"currency\": \"KRW\",\n" +
-                "  \"totalAmount\": ${orderConfirmRequest.amount},\n" +
-                "  \"balanceAmount\": 1000,\n" +
-                "  \"suppliedAmount\": 909,\n" +
-                "  \"vat\": 91,\n" +
-                "  \"taxFreeAmount\": 0,\n" +
-                "  \"method\": \"카드\",\n" +
-                "  \"version\": \"2022-11-16\"\n" +
-                "}\n"
+        val body = """
+            {
+              "mId": "tosspayments",
+              "lastTransactionKey": "9C62B18EEF0DE3EB7F4422EB6D14BC6E",
+              "paymentKey": "${orderConfirmRequest.paymentKey}",
+              "orderId": "${orderConfirmRequest.orderId}",
+              "orderName": "토스 티셔츠 외 2건",
+              "taxExemptionAmount": 0,
+              "status": "DONE",
+              "requestedAt": "2024-02-13T12:17:57+09:00",
+              "approvedAt": "2024-02-13T12:18:14+09:00",
+              "useEscrow": false,
+              "cultureExpense": false,
+              "card": {
+                "issuerCode": "71",
+                "acquirerCode": "71",
+                "number": "12345678****000*",
+                "installmentPlanMonths": 0,
+                "isInterestFree": false,
+                "interestPayer": null,
+                "approveNo": "00000000",
+                "useCardPoint": false,
+                "cardType": "신용",
+                "ownerType": "개인",
+                "acquireStatus": "READY",
+                "receiptUrl": "https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX",
+                "amount": 1000
+              },
+              "virtualAccount": null,
+              "transfer": null,
+              "mobilePhone": null,
+              "giftCertificate": null,
+              "cashReceipt": null,
+              "cashReceipts": null,
+              "discount": null,
+              "cancels": null,
+              "secret": null,
+              "type": "NORMAL",
+              "easyPay": {
+                "provider": "토스페이",
+                "amount": 0,
+                "discountAmount": 0
+              },
+              "easyPayAmount": 0,
+              "easyPayDiscountAmount": 0,
+              "country": "KR",
+              "failure": null,
+              "isPartialCancelable": true,
+              "receipt": {
+                "url": "https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX"
+              },
+              "checkout": {
+                "url": "https://api.tosspayments.com/v1/payments/5EnNZRJGvaBX7zk2yd8ydw26XvwXkLrx9POLqKQjmAw4b0e1/checkout"
+              },
+              "currency": "KRW",
+              "totalAmount": ${orderConfirmRequest.amount},
+              "balanceAmount": 1000,
+              "suppliedAmount": 909,
+              "vat": 91,
+              "taxFreeAmount": 0,
+              "method": "카드",
+              "version": "2022-11-16"
+            }
+        """.trimIndent()
+
         mockServerUtils.addMockResponse(
             HttpStatus.OK,
             body
@@ -590,44 +593,47 @@ class OrderIntegrationTest : IntegrationTest() {
     }
 
     private fun setUpTossPaymentCancelResponse() {
-        val body = "{\n" +
-                "  \"mId\": \"tosspayments\",\n" +
-                "  \"version\": \"2022-11-16\",\n" +
-                "  \"lastTransactionKey\": \"GOtuE_rpkelaDwxW_ULZj\",\n" +
-                "  \"paymentKey\": \"Zrmyj5eoBkWaVldAqO-i6\",\n" +
-                "  \"orderId\": \"frEwn_vLxqeg3l5MhCsph\",\n" +
-                "  \"orderName\": \"토스 티셔츠 외 2건\",\n" +
-                "  \"currency\": \"KRW\",\n" +
-                "  \"method\": \"카드\",\n" +
-                "  \"status\": \"CANCELED\",\n" +
-                "  //...\n" +
-                "  \"cancels\": [\n" +
-                "    {\n" +
-                "      \"cancelReason\": \"고객이 취소를 원함\",\n" +
-                "      \"canceledAt\": \"2022-01-01T11:32:04+09:00\",\n" +
-                "      \"cancelAmount\": 10000,\n" +
-                "      \"taxFreeAmount\": 0,\n" +
-                "      \"taxExemptionAmount\": 0,\n" +
-                "      \"refundableAmount\": 0,\n" +
-                "      \"easyPayDiscountAmount\": 0,\n" +
-                "      \"transactionKey\": \"8B4F646A829571D870A3011A4E13D640\",\n" +
-                "      \"receiptKey\": \"V4AJ6AhSWsGN0RocizZQlagPLN8s2IahJLXpfSHzQBTKoDG7\",\n" +
-                "      \"cancelStatus\": \"DONE\",\n" +
-                "      \"cancelRequestId\": null\n" +
-                "    }\n" +
-                "  ],\n" +
-                "  \"secret\": null,\n" +
-                "  \"type\": \"NORMAL\",\n" +
-                "  \"easyPay\": \"토스페이\",\n" +
-                "  \"country\": \"KR\",\n" +
-                "  \"failure\": null,\n" +
-                "  \"totalAmount\": 10000,\n" +
-                "  \"balanceAmount\": 0,\n" +
-                "  \"suppliedAmount\": 0,\n" +
-                "  \"vat\": 0,\n" +
-                "  \"taxFreeAmount\": 0,\n" +
-                "  \"taxExemptionAmount\": 0\n" +
-                "}"
+        val body = """
+            {
+              "mId": "tosspayments",
+              "version": "2022-11-16",
+              "lastTransactionKey": "GOtuE_rpkelaDwxW_ULZj",
+              "paymentKey": "Zrmyj5eoBkWaVldAqO-i6",
+              "orderId": "frEwn_vLxqeg3l5MhCsph",
+              "orderName": "토스 티셔츠 외 2건",
+              "currency": "KRW",
+              "method": "카드",
+              "status": "CANCELED",
+        
+              "cancels": [
+                {
+                  "cancelReason": "고객이 취소를 원함",
+                  "canceledAt": "2022-01-01T11:32:04+09:00",
+                  "cancelAmount": 10000,
+                  "taxFreeAmount": 0,
+                  "taxExemptionAmount": 0,
+                  "refundableAmount": 0,
+                  "easyPayDiscountAmount": 0,
+                  "transactionKey": "8B4F646A829571D870A3011A4E13D640",
+                  "receiptKey": "V4AJ6AhSWsGN0RocizZQlagPLN8s2IahJLXpfSHzQBTKoDG7",
+                  "cancelStatus": "DONE",
+                  "cancelRequestId": null
+                }
+              ],
+              "secret": null,
+              "type": "NORMAL",
+              "easyPay": "토스페이",
+              "country": "KR",
+              "failure": null,
+              "totalAmount": 10000,
+              "balanceAmount": 0,
+              "suppliedAmount": 0,
+              "vat": 0,
+              "taxFreeAmount": 0,
+              "taxExemptionAmount": 0
+            }
+        """.trimIndent()
+
         mockServerUtils.addMockResponse(HttpStatus.OK, body)
     }
 
