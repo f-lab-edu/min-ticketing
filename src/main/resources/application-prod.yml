@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  mail:
+    sender: ${MAIL_SENDER}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+server:
+  servlet:
+    encoding:
+      force-response: true
+      charset: UTF-8
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token:
+    time: ${ACCESS_TOKEN_ALIVE_TIME}
+
+service:
+  url: http://localhost
+  toss:
+    url: https://api.tosspayments.com/
+    confirm-uri: /v1/payments/confirm
+    cancel-uri: /v1/payments/%s/cancel
+    access-token: ${TOSS_ACCESS_TOKEN}
