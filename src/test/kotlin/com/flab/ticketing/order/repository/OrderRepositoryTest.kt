@@ -4,7 +4,9 @@ import com.flab.ticketing.common.OrderTestDataGenerator
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.RepositoryTest
 import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
+import com.flab.ticketing.order.dto.request.OrderSearchConditions
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.performance.entity.Performance
@@ -15,6 +17,7 @@ import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
@@ -61,9 +64,9 @@ class OrderRepositoryTest : RepositoryTest() {
                 Thread.sleep(100)
             }
 
-            val actual = orderRepository.findByUser(user.uid, PageRequest.of(0, 10))
+            val actual = orderRepository.findByUser(user.uid, CursorInfoDto(), OrderSearchConditions())
 
-            val expectedUidList = listOf("order-004", "order-003", "order-002", "order-001", "order-000")
+            val expectedUidList = orders.sortedByDescending { it.createdAt }.map { it.uid }
 
             actual.map { it.uid } shouldContainExactly expectedUidList
         }
@@ -88,8 +91,10 @@ class OrderRepositoryTest : RepositoryTest() {
                 orderRepository.save(order)
             }
 
-            val actual = orderRepository.findByUser(user.uid, orders[3].uid, PageRequest.of(0, 10))
-            val expectedUidList = listOf("order-003", "order-002", "order-001", "order-000")
+            val sortedOrders = orders.sortedByDescending { it.id }
+
+            val actual = orderRepository.findByUser(user.uid, CursorInfoDto(cursor = sortedOrders[2].uid), OrderSearchConditions())
+            val expectedUidList = listOf(sortedOrders[2].uid, sortedOrders[3].uid, sortedOrders[4].uid)
 
             actual.map { it.uid } shouldContainExactly expectedUidList
 
@@ -109,6 +114,38 @@ class OrderRepositoryTest : RepositoryTest() {
             }
 
             e.info shouldBe OrderErrorInfos.ORDER_MUST_MINIMUM_ONE_RESERVATION
+
+        }
+
+        "주문을 조회할 때 Status로 조회할 수 있다."{
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            )
+
+            val orders = List(5) {
+                OrderTestDataGenerator.createOrder(
+                    uid = "order-00$it",
+                    user = user
+                )
+            }
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orders.forEachIndexed { idx, order ->
+                order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[idx])
+                orderRepository.save(order)
+            }
+            val canceledOrders = orders.subList(0, 2)
+            canceledOrders.forEach { it.status = Order.OrderStatus.CANCELED }
+
+            val actual = orderRepository.findByUser(
+                user.uid,
+                CursorInfoDto(),
+                OrderSearchConditions(status = Order.OrderStatus.CANCELED)
+            )
+
+            actual shouldContainAll canceledOrders
 
         }
     }
