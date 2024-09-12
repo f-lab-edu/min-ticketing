@@ -17,7 +17,8 @@ import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
-import com.flab.ticketing.order.enums.TossPayErrorCode
+import com.flab.ticketing.order.enums.TossPayCancelErrorCode
+import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
@@ -46,6 +47,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 
@@ -279,8 +281,8 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("400 BAD Request와 적절한 오류 메시지를 반환한다.") {
-                    checkError(mvcResult, HttpStatus.BAD_REQUEST, OrderErrorInfos.INVALID_USER)
+                then("403 BAD Request와 적절한 오류 메시지를 반환한다.") {
+                    checkError(mvcResult, HttpStatus.FORBIDDEN, OrderErrorInfos.INVALID_USER)
                 }
             }
         }
@@ -312,7 +314,7 @@ class OrderIntegrationTest : IntegrationTest() {
                 paymentKey = "payment001",
                 amount = order.payment.totalPrice
             )
-            val tossPayResponse = setUpTossPaymentFailResponse()
+            val tossPayResponse = setUpTossPaymentFailConfirmResponse()
 
             `when`("결제 승인 API를 호출 시") {
                 val uri = "/api/orders/toss/confirm"
@@ -419,6 +421,78 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
+        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때") {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orderRepository.save(order)
+
+            setUpTossPaymentCancelResponse()
+            `when`("주문 취소를 시도할 시") {
+                val uri = "/api/orders/${order.uid}/cancel"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("주문의 상태를 CANCEL로 바꾸고 200 코드를 반환한다.") {
+                    mvcResult.response.status shouldBe HttpStatus.OK.value()
+
+                    orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.CANCELED
+                }
+            }
+
+        }
+
+        given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류") {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            userRepository.save(user)
+            savePerformance(listOf(performance))
+            orderRepository.save(order)
+
+            val tossErrorResponse = setUpTossPaymentFailCancelResponse()
+
+            `when`("주문 취소를 시도할 시") {
+                val uri = "/api/orders/${order.uid}/cancel"
+                val jwt = createJwt(user)
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.post(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("토스 페이먼츠 오류에 따른 적절한 상태코드와 메시지를 반환한다.") {
+                    checkError(
+                        mvcResult,
+                        tossErrorResponse.code.responseStatus,
+                        CommonErrorInfos.EXTERNAL_API_ERROR.code,
+                        TOSS_EXCEPTION_PREFIX + tossErrorResponse.message
+                    )
+                }
+            }
+
+
+        }
     }
 
 
@@ -437,68 +511,71 @@ class OrderIntegrationTest : IntegrationTest() {
     }
 
     private fun setUpTossPaymentConfirmResponse(orderConfirmRequest: OrderConfirmRequest): TossPayConfirmResponse? {
-        val body = "{\n" +
-                "  \"mId\": \"tosspayments\",\n" +
-                "  \"lastTransactionKey\": \"9C62B18EEF0DE3EB7F4422EB6D14BC6E\",\n" +
-                "  \"paymentKey\": \"${orderConfirmRequest.paymentKey}\",\n" +
-                "  \"orderId\": \"${orderConfirmRequest.orderId}\",\n" +
-                "  \"orderName\": \"토스 티셔츠 외 2건\",\n" +
-                "  \"taxExemptionAmount\": 0,\n" +
-                "  \"status\": \"DONE\",\n" +
-                "  \"requestedAt\": \"2024-02-13T12:17:57+09:00\",\n" +
-                "  \"approvedAt\": \"2024-02-13T12:18:14+09:00\",\n" +
-                "  \"useEscrow\": false,\n" +
-                "  \"cultureExpense\": false,\n" +
-                "  \"card\": {\n" +
-                "    \"issuerCode\": \"71\",\n" +
-                "    \"acquirerCode\": \"71\",\n" +
-                "    \"number\": \"12345678****000*\",\n" +
-                "    \"installmentPlanMonths\": 0,\n" +
-                "    \"isInterestFree\": false,\n" +
-                "    \"interestPayer\": null,\n" +
-                "    \"approveNo\": \"00000000\",\n" +
-                "    \"useCardPoint\": false,\n" +
-                "    \"cardType\": \"신용\",\n" +
-                "    \"ownerType\": \"개인\",\n" +
-                "    \"acquireStatus\": \"READY\",\n" +
-                "    \"receiptUrl\": \"https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX\",\n" +
-                "    \"amount\": 1000\n" +
-                "  },\n" +
-                "  \"virtualAccount\": null,\n" +
-                "  \"transfer\": null,\n" +
-                "  \"mobilePhone\": null,\n" +
-                "  \"giftCertificate\": null,\n" +
-                "  \"cashReceipt\": null,\n" +
-                "  \"cashReceipts\": null,\n" +
-                "  \"discount\": null,\n" +
-                "  \"cancels\": null,\n" +
-                "  \"secret\": null,\n" +
-                "  \"type\": \"NORMAL\",\n" +
-                "  \"easyPay\": {\n" +
-                "    \"provider\": \"토스페이\",\n" +
-                "    \"amount\": 0,\n" +
-                "    \"discountAmount\": 0\n" +
-                "  },\n" +
-                "  \"easyPayAmount\": 0,\n" +
-                "  \"easyPayDiscountAmount\": 0,\n" +
-                "  \"country\": \"KR\",\n" +
-                "  \"failure\": null,\n" +
-                "  \"isPartialCancelable\": true,\n" +
-                "  \"receipt\": {\n" +
-                "    \"url\": \"https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX\"\n" +
-                "  },\n" +
-                "  \"checkout\": {\n" +
-                "    \"url\": \"https://api.tosspayments.com/v1/payments/5EnNZRJGvaBX7zk2yd8ydw26XvwXkLrx9POLqKQjmAw4b0e1/checkout\"\n" +
-                "  },\n" +
-                "  \"currency\": \"KRW\",\n" +
-                "  \"totalAmount\": ${orderConfirmRequest.amount},\n" +
-                "  \"balanceAmount\": 1000,\n" +
-                "  \"suppliedAmount\": 909,\n" +
-                "  \"vat\": 91,\n" +
-                "  \"taxFreeAmount\": 0,\n" +
-                "  \"method\": \"카드\",\n" +
-                "  \"version\": \"2022-11-16\"\n" +
-                "}\n"
+        val body = """
+            {
+              "mId": "tosspayments",
+              "lastTransactionKey": "9C62B18EEF0DE3EB7F4422EB6D14BC6E",
+              "paymentKey": "${orderConfirmRequest.paymentKey}",
+              "orderId": "${orderConfirmRequest.orderId}",
+              "orderName": "토스 티셔츠 외 2건",
+              "taxExemptionAmount": 0,
+              "status": "DONE",
+              "requestedAt": "2024-02-13T12:17:57+09:00",
+              "approvedAt": "2024-02-13T12:18:14+09:00",
+              "useEscrow": false,
+              "cultureExpense": false,
+              "card": {
+                "issuerCode": "71",
+                "acquirerCode": "71",
+                "number": "12345678****000*",
+                "installmentPlanMonths": 0,
+                "isInterestFree": false,
+                "interestPayer": null,
+                "approveNo": "00000000",
+                "useCardPoint": false,
+                "cardType": "신용",
+                "ownerType": "개인",
+                "acquireStatus": "READY",
+                "receiptUrl": "https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX",
+                "amount": 1000
+              },
+              "virtualAccount": null,
+              "transfer": null,
+              "mobilePhone": null,
+              "giftCertificate": null,
+              "cashReceipt": null,
+              "cashReceipts": null,
+              "discount": null,
+              "cancels": null,
+              "secret": null,
+              "type": "NORMAL",
+              "easyPay": {
+                "provider": "토스페이",
+                "amount": 0,
+                "discountAmount": 0
+              },
+              "easyPayAmount": 0,
+              "easyPayDiscountAmount": 0,
+              "country": "KR",
+              "failure": null,
+              "isPartialCancelable": true,
+              "receipt": {
+                "url": "https://dashboard.tosspayments.com/receipt/redirection?transactionId=tviva20240213121757MvuS8&ref=PX"
+              },
+              "checkout": {
+                "url": "https://api.tosspayments.com/v1/payments/5EnNZRJGvaBX7zk2yd8ydw26XvwXkLrx9POLqKQjmAw4b0e1/checkout"
+              },
+              "currency": "KRW",
+              "totalAmount": ${orderConfirmRequest.amount},
+              "balanceAmount": 1000,
+              "suppliedAmount": 909,
+              "vat": 91,
+              "taxFreeAmount": 0,
+              "method": "카드",
+              "version": "2022-11-16"
+            }
+        """.trimIndent()
+
         mockServerUtils.addMockResponse(
             HttpStatus.OK,
             body
@@ -507,15 +584,70 @@ class OrderIntegrationTest : IntegrationTest() {
         return objectMapper.readValue(body, TossPayConfirmResponse::class.java)
     }
 
-    private fun setUpTossPaymentFailResponse(): TossPayErrorResponse {
-        mockServerUtils.addMockResponse(
-            HttpStatus.BAD_REQUEST,
-            "{\n" +
-                    "  \"code\": \"NOT_FOUND_PAYMENT\",\n" +
-                    "  \"message\": \"존재하지 않는 결제 입니다.\"\n" +
-                    "}"
-        )
-        return TossPayErrorResponse(TossPayErrorCode.NOT_FOUND_PAYMENT, "존재하지 않는 결제 입니다.")
+    private fun setUpTossPaymentFailConfirmResponse(): TossPayErrorResponse {
+        val errorResponse = mapOf(Pair("code", "NOT_FOUND_PAYMENT"), Pair("message", "존재하지 않는 결제 입니다."))
+
+        setUpTossPaymentFailResponse(HttpStatus.BAD_REQUEST, errorResponse)
+        return TossPayErrorResponse(TossPayConfirmErrorCode.NOT_FOUND_PAYMENT, "존재하지 않는 결제 입니다.")
+
+    }
+
+    private fun setUpTossPaymentCancelResponse() {
+        val body = """
+            {
+              "mId": "tosspayments",
+              "version": "2022-11-16",
+              "lastTransactionKey": "GOtuE_rpkelaDwxW_ULZj",
+              "paymentKey": "Zrmyj5eoBkWaVldAqO-i6",
+              "orderId": "frEwn_vLxqeg3l5MhCsph",
+              "orderName": "토스 티셔츠 외 2건",
+              "currency": "KRW",
+              "method": "카드",
+              "status": "CANCELED",
+        
+              "cancels": [
+                {
+                  "cancelReason": "고객이 취소를 원함",
+                  "canceledAt": "2022-01-01T11:32:04+09:00",
+                  "cancelAmount": 10000,
+                  "taxFreeAmount": 0,
+                  "taxExemptionAmount": 0,
+                  "refundableAmount": 0,
+                  "easyPayDiscountAmount": 0,
+                  "transactionKey": "8B4F646A829571D870A3011A4E13D640",
+                  "receiptKey": "V4AJ6AhSWsGN0RocizZQlagPLN8s2IahJLXpfSHzQBTKoDG7",
+                  "cancelStatus": "DONE",
+                  "cancelRequestId": null
+                }
+              ],
+              "secret": null,
+              "type": "NORMAL",
+              "easyPay": "토스페이",
+              "country": "KR",
+              "failure": null,
+              "totalAmount": 10000,
+              "balanceAmount": 0,
+              "suppliedAmount": 0,
+              "vat": 0,
+              "taxFreeAmount": 0,
+              "taxExemptionAmount": 0
+            }
+        """.trimIndent()
+
+        mockServerUtils.addMockResponse(HttpStatus.OK, body)
+    }
+
+    private fun setUpTossPaymentFailCancelResponse(): TossPayErrorResponse {
+        val errorResponse = mapOf(Pair("code", "ALREADY_CANCELED_PAYMENT"), Pair("message", "이미 취소된 결제 입니다."))
+        setUpTossPaymentFailResponse(HttpStatus.BAD_REQUEST, errorResponse)
+
+        return TossPayErrorResponse(TossPayCancelErrorCode.ALREADY_CANCELED_PAYMENT, "이미 취소된 결제 입니다.")
+    }
+
+
+    private fun setUpTossPaymentFailResponse(expectStatus: HttpStatus, resp: Map<String, String>) {
+        val body = objectMapper.writeValueAsString(resp)
+        mockServerUtils.addMockResponse(expectStatus, body)
     }
 
     private fun savePerformance(performances: List<Performance>) {

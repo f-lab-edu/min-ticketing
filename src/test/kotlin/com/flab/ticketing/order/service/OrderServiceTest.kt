@@ -7,6 +7,8 @@ import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.exception.BadRequestException
+import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.service.FileService
 import com.flab.ticketing.common.utils.NanoIdGenerator
@@ -16,12 +18,14 @@ import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.OrderReader
 import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
+import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
@@ -31,6 +35,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.awt.image.BufferedImage
+import java.time.ZonedDateTime
 import java.util.*
 
 class OrderServiceTest : UnitTest() {
@@ -249,11 +254,11 @@ class OrderServiceTest : UnitTest() {
             val actual = orderService.getOrderList(user.uid, CursorInfoDto())
 
             actual.map { it.uid } shouldContainExactly listOf(orders[0].uid, orders[1].uid)
-            
+
         }
 
 
-        "결제 승인시 반환 받는 payment key를 DB에 저장한다."{
+        "결제 승인시 반환 받는 payment key를 DB에 저장한다." {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
@@ -287,6 +292,89 @@ class OrderServiceTest : UnitTest() {
             order.status shouldBe Order.OrderStatus.COMPLETED
             order.payment.paymentKey!! shouldBeEqual orderConfirmResponse.paymentKey
             verify { tossPaymentClient.confirm(orderConfirmRequest) }
+        }
+
+        "아직 시작되지 않은 공연의 취소 요청이 들어왔을 시 토스 취소 API를 호출하고 공연을 취소한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every {
+                tossPaymentClient.cancel(
+                    order.payment.paymentKey!!,
+                    OrderCancelReasons.CUSTOMER_WANTS.reason
+                )
+            } returns Unit
+
+            orderService.cancelOrder(user.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
+
+            order.status shouldBe Order.OrderStatus.CANCELED
+        }
+
+        "공연날짜가 지난 공연의 추소 요청이 들어왔을 시 BadRequestException과 적절한 오류 코드를 반환한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().minusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every { tossPaymentClient.cancel(any(), any()) } returns Unit
+
+
+            val e = shouldThrow<BadRequestException> {
+                orderService.cancelOrder(user.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
+            }
+
+            e.info shouldBe PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED
+
+        }
+
+        "주문자와 취소 요청자가 다르다면 ForbiddenException과 적절한 오류 코드를 반환한다." {
+            val orderUser = UserTestDataGenerator.createUser()
+            val cancelUser = UserTestDataGenerator.createUser(uid = "user-002")
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order =
+                OrderTestDataGenerator.createOrder(user = orderUser, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every { tossPaymentClient.cancel(any(), any()) } returns Unit
+
+            val e = shouldThrow<ForbiddenException> {
+                orderService.cancelOrder(cancelUser.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
+            }
+
+            e.info shouldBe OrderErrorInfos.INVALID_USER
+        }
+
+        "Reservation 중 사용이 완료된 주문이 있다면 ForbiddenException과 적절한 오류 코드를 반환한다." {
+            val user = UserTestDataGenerator.createUser()
+            val performance = PerformanceTestDataGenerator.createPerformance(
+                showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
+            )
+            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
+            order.status = Order.OrderStatus.COMPLETED
+            order.reservations[0].isUsed = true
+
+            every { orderReader.findByUid(order.uid) } returns order
+            every { tossPaymentClient.cancel(any(), any()) } returns Unit
+
+            val e = shouldThrow<ForbiddenException> {
+                orderService.cancelOrder(user.uid, order.uid, OrderCancelReasons.CUSTOMER_WANTS)
+            }
+
+            e.info shouldBe OrderErrorInfos.RESERVATION_ALREADY_USED
+
         }
     }
 

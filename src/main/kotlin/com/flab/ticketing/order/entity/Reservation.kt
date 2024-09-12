@@ -20,5 +20,7 @@ class Reservation(
     @JoinColumn(name = "order_id")
     val order: Order,
 
-    var qrImageUrl: String? = null
+    var qrImageUrl: String? = null,
+
+    var isUsed: Boolean = false
 ) : BaseEntity()

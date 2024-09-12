@@ -9,6 +9,7 @@ import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.response.CartListResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
+import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.service.OrderService
 import com.flab.ticketing.order.service.ReservationService
 import org.springframework.http.HttpStatus
@@ -55,6 +56,14 @@ class OrderController(
             return CursoredResponse(null, orderList)
         }
         return CursoredResponse(orderList[orderList.size-1].uid, orderList.dropLast(1))
+    }
+
+    @PostMapping("/{orderUid}/cancel")
+    fun cancelOrder(
+        @LoginUser userInfo: AuthenticatedUserDto,
+        @PathVariable orderUid: String
+    ){
+        orderService.cancelOrder(userInfo.uid, orderUid, OrderCancelReasons.CUSTOMER_WANTS)
     }
 
 }

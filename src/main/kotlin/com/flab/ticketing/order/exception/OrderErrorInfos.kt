@@ -8,6 +8,7 @@ enum class OrderErrorInfos(override val code: String, override val message: Stri
     INVALID_CART_INFO("ORDER-002", "올바르지 않은 장바구니 정보가 존재합니다."),
     ORDER_INFO_NOT_FOUND("ORDER-003", "주문 정보를 조회할 수 없습니다."),
     INVALID_USER("ORDER-004", "주문자와 동일하지 않은 사용자입니다."),
-    ORDER_MUST_MINIMUM_ONE_RESERVATION("ORDER-005", "주문 시에는 최소 하나 이상의 주문 상품이 필요합니다.")
+    ORDER_MUST_MINIMUM_ONE_RESERVATION("ORDER-005", "주문 시에는 최소 하나 이상의 주문 상품이 필요합니다."),
+    RESERVATION_ALREADY_USED("ORDER-006", "이미 사용된 티켓입니다.")
 
 }
