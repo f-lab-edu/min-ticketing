@@ -31,14 +31,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'com.aventrix.jnanoid:jnanoid:2.0.0'
     implementation 'com.google.zxing:javase:3.5.3'
-    
+
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
     implementation 'com.linecorp.kotlin-jdsl:jpql-dsl:3.5.1'
     implementation 'com.linecorp.kotlin-jdsl:jpql-render:3.5.1'
     implementation 'com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.1'
-    implementation 'com.mysql:mysql-connector-j'
+
+    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+    implementation 'com.oracle.database.security:osdt_cert'
+    implementation 'com.oracle.database.security:oraclepki'
+    implementation 'com.oracle.database.security:osdt_core'
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -65,7 +69,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.named("jar"){
+tasks.named("jar") {
     enabled = false // Plain jar이 생성되지 않도록 제한
 }
 

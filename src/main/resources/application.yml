@@ -2,8 +2,9 @@ spring:
   profiles:
     active: prod
 
+
 ---
 
 spring:
   profiles:
-    active: local
+    active: dev
