@@ -1,6 +1,6 @@
 spring:
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: oracle.jdbc.OracleDriver
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -31,7 +31,7 @@ jwt:
     time: ${ACCESS_TOKEN_ALIVE_TIME}
 
 service:
-  url: http://localhost
+  url: https://minturtle.kro.kr
   toss:
     url: https://api.tosspayments.com/
     confirm-uri: /v1/payments/confirm
