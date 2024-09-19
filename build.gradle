@@ -65,6 +65,10 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.named("jar"){
+    enabled = false // Plain jar이 생성되지 않도록 제한
+}
+
 jacoco {
     toolVersion = '0.8.12'
 }
@@ -90,6 +94,7 @@ jacocoTestReport {
     }
 
 }
+
 
 task testCoverage(type: Test) {
     group 'verification'
