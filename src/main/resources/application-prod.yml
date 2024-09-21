@@ -37,3 +37,15 @@ service:
     confirm-uri: /v1/payments/confirm
     cancel-uri: /v1/payments/%s/cancel
     access-token: ${TOSS_ACCESS_TOKEN}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
+  file:
+    name: ticketing
+    path: /app/logs
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 1GB
+      max-history: 30

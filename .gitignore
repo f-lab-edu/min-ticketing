@@ -39,5 +39,5 @@ out/
 ### Kotlin ###
 .kotlin
 
-src/main/resources/application.properties
-src/main/resources
+src/main/resources/application-dev.yml
+/logs/**
