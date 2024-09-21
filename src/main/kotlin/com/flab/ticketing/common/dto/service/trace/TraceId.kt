@@ -29,45 +29,15 @@ data class TraceId(
     }
 
     fun getStartPrefix(): String {
-        if (level == 0) {
-            return "|"
-        }
-
-        val sb = StringBuilder().append("|")
-
-        for (i in 0..<level) {
-            sb.append("-")
-        }
-
-
-        return sb.append(">").toString()
+        return "|".repeat(level + 1) + "->"
     }
 
-
     fun getEndPrefix(): String {
-        if (level == 0) {
-            return "|"
-        }
-        val sb = StringBuilder().append("|").append("<")
-
-        for (i in 0..<level) {
-            sb.append("-")
-        }
-
-        return sb.toString()
+        return "|".repeat(level + 1) + "<-"
     }
 
     fun getExceptionPrefix(): String {
-        if (level == 0) {
-            return "|"
-        }
-        val sb = StringBuilder().append("|").append("<").append("X")
-
-        for (i in 0..<level) {
-            sb.append("-")
-        }
-
-        return sb.toString()
+        return "|".repeat(level + 1) + "<X-"
     }
 
 }

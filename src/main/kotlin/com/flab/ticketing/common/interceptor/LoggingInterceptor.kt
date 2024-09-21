@@ -23,7 +23,7 @@ class LoggingInterceptor(
         val startTime = Instant.now()
         request.setAttribute(requestStartTime, startTime)
 
-        log.info("[{}] {} {} requested", traceId.id, request.method, request.requestURI)
+        log.info("[{}]{} {} {} requested", traceId.id, traceId.getStartPrefix(), request.method, request.requestURI)
 
         return true
     }
@@ -36,10 +36,13 @@ class LoggingInterceptor(
     ) {
         val requestTime = request.getAttribute(requestStartTime) as Instant
         val totalTimeMs = ChronoUnit.MILLIS.between(requestTime, Instant.now())
-        
+
+        val prefix = if (ex == null) traceId.getEndPrefix() else traceId.getExceptionPrefix()
+
         log.info(
-            "[{}] {} {} responsed {} - {}ms",
+            "[{}]{} {} {} responsed {} - {}ms",
             traceId.id,
+            prefix,
             request.method,
             request.requestURI,
             response.status,

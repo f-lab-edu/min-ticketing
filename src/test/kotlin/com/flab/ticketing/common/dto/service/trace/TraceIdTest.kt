@@ -23,10 +23,10 @@ class TraceIdTest : UnitTest() {
             forAll(
                 table(
                     headers("input", "expected"),
-                    row(0, "|"),
-                    row(1, "|->"),
-                    row(2, "|-->"),
-                    row(3, "|--->")
+                    row(0, "|->"),
+                    row(1, "||->"),
+                    row(2, "|||->"),
+                    row(3, "||||->")
                 )
             ) { input, expected ->
                 val traceId = TraceId()
@@ -42,10 +42,10 @@ class TraceIdTest : UnitTest() {
             forAll(
                 table(
                     headers("input", "expected"),
-                    row(0, "|"),
-                    row(1, "|<-"),
-                    row(2, "|<--"),
-                    row(3, "|<---")
+                    row(0, "|<-"),
+                    row(1, "||<-"),
+                    row(2, "|||<-"),
+                    row(3, "||||<-")
                 )
             ) { input, expected ->
                 val traceId = TraceId()
@@ -61,10 +61,10 @@ class TraceIdTest : UnitTest() {
             forAll(
                 table(
                     headers("input", "expected"),
-                    row(0, "|"),
-                    row(1, "|<X-"),
-                    row(2, "|<X--"),
-                    row(3, "|<X---")
+                    row(0, "|<X-"),
+                    row(1, "||<X-"),
+                    row(2, "|||<X-"),
+                    row(3, "||||<X-")
                 )
             ) { input, expected ->
                 val traceId = TraceId()
