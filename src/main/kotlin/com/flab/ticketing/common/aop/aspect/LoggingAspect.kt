@@ -20,7 +20,7 @@ class LoggingAspect(
     private val log = LoggerFactory.getLogger(LoggingAspect::class.java)
 
     @Around("@within(com.flab.ticketing.common.aop.Logging) || @annotation(com.flab.ticketing.common.aop.Logging)")
-    fun logExecutionTime(joinPoint: ProceedingJoinPoint): Any {
+    fun logExecutionTime(joinPoint: ProceedingJoinPoint): Any? {
         val methodSignature = joinPoint.signature as MethodSignature
         val className = joinPoint.target.javaClass.simpleName
         val methodName = methodSignature.name
@@ -29,7 +29,7 @@ class LoggingAspect(
         log.info("[{}]{} {}.{}", traceId.id, traceId.getStartPrefix(), className, methodName)
         val startTime = Instant.now()
 
-        try {
+        return try {
             val proceed = joinPoint.proceed()
             val executionTimeMs = ChronoUnit.MILLIS.between(startTime, Instant.now())
 
@@ -42,7 +42,7 @@ class LoggingAspect(
                 executionTimeMs
             )
 
-            return proceed
+            proceed
         } catch (e: Exception) {
             log.info(
                 "[{}]{} {}.{} ended by exception {}",

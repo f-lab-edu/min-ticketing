@@ -1,5 +1,6 @@
 package com.flab.ticketing.order.service
 
+import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.response.CartListResponse
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 
 
 @Service
+@Logging
 class ReservationService(
     private val userReader: UserReader,
     private val reservationReader: ReservationReader,

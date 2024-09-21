@@ -1,6 +1,7 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.ExternalAPIException
@@ -35,6 +36,7 @@ import java.time.ZonedDateTime
 
 @Service
 @Transactional
+@Logging
 class OrderService(
     private val userReader: UserReader,
     private val cartReader: CartReader,

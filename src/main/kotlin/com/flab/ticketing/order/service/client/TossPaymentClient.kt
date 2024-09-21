@@ -1,6 +1,7 @@
 package com.flab.ticketing.order.service.client
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.ExternalAPIException
 import com.flab.ticketing.common.exception.InternalServerException
@@ -20,6 +21,7 @@ import org.springframework.web.client.RestClient
 import java.net.URI
 
 @Component
+@Logging
 class TossPaymentClient(
     private val restClient: RestClient,
     private val objectMapper: ObjectMapper,
