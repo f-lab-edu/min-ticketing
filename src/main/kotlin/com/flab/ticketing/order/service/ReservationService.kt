@@ -24,8 +24,7 @@ class ReservationService(
     private val reservationReader: ReservationReader,
     private val performanceReader: PerformanceReader,
     private val cartReader: CartReader,
-    private val cartWriter: CartWriter,
-    private val nanoIdGenerator: NanoIdGenerator
+    private val cartWriter: CartWriter
 
 ) {
 
@@ -51,7 +50,7 @@ class ReservationService(
     @Transactional(readOnly = true)
     fun getCarts(userUid: String): CartListResponse {
         val userCarts = cartReader.findByUser(userUid)
-        
+
         return CartListResponse.of(userCarts)
     }
 
@@ -62,7 +61,7 @@ class ReservationService(
         seat: PerformancePlaceSeat
     ) {
         try {
-            cartWriter.save(Cart(nanoIdGenerator.createNanoId(), seat, performanceDateTime, user))
+            cartWriter.save(Cart(NanoIdGenerator.createNanoId(), seat, performanceDateTime, user))
         } catch (e: DataIntegrityViolationException) {
             throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)
         }
