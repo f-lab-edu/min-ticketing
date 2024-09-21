@@ -11,8 +11,8 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-        show_sql: true
+  #        format_sql: true
+  #        show_sql: true
   mail:
     sender: noreply@minticketing.com
     host: 127.0.0.1

@@ -7,7 +7,8 @@ import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.reflect.MethodSignature
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import java.text.DecimalFormat
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 
 @Aspect
@@ -17,8 +18,6 @@ class LoggingAspect(
 ) {
 
     private val log = LoggerFactory.getLogger(LoggingAspect::class.java)
-    private val decimalFormat = DecimalFormat("#,##0.000")
-
 
     @Around("@within(com.flab.ticketing.common.aop.Logging) || @annotation(com.flab.ticketing.common.aop.Logging)")
     fun logExecutionTime(joinPoint: ProceedingJoinPoint): Any {
@@ -28,20 +27,19 @@ class LoggingAspect(
 
         traceId.addLevel()
         log.info("[{}]{} {}.{}", traceId.id, traceId.getStartPrefix(), className, methodName)
-        val startTimeNs = System.nanoTime()
+        val startTime = Instant.now()
 
         try {
             val proceed = joinPoint.proceed()
-            val executionTimeMs = (System.nanoTime() - startTimeNs) / 1_000_000.0
-            val formattedTime = decimalFormat.format(executionTimeMs)
+            val executionTimeMs = ChronoUnit.MILLIS.between(startTime, Instant.now())
 
             log.info(
-                "[{}]{} {}.{} ended at {}",
+                "[{}]{} {}.{} ended at {}ms",
                 traceId.id,
                 traceId.getEndPrefix(),
                 className,
                 methodName,
-                formattedTime
+                executionTimeMs
             )
 
             return proceed
