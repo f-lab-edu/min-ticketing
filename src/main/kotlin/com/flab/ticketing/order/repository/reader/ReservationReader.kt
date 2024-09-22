@@ -1,5 +1,6 @@
 package com.flab.ticketing.order.repository.reader
 
+import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.order.repository.ReservationRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -7,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Transactional(readOnly = true)
+@Logging
 class ReservationReader(
     private val reservationRepository: ReservationRepository
 ) {
