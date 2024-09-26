@@ -1,17 +1,13 @@
 package com.flab.ticketing.common.dto.service.trace
 
 import com.flab.ticketing.common.utils.NanoIdGenerator
-import org.springframework.context.annotation.Scope
-import org.springframework.context.annotation.ScopedProxyMode
-import org.springframework.stereotype.Component
 
 
-@Scope(value = "request", proxyMode = ScopedProxyMode.TARGET_CLASS)
-@Component
 data class TraceId(
     val id: String = createId()
 ) {
-    private var level = 0
+    var level = 0
+        private set
 
     companion object {
         private fun createId(): String {

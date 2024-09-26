@@ -1,6 +1,6 @@
 package com.flab.ticketing.common.aop.aspect
 
-import com.flab.ticketing.common.dto.service.trace.TraceId
+import com.flab.ticketing.common.utils.TraceIdHolder
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -13,9 +13,7 @@ import java.time.temporal.ChronoUnit
 
 @Aspect
 @Component
-class LoggingAspect(
-    private val traceId: TraceId,
-) {
+class LoggingAspect {
 
     private val log = LoggerFactory.getLogger(LoggingAspect::class.java)
 
@@ -24,6 +22,8 @@ class LoggingAspect(
         val methodSignature = joinPoint.signature as MethodSignature
         val className = joinPoint.target.javaClass.simpleName
         val methodName = methodSignature.name
+
+        val traceId = TraceIdHolder.get() ?: TraceIdHolder.set()
 
         traceId.addLevel()
         log.info("[{}]{} {}.{}", traceId.id, traceId.getStartPrefix(), className, methodName)
@@ -55,9 +55,17 @@ class LoggingAspect(
             throw e
         } finally {
             traceId.minusLevel()
+            releaseIfLoggingProcessEnd()
         }
 
     }
 
+    fun releaseIfLoggingProcessEnd() {
+        val traceId = TraceIdHolder.get() ?: return
+
+        if (traceId.level == 0) {
+            TraceIdHolder.release()
+        }
+    }
 
 }
