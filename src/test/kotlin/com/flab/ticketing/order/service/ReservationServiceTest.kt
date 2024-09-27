@@ -40,8 +40,7 @@ class ReservationServiceTest : UnitTest() {
             reservationReader,
             performanceReader,
             cartReader,
-            cartWriter,
-            nanoIdGenerator
+            cartWriter
         )
 
     init {

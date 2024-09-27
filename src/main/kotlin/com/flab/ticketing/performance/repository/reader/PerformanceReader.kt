@@ -1,5 +1,6 @@
 package com.flab.ticketing.performance.repository.reader
 
+import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
+@Logging
 class PerformanceReader(
     private val performanceRepository: PerformanceRepository,
     private val performanceDateRepository: PerformanceDateRepository
