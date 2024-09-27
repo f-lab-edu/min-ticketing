@@ -59,7 +59,7 @@ jobs:
 
       - name: Rename JAR file
         run: |
-          find app -name "minticketing-*.jar" -type f -exec mv {} app/app.jar \;
+          find app -name "min-ticketing-*.jar" -type f -exec mv {} app/app.jar \;
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
