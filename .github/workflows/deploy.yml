@@ -84,24 +84,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.ORACLE_KNOWN_HOSTS }}
-
-      - name: Update known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.ORACLE_HOST }} >> ~/.ssh/known_hosts
+          ssh-private-key:  ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
 
       - name: Deploy to Oracle Cloud
         env:
           HOST: ${{ secrets.ORACLE_HOST }}
           USER: ${{ secrets.ORACLE_USER }}
         run: |
-          scp docker-compose.yml $USER@$HOST:~/
-          ssh $USER@$HOST << EOF
+          scp -o StrictHostKeyChecking=accept-new docker-compose.yml $USER@$HOST:~/
+          ssh -o StrictHostKeyChecking=accept-new $USER@$HOST << EOF
             cd /home/ubuntu
             sudo docker compose pull
             sudo docker compose up -d
