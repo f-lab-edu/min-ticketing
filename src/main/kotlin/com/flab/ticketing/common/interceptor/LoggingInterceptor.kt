@@ -1,6 +1,6 @@
 package com.flab.ticketing.common.interceptor
 
-import com.flab.ticketing.common.dto.service.trace.TraceId
+import com.flab.ticketing.common.utils.TraceIdHolder
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -11,10 +11,7 @@ import java.time.temporal.ChronoUnit
 
 
 @Component
-class LoggingInterceptor(
-    private val traceId: TraceId
-
-) : HandlerInterceptor {
+class LoggingInterceptor : HandlerInterceptor {
 
     private val log = LoggerFactory.getLogger(LoggingInterceptor::class.java)
     private val requestStartTime = "requestStartTime"
@@ -23,6 +20,8 @@ class LoggingInterceptor(
         val startTime = Instant.now()
         request.setAttribute(requestStartTime, startTime)
 
+        val traceId = TraceIdHolder.get() ?: TraceIdHolder.set()
+        traceId.addLevel()
         log.info("[{}]{} {} {} requested", traceId.id, traceId.getStartPrefix(), request.method, request.requestURI)
 
         return true
@@ -36,7 +35,7 @@ class LoggingInterceptor(
     ) {
         val requestTime = request.getAttribute(requestStartTime) as Instant
         val totalTimeMs = ChronoUnit.MILLIS.between(requestTime, Instant.now())
-
+        val traceId = TraceIdHolder.get() ?: TraceIdHolder.set()
         val prefix = if (ex == null) traceId.getEndPrefix() else traceId.getExceptionPrefix()
 
         log.info(
@@ -49,5 +48,6 @@ class LoggingInterceptor(
             totalTimeMs
         )
 
+        TraceIdHolder.release()
     }
 }
