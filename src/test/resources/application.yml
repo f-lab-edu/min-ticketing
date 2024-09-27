@@ -1,0 +1,44 @@
+spring:
+  # H2 Database 설정
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: 'jdbc:h2:mem:test'
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  #        format_sql: true
+  #        show_sql: true
+  mail:
+    sender: noreply@minticketing.com
+    host: 127.0.0.1
+    port: 3025
+    username: foo
+    password: foo-pwd
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  servlet:
+    encoding:
+      force-response: true
+      charset: UTF-8
+
+jwt:
+  secret: SECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEYSECRETKEY
+  access-token:
+    time: 1000000
+
+service:
+  url: http://test.com
+  toss:
+    url: http://localhost:2024
+    confirm-uri: /v1/payments/confirm
+    cancel-uri: /v1/payments/%s/cancel
+    access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg==
