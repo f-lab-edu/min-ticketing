@@ -57,7 +57,6 @@ class OrderServiceTest : UnitTest() {
         cartWriter = cartWriter,
         orderReader = orderReader,
         orderWriter = orderWriter,
-        nanoIdGenerator = nanoIdGenerator,
         tossPaymentClient = tossPaymentClient,
         fileService = fileService,
         serviceUrl = serviceUrl
@@ -89,7 +88,6 @@ class OrderServiceTest : UnitTest() {
 
             every { userReader.findByUid(user.uid) } returns user
             every { cartReader.findByUidList(listOf("cart001", "cart002")) } returns carts
-            every { nanoIdGenerator.createNanoId() } returns orderUid
             every { orderWriter.save(any()) } returns Unit
             every { cartWriter.deleteAll(any()) } returns Unit
 
@@ -101,7 +99,6 @@ class OrderServiceTest : UnitTest() {
             verify { orderWriter.save(any()) }
             verify { cartWriter.deleteAll(carts) }
 
-            actual.orderId shouldBeEqual orderUid
             actual.amount shouldBeEqual performance.price * 2
             actual.customerName shouldBeEqual user.nickname
             actual.customerEmail shouldBeEqual user.email

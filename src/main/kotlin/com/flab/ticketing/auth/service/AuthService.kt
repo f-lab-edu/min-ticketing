@@ -23,8 +23,7 @@ class AuthService(
     private val emailVerifier: EmailVerifier,
     private val userReader: UserReader,
     private val userWriter: UserWriter,
-    private val passwordEncoder: PasswordEncoder,
-    private val nanoIdGenerator: NanoIdGenerator
+    private val passwordEncoder: PasswordEncoder
 ) {
 
     @Transactional(readOnly = true)
@@ -47,7 +46,7 @@ class AuthService(
     fun saveVerifiedUserInfo(registerInfo: UserRegisterRequest) {
         emailVerifier.checkVerified(registerInfo.email)
 
-        val uid = nanoIdGenerator.createNanoId()
+        val uid = NanoIdGenerator.createNanoId()
         val encodedPassword = passwordEncoder.encode(registerInfo.password)
 
         val user = User(uid, registerInfo.email, encodedPassword, registerInfo.nickname)

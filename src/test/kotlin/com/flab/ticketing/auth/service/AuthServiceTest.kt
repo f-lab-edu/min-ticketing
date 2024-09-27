@@ -32,8 +32,7 @@ class AuthServiceTest : UnitTest() {
             emailVerifier,
             userReader,
             userWriter,
-            userPWEncoder,
-            nanoIdGenerator
+            userPWEncoder
         )
 
 

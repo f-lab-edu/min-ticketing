@@ -1,0 +1,109 @@
+spring:
+  profiles:
+    active: prod
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  mail:
+    sender: ${MAIL_SENDER}
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+server:
+  servlet:
+    encoding:
+      force-response: true
+      charset: UTF-8
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token:
+    time: ${ACCESS_TOKEN_ALIVE_TIME}
+
+service:
+  url: https://minturtle.kro.kr
+  toss:
+    url: https://api.tosspayments.com/
+    confirm-uri: /v1/payments/confirm
+    cancel-uri: /v1/payments/%s/cancel
+    access-token: ${TOSS_ACCESS_TOKEN}
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
+  file:
+    name: ticketing
+    path: /app/logs
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 1GB
+      max-history: 30
+
+---
+
+spring:
+  profiles:
+    active: dev
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/ticketing?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 1111
+  jpa:
+    hibernate:
+      ddl-auto: update
+  mail:
+    sender: noreply@minticketing.com
+    host: smtp.gmail.com
+    port: 465
+    username: asdas
+    password: 21312asf
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+server:
+  servlet:
+    encoding:
+      force-response: true
+      charset: UTF-8
+
+jwt:
+  secret: UshUVcHhZ8olLFeQVCnjoRjp1EjY8vRY6UUR12QKCWDh8LcJFmPrrxRYSQSdZZVc
+
+  access-token:
+    time: 1000000
+
+service:
+  url: http://localhost
+  toss:
+    url: https://api.tosspayments.com/
+    confirm-uri: /v1/payments/confirm
+    cancel-uri: /v1/payments/%s/cancel
+    access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg== # Toss Payments 임시 키
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
+  file:
+    name: ticketing
+    path: logs
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      total-size-cap: 1GB
+      max-history: 30

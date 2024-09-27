@@ -1,6 +1,7 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
+import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.ExternalAPIException
@@ -35,13 +36,13 @@ import java.time.ZonedDateTime
 
 @Service
 @Transactional
+@Logging
 class OrderService(
     private val userReader: UserReader,
     private val cartReader: CartReader,
     private val cartWriter: CartWriter,
     private val orderReader: OrderReader,
     private val orderWriter: OrderWriter,
-    private val nanoIdGenerator: NanoIdGenerator,
     private val tossPaymentClient: TossPaymentClient,
     private val fileService: FileService,
     @Value("\${service.url}") private val serviceUrl: String
@@ -87,7 +88,11 @@ class OrderService(
 
 
     @Transactional(readOnly = true)
-    fun getOrderList(userUid: String, searchConditions: OrderSearchConditions, cursorInfo: CursorInfoDto): List<OrderSummarySearchResult> {
+    fun getOrderList(
+        userUid: String,
+        searchConditions: OrderSearchConditions,
+        cursorInfo: CursorInfoDto
+    ): List<OrderSummarySearchResult> {
         val orders = orderReader.findOrderByUser(userUid, searchConditions, cursorInfo)
 
         return orders.filter { it.reservations.size > 0 }.map {
@@ -101,7 +106,12 @@ class OrderService(
         }
     }
 
-    fun cancelOrder(userUid: String, orderUid: String, reason: OrderCancelReasons, compareTime: ZonedDateTime = ZonedDateTime.now()) {
+    fun cancelOrder(
+        userUid: String,
+        orderUid: String,
+        reason: OrderCancelReasons,
+        compareTime: ZonedDateTime = ZonedDateTime.now()
+    ) {
         val order = orderReader.findByUid(orderUid)
 
         checkValidOrderCancelRequest(userUid, order, compareTime)
@@ -135,7 +145,7 @@ class OrderService(
     }
 
     private fun checkPerformancePassed(reservations: List<Reservation>, compareTime: ZonedDateTime) {
-       reservations.forEach {
+        reservations.forEach {
             val showTime = it.performanceDateTime.showTime
             if (showTime.isBefore(compareTime)) {
                 throw BadRequestException(PerformanceErrorInfos.PERFORMANCE_ALREADY_PASSED)
@@ -157,7 +167,7 @@ class OrderService(
 
     private fun createOrder(user: User, orderInfoRequest: OrderInfoRequest, carts: List<Cart>): Order {
         return Order(
-            nanoIdGenerator.createNanoId(),
+            NanoIdGenerator.createNanoId(),
             user,
             payment = Order.Payment(
                 carts.map { it.performanceDateTime.performance.price }.sum(),
