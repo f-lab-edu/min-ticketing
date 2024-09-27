@@ -31,6 +31,18 @@ jobs:
           name: minticketing-jar
           path: build/libs/*.jar
 
+      - name: Zip test reports
+        if: always()
+        run: zip -r test-reports.zip build/reports/tests/test
+  
+      - name: Upload zipped test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports
+          path: test-reports.zip
+
+
   docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
