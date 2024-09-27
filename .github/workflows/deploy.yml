@@ -90,6 +90,11 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.ORACLE_KNOWN_HOSTS }}
 
+      - name: Update known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.ORACLE_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy to Oracle Cloud
         env:
           HOST: ${{ secrets.ORACLE_HOST }}
