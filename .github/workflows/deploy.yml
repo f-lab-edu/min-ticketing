@@ -95,7 +95,7 @@ jobs:
           USER: ${{ secrets.ORACLE_USER }}
         run: |
           ssh -o StrictHostKeyChecking=accept-new $USER@$HOST << EOF
-            cd /home/ubuntu
+            cd /home/ubuntu/min-ticketing
             sudo docker compose pull
             sudo docker compose up -d
           EOF
