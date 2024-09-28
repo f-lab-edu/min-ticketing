@@ -94,7 +94,6 @@ jobs:
           HOST: ${{ secrets.ORACLE_HOST }}
           USER: ${{ secrets.ORACLE_USER }}
         run: |
-          scp -o StrictHostKeyChecking=accept-new docker-compose.yml $USER@$HOST:~/
           ssh -o StrictHostKeyChecking=accept-new $USER@$HOST << EOF
             cd /home/ubuntu
             sudo docker compose pull
