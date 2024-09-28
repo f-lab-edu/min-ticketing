@@ -2,7 +2,7 @@ spring:
   profiles:
     active: prod
   datasource:
-    driver-class-name: oracle.jdbc.OracleDriver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
@@ -20,7 +20,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-
+      password: ${REDIS_PASSWORD}
 server:
   servlet:
     encoding:
