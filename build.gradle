@@ -40,7 +40,7 @@ dependencies {
     implementation 'com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.1'
 
 
-    runtimeOnly "com.mysql:mysql-connector-j"
+    implementation "com.mysql:mysql-connector-j"
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
     implementation 'com.oracle.database.security:osdt_cert'
     implementation 'com.oracle.database.security:oraclepki'
