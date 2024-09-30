@@ -107,3 +107,11 @@ logging:
       max-file-size: 10MB
       total-size-cap: 1GB
       max-history: 30
+
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
