@@ -7,5 +7,7 @@ RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 
 COPY app/app.jar app.jar
 
+EXPOSE 8080
+
 # 4. 컨테이너에서 실행할 명령어 설정
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

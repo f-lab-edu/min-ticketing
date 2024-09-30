@@ -1,8 +1,10 @@
 spring:
   application:
     name: min-ticketing
-  profiles:
-    active: prod
+  config:
+    activate:
+      on-profile: prod
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
@@ -56,9 +58,9 @@ logging:
 
 ---
 
-spring:
-  profiles:
-    active: dev
+config:
+  activate:
+    on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/ticketing?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
