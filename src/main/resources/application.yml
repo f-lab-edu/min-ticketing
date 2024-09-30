@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: min-ticketing
   profiles:
     active: prod
   datasource:
@@ -115,3 +117,6 @@ management:
     web:
       exposure:
         include: health, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
