@@ -23,6 +23,9 @@ spring:
     redis:
       host: localhost
       port: 6379
+  web:
+    resources:
+      add-mappings: false
 
 server:
   servlet:
