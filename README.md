@@ -23,7 +23,8 @@
 ## 🏘️ 프로젝트 아키텍쳐
 
 ---
-![프로젝트 아키텍쳐](project_struct.png)
+![image](https://github.com/user-attachments/assets/fd21438a-d930-47f6-a5f4-5681a2f7038f)
+
 
 ## 🤔 프로젝트 주요 관심사
 
@@ -38,7 +39,8 @@
 ## 💡 Technical Issues
 
 ---
-
+- [Spring + Loki + Grafana로 로그 시스템 구축하기](https://flannel-dill-7dc.notion.site/Spring-Loki-Grafana-110fc957389c80d69bc5d33a9b5c2618?pvs=4)
+- [Spring Web MVC 비동기 메서드 호출 시 Request 정보를 유지하려면 어떻게 해야할까?](https://flannel-dill-7dc.notion.site/Request-10dfc957389c809ea4f0da9566ab90ba?pvs=4)
 - [공연 상세 조회 시 발생한 N + 1 문제를 해결하고, 확장성 있는 코드로 변경하기](https://flannel-dill-7dc.notion.site/N-1-ad7f7737e89e4ffba6866650f7925de6?pvs=4)
 - [테스트 코드 개선하기, TDD와 BDD의 관계](https://flannel-dill-7dc.notion.site/0d997311ea344437b6cae3cb63487d76?pvs=4)
 
