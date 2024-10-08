@@ -1,6 +1,10 @@
 spring:
-  profiles:
-    active: prod
+  application:
+    name: min-ticketing
+  config:
+    activate:
+      on-profile: prod
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
@@ -53,12 +57,22 @@ logging:
       max-file-size: 10MB
       total-size-cap: 1GB
       max-history: 30
-
+management:
+  server:
+    port: 9090
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
 ---
 
 spring:
-  profiles:
-    active: dev
+  config:
+    activate:
+      on-profile: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/ticketing?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
@@ -119,3 +133,6 @@ management:
     web:
       exposure:
         include: health, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}

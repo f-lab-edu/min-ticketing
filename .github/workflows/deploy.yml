@@ -31,6 +31,18 @@ jobs:
           name: minticketing-jar
           path: build/libs/*.jar
 
+      - name: Zip test reports
+        if: always()
+        run: zip -r test-reports.zip build/reports/tests/test
+  
+      - name: Upload zipped test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-reports
+          path: test-reports.zip
+
+
   docker:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
@@ -47,7 +59,7 @@ jobs:
 
       - name: Rename JAR file
         run: |
-          find app -name "minticketing-*.jar" -type f -exec mv {} app/app.jar \;
+          find app -name "ticketing-*.jar" -type f -exec mv {} app/app.jar \;
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -72,20 +84,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install SSH key
-        uses: shimataro/ssh-key-action@v2
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
         with:
-          key: ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
-          known_hosts: ${{ secrets.ORACLE_KNOWN_HOSTS }}
+          ssh-private-key:  ${{ secrets.ORACLE_SSH_PRIVATE_KEY }}
 
       - name: Deploy to Oracle Cloud
         env:
           HOST: ${{ secrets.ORACLE_HOST }}
           USER: ${{ secrets.ORACLE_USER }}
         run: |
-          scp docker-compose.yml $USER@$HOST:~/
-          ssh $USER@$HOST << EOF
-            cd /home/ubuntu
+          ssh -o StrictHostKeyChecking=accept-new $USER@$HOST << EOF
+            cd /home/ubuntu/min-ticketing
             sudo docker compose pull
             sudo docker compose up -d
           EOF

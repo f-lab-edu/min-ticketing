@@ -48,6 +48,7 @@ dependencies {
 //    implementation 'com.oracle.database.security:osdt_cert'
 //    implementation 'com.oracle.database.security:oraclepki'
 //    implementation 'com.oracle.database.security:osdt_core'
+
     implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
