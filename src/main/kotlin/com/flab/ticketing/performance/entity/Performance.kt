@@ -16,6 +16,8 @@ class Performance(
 
     val image: String,
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
     val description: String,
 
     val price: Int,

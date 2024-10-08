@@ -44,11 +44,13 @@ dependencies {
 
 
     runtimeOnly "com.mysql:mysql-connector-j"
-    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
-    implementation 'com.oracle.database.security:osdt_cert'
-    implementation 'com.oracle.database.security:oraclepki'
-    implementation 'com.oracle.database.security:osdt_core'
+//    runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+//    implementation 'com.oracle.database.security:osdt_cert'
+//    implementation 'com.oracle.database.security:oraclepki'
+//    implementation 'com.oracle.database.security:osdt_core'
     implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
