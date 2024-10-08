@@ -5,6 +5,7 @@ import com.flab.ticketing.auth.filter.JwtAuthenticateFilter
 import com.flab.ticketing.common.filter.ExceptionHandlerFilter
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider
@@ -34,10 +35,19 @@ class SecurityConfig {
             .csrf { csrfConfig -> csrfConfig.disable() }
             .authorizeHttpRequests { authorizedRequests ->
                 authorizedRequests
+
                     .requestMatchers("/api/user/new/**").permitAll()
                     .requestMatchers("/api/user/login").permitAll()
                     .requestMatchers("/api/performances", "/api/performances/*").permitAll()
-                    .requestMatchers("/actuator/**").permitAll()
+                    .requestMatchers("/actuator").permitAll()
+                    .requestMatchers(
+                        "/api/health-check",
+                        "/api/orders/**",
+                        "/api/reservations/**",
+                        "/api/performances/*/dates/**"
+                    )
+                    .authenticated()
+                    .requestMatchers(HttpMethod.GET).permitAll()
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
             .exceptionHandling { it.authenticationEntryPoint(authenticationEntryPoint) }
