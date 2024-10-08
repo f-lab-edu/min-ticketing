@@ -25,8 +25,7 @@ class AuthController(
         responses = [
             ApiResponse(responseCode = "200", description = "이메일이 성공적으로 전송됨"),
             ApiResponse(
-                responseCode = "400", description = "잘못된 이메일 형식 - COMMON-001",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "잘못된 이메일 형식 - COMMON-001"
             ),
             ApiResponse(
                 responseCode = "409", description = "이미 가입된 이메일 - AUTH-001",
@@ -66,8 +65,7 @@ class AuthController(
                 content = [Content(schema = Schema(implementation = ErrorResponse::class))]
             ),
             ApiResponse(
-                responseCode = "400", description = "잘못된 인증 코드 - AUTH-004",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "잘못된 인증 코드 - AUTH-004"
             )
         ]
     )
@@ -82,16 +80,13 @@ class AuthController(
         responses = [
             ApiResponse(responseCode = "200", description = "사용자가 성공적으로 등록됨"),
             ApiResponse(
-                responseCode = "400", description = "영문, 숫자, 특수문자를 1글자씩 포함한 8자 이상의 비밀번호 조건 불만족- COMMON-001",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "영문, 숫자, 특수문자를 1글자씩 포함한 8자 이상의 비밀번호 조건 불만족- COMMON-001"
             ),
             ApiResponse(
-                responseCode = "400", description = "이메일 인증 시도를 하지 않았거나 가입 유효시간이 지난 사용자의 경우- AUTH-003",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "이메일 인증 시도를 하지 않았거나 가입 유효시간이 지난 사용자의 경우- AUTH-003"
             ),
             ApiResponse(
-                responseCode = "400", description = "이메일 인증 메일은 전송하였으나, 메일 인증을 완료하지 않은 사용자의 경우 - AUTH-005",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "이메일 인증 메일은 전송하였으나, 메일 인증을 완료하지 않은 사용자의 경우 - AUTH-005"
             ),
             ApiResponse(
                 responseCode = "400", description = "비밀번호와 비밀번호 확인이 불일치 - AUTH-006",
@@ -114,12 +109,10 @@ class AuthController(
         responses = [
             ApiResponse(responseCode = "200", description = "비밀번호가 성공적으로 업데이트됨"),
             ApiResponse(
-                responseCode = "400", description = "조건을 만족하지 못한 새 비밀번호 - COMMON-001",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "조건을 만족하지 못한 새 비밀번호 - COMMON-001"
             ),
             ApiResponse(
-                responseCode = "400", description = "서로 다른 newPassword와 newPasswordConfirm 입력시 - AUTH-006",
-                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+                responseCode = "400", description = "서로 다른 newPassword와 newPasswordConfirm 입력시 - AUTH-006"
             ),
             ApiResponse(
                 responseCode = "400", description = "잘못된 현재 비밀번호 - AUTH-012",
