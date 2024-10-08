@@ -35,13 +35,19 @@ class SecurityConfig {
             .csrf { csrfConfig -> csrfConfig.disable() }
             .authorizeHttpRequests { authorizedRequests ->
                 authorizedRequests
-                    .requestMatchers(HttpMethod.GET).permitAll()
+
                     .requestMatchers("/api/user/new/**").permitAll()
                     .requestMatchers("/api/user/login").permitAll()
                     .requestMatchers("/api/performances", "/api/performances/*").permitAll()
                     .requestMatchers("/actuator").permitAll()
-                    .requestMatchers("/api/orders/**", "/api/reservations/**", "/api/performances/*/dates/**")
+                    .requestMatchers(
+                        "/api/health-check",
+                        "/api/orders/**",
+                        "/api/reservations/**",
+                        "/api/performances/*/dates/**"
+                    )
                     .authenticated()
+                    .requestMatchers(HttpMethod.GET).permitAll()
                     .anyRequest().authenticated()
             }.formLogin { formLogin -> formLogin.disable() }
             .exceptionHandling { it.authenticationEntryPoint(authenticationEntryPoint) }
