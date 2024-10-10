@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.ErrorInfo
 import com.icegreen.greenmail.configuration.GreenMailConfiguration
+import com.icegreen.greenmail.util.DummySSLSocketFactory
 import com.icegreen.greenmail.util.GreenMail
-import com.icegreen.greenmail.util.ServerSetupTest
+import com.icegreen.greenmail.util.ServerSetup
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
@@ -18,16 +19,18 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.MvcResult
 import redis.embedded.RedisServer
+import java.security.Security
 
 
 @SpringBootTest
-@Import(EmbeddedRedisServerConfig::class, MockServerUtils::class)
+@Import(IntegrationTestConfig::class, MockServerUtils::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 abstract class IntegrationTest : BehaviorSpec() {
@@ -42,13 +45,8 @@ abstract class IntegrationTest : BehaviorSpec() {
     @Autowired
     lateinit var mockServerUtils: MockServerUtils
 
-    val greenMail = GreenMail(ServerSetupTest.SMTP_IMAP)
-        .withConfiguration(
-            GreenMailConfiguration
-                .aConfig()
-                .withUser("foo@localhost", "foo", "foo-pwd")
-
-        )
+    @Autowired
+    lateinit var greenMail: GreenMail
 
 
     protected fun checkError(mvcResult: MvcResult, expectedStatus: HttpStatus, expectedErrorInfo: ErrorInfo) {
@@ -73,7 +71,7 @@ abstract class IntegrationTest : BehaviorSpec() {
 
 
 @TestConfiguration
-internal class EmbeddedRedisServerConfig(
+internal class IntegrationTestConfig(
     @Value("\${spring.data.redis.port}") val port: Int
 ) {
 
@@ -89,4 +87,22 @@ internal class EmbeddedRedisServerConfig(
         redisServer.stop()
     }
 
+
+    @Bean(initMethod = "start", destroyMethod = "stop")
+    fun greenMail(
+        @Value("\${spring.mail.port}") port: Int,
+    ): GreenMail {
+        Security.setProperty("ssl.SocketFactory.provider", DummySSLSocketFactory::class.qualifiedName)
+
+        val smtpServer = ServerSetup(port, null, ServerSetup.PROTOCOL_SMTPS)
+        val imapServer = ServerSetup(3026, null, ServerSetup.PROTOCOL_IMAP)
+
+        val greenMail = GreenMail(arrayOf(smtpServer, imapServer))
+            .withConfiguration(
+                GreenMailConfiguration
+                    .aConfig()
+                    .withUser("foo@localhost", "foo", "foo-pwd")
+            )
+        return greenMail
+    }
 }

@@ -24,21 +24,19 @@ class UserConfig {
         javaMailSender.port = port
         javaMailSender.username = username
         javaMailSender.password = password
-        javaMailSender.setJavaMailProperties(getMailProperties())
+        javaMailSender.javaMailProperties = getMailProperties(host)
 
         return javaMailSender
     }
 
-    private fun getMailProperties(): Properties {
-        val properties = Properties()
-        properties.setProperty("mail.transport.protocol", "smtp")
-        properties.setProperty("mail.debug", "false")
-        properties.setProperty("mail.smtp.auth", "true")
-        properties.setProperty("mail.smtp.starttls.enable", "true")
-        properties.setProperty("mail.smtp.connectiontimeout", "5000")
-        properties.setProperty("mail.smtp.timeout", "3000")
-        properties.setProperty("mail.smtp.writetimeout", "5000")
-        return properties
+    private fun getMailProperties(host: String?): Properties {
+        val props = Properties()
+        props["mail.transport.protocol"] = "smtp"
+        props["mail.smtp.auth"] = "true"
+        props["mail.smtp.starttls.enable"] = "true"
+        props["mail.smtp.ssl.enable"] = "true"
+        props["mail.smtp.ssl.trust"] = host
+        return props
     }
 
 }
