@@ -370,9 +370,6 @@ class UserRegisterIntegrationTest : IntegrationTest() {
             }
         }
 
-        beforeSpec {
-            greenMail.start()
-        }
 
         afterContainer {
             greenMail.reset()
@@ -381,10 +378,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
         afterEach {
             userRepository.deleteAll()
         }
-
-        afterSpec {
-            greenMail.stop()
-        }
+        
 
     }
 

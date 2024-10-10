@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.NoHandlerFoundException
 
 
 @RestControllerAdvice
@@ -25,6 +26,11 @@ class GlobalControllerAdvice {
     @ExceptionHandler(NotFoundException::class)
     fun handleNotFoundException(e: BusinessException): ResponseEntity<ErrorResponse> {
         return ResponseEntity(ErrorResponse.of(e.info), HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(NoHandlerFoundException::class)
+    fun handleInvalidUrl(): ResponseEntity<ErrorResponse> {
+        return ResponseEntity(ErrorResponse.of(CommonErrorInfos.NOT_FOUND), HttpStatus.NOT_FOUND)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
