@@ -15,7 +15,7 @@ spring:
   #        show_sql: true
   mail:
     sender: noreply@minticketing.com
-    host: 127.0.0.1
+    host: localhost
     port: 3025
     username: foo
     password: foo-pwd
