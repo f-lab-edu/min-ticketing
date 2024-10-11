@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.info.Info
 import io.swagger.v3.oas.models.security.SecurityRequirement
 import io.swagger.v3.oas.models.security.SecurityScheme
+import io.swagger.v3.oas.models.servers.Server
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
@@ -37,6 +38,12 @@ class SwaggerConfig : WebMvcConfigurer {
             .info(apiInfo())
             .addSecurityItem(securityRequirement)
             .components(components)
+            .servers(
+                listOf(
+                    Server().url("https://minturtle.kro.kr").description("Production server"),
+                    Server().url("http://localhost:8080").description("Development server")
+                )
+            )
 
     }
 
