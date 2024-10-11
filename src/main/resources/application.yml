@@ -67,6 +67,12 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
 ---
 
 spring:
@@ -136,3 +142,9 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
