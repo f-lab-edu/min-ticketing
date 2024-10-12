@@ -192,11 +192,12 @@ class PerformanceServiceTest : UnitTest() {
         }
 
         "Performance의 목록을 조회하고, 각 Performance의 StartDate와 EndDate를 조회해 매핑 한 후 반환할 수 있다." {
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            var performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 6
             )
             performances.forEachIndexed { idx, it -> (it as BaseEntity).setIdUsingReflection(idx.toLong()) }
-
+            performances = performances.reversed()
+            
             every { performanceReader.findPerformanceEntityWithPlaceAndRegion(CursorInfoDto()) } returns performances
             every { performanceReader.findPerformanceStartAndEndDate(performances.map { it.id }) } returns createPerformanceStartAndEndDate(
                 performances
