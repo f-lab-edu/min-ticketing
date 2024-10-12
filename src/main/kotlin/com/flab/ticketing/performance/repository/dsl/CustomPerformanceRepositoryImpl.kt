@@ -108,16 +108,8 @@ class CustomPerformanceRepositoryImpl(
             select(entity(Performance::class))
                 .from(
                     entity(Performance::class),
-                    fetchJoin(entity(PerformancePlace::class)).on(
-                        path(Performance::performancePlace).eq(
-                            entity(PerformancePlace::class)
-                        )
-                    ),
-                    fetchJoin(entity(Region::class)).on(
-                        path(PerformancePlace::region).eq(
-                            entity(Region::class)
-                        )
-                    )
+                    fetchJoin(Performance::performancePlace),
+                    fetchJoin(PerformancePlace::region)
                 ).where(
                     cursorInfoDto.cursor?.let {
                         path(Performance::id).lessThanOrEqualTo(cursorSubQuery)
