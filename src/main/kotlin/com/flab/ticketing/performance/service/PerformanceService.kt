@@ -32,10 +32,9 @@ class PerformanceService(
     fun search(
         cursorInfoDto: CursorInfoDto
     ): List<PerformanceSummarySearchResult> {
-        val performanceMap =
-            performanceReader.findPerformanceEntityWithPlaceAndRegion(cursorInfoDto)
-                .associateBy { it.id }
-                .toMap(LinkedHashMap())
+        val performanceMap = performanceReader.findPerformanceEntityByCursor(cursorInfoDto)
+            .associateBy { it.id }
+            .toMap(LinkedHashMap())
 
         val startEndDateResultMap = performanceReader.findPerformanceStartAndEndDate(performanceMap.keys.toList())
             .associateBy { it.performanceId }
@@ -47,7 +46,7 @@ class PerformanceService(
                 performance.uid,
                 performance.image,
                 performance.name,
-                performance.performancePlace.region.name,
+                performance.regionName,
                 startEndDateResult?.startDate,
                 startEndDateResult?.endDate
             )

@@ -32,7 +32,7 @@ class PerformanceReader(
         return performanceRepository.search(searchConditions, cursorInfoDto).filterNotNull()
     }
 
-    fun findPerformanceEntityWithPlaceAndRegion(
+    fun findPerformanceEntityByCursor(
         cursorInfoDto: CursorInfoDto
     ): List<Performance> {
         return performanceRepository.search(cursorInfoDto)

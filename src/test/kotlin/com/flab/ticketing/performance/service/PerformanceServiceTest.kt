@@ -197,8 +197,8 @@ class PerformanceServiceTest : UnitTest() {
             )
             performances.forEachIndexed { idx, it -> (it as BaseEntity).setIdUsingReflection(idx.toLong()) }
             performances = performances.reversed()
-            
-            every { performanceReader.findPerformanceEntityWithPlaceAndRegion(CursorInfoDto()) } returns performances
+
+            every { performanceReader.findPerformanceEntityByCursor(CursorInfoDto()) } returns performances
             every { performanceReader.findPerformanceStartAndEndDate(performances.map { it.id }) } returns createPerformanceStartAndEndDate(
                 performances
             )
