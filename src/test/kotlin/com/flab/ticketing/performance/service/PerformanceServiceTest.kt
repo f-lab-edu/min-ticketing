@@ -2,6 +2,8 @@ package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.entity.BaseEntity
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
@@ -9,6 +11,9 @@ import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
+import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
+import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.reader.PerformanceReader
@@ -186,6 +191,48 @@ class PerformanceServiceTest : UnitTest() {
             }
         }
 
+        "Performance의 목록을 조회하고, 각 Performance의 StartDate와 EndDate를 조회해 매핑 한 후 반환할 수 있다." {
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 6
+            )
+            performances.forEachIndexed { idx, it -> (it as BaseEntity).setIdUsingReflection(idx.toLong()) }
+
+            every { performanceReader.findPerformanceEntityWithPlaceAndRegion(CursorInfoDto()) } returns performances
+            every { performanceReader.findPerformanceStartAndEndDate(performances.map { it.id }) } returns createPerformanceStartAndEndDate(
+                performances
+            )
+            val expected = createSearchExpectedOrderByIdDesc(performances)
+
+            val actual = performanceService.search(CursorInfoDto())
+
+            actual shouldContainExactly expected
+        }
     }
+
+
+    private fun createPerformanceStartAndEndDate(performances: List<Performance>): List<PerformanceStartEndDateResult> {
+        return performances.map {
+            PerformanceStartEndDateResult(
+                it.id,
+                it.performanceDateTime.minOf { it.showTime },
+                it.performanceDateTime.maxOf { it.showTime })
+        }
+    }
+
+    private fun createSearchExpectedOrderByIdDesc(performances: List<Performance>): List<PerformanceSummarySearchResult> {
+        val sorted = performances.sortedBy { it.id }.asReversed()
+
+        return sorted.map {
+            PerformanceSummarySearchResult(
+                it.uid,
+                it.image,
+                it.name,
+                it.performancePlace.region.name,
+                it.performanceDateTime.minOf { d -> d.showTime },
+                it.performanceDateTime.maxOf { d -> d.showTime }
+            )
+        }
+    }
+
 
 }

@@ -745,6 +745,41 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
             }
         }
 
+
+        given("공연 정보가 6개 이상 존재할 때 - v2") {
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 6
+            )
+
+            savePerformance(performances)
+            `when`("사용자가 5개의 공연 정보를 조회할 시") {
+                val uri = "/api/performances/v2"
+                val limit = 5
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .param("limit", limit.toString())
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("정렬조건은 최신 등록 순으로, 5개의 공연 정보(1페이지)와 다음 공연의 커서를 받을 수 있다.") {
+                    val actual = objectMapper.readValue<CursoredResponse<PerformanceSummarySearchResult>>(
+                        mvcResult.response.contentAsString,
+                        objectMapper.typeFactory.constructParametricType(
+                            CursoredResponse::class.java,
+                            PerformanceSummarySearchResult::class.java
+                        )
+                    )
+
+                    val expected = createSearchExpectedOrderByIdDesc(performances.drop(1))
+
+                    actual.cursor?.shouldBeEqual(performances[0].uid)
+                    actual.data.size shouldBe 5
+                    actual.data shouldContainExactly expected
+                }
+            }
+        }
     }
 
 
