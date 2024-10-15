@@ -753,7 +753,7 @@ class PerformanceSearchIntegrationTest : IntegrationTest() {
 
             savePerformance(performances)
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
-                val uri = "/api/performances/v2"
+                val uri = "/api/v2/performances"
                 val limit = 5
 
                 val mvcResult = mockMvc.perform(

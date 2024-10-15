@@ -49,31 +49,6 @@ class PerformanceController(
         return CursoredResponse(null, performances)
     }
 
-    @Operation(
-        summary = "공연 목록 조회 v2",
-        description = "조건 없이 공연 목록을 조회합니다. 커서 기반 페이징을 지원합니다.",
-        responses = [
-            ApiResponse(responseCode = "200", description = "성공적으로 공연 목록을 조회함")
-        ]
-    )
-    @GetMapping("/v2")
-    fun getListV2(
-        @ParameterObject @ModelAttribute cursorInfoDto: CursorInfoDto
-    ): CursoredResponse<PerformanceSummarySearchResult> {
-        val performances = performanceService.search(
-            CursorInfoDto(cursorInfoDto.cursor, cursorInfoDto.limit + 1)
-        )
-
-        if (performances.size == cursorInfoDto.limit + 1) {
-            return CursoredResponse(
-                performances[cursorInfoDto.limit].uid,
-                performances.dropLast(1)
-            )
-        }
-
-        return CursoredResponse(null, performances)
-    }
-
 
     @Operation(
         summary = "공연 상세 정보 조회",
