@@ -19,7 +19,11 @@ object PerformanceTestDataGenerator {
         return Region(generateUid("region"), name)
     }
 
-    fun createPerformancePlace(region: Region = createRegion(), name: String = " 공연장", numSeats: Int = 2): PerformancePlace {
+    fun createPerformancePlace(
+        region: Region = createRegion(),
+        name: String = " 공연장",
+        numSeats: Int = 2
+    ): PerformancePlace {
         val place = PerformancePlace(region, name)
         repeat(numSeats) {
             val row = it / 10 + 1
@@ -32,11 +36,11 @@ object PerformanceTestDataGenerator {
     fun createPerformance(
         place: PerformancePlace = createPerformancePlace(),
         name: String = "공연",
-        showTimes : List<ZonedDateTime>,
+        showTimes: List<ZonedDateTime>,
         price: Int = 10000,
-        image:String = "http://image.com/image/1",
+        image: String = "http://image.com/image/1",
         description: String = "공연 설명"
-    ) : Performance{
+    ): Performance {
 
         val performance = Performance(
             uid = generateUid("performance"),
@@ -44,10 +48,12 @@ object PerformanceTestDataGenerator {
             image = image,
             description = description,
             price = price,
-            performancePlace = place
+            performancePlace = place,
+            placeName = place.name,
+            regionName = place.region.name
         )
 
-        for(showTime in showTimes){
+        for (showTime in showTimes) {
             performance.addDateTime(generateUid("datetime"), showTime)
         }
 
@@ -67,7 +73,9 @@ object PerformanceTestDataGenerator {
             image = "https://example.com/image.jpg",
             description = "This is a test performance description",
             price = price,
-            performancePlace = place
+            performancePlace = place,
+            placeName = place.name,
+            regionName = place.region.name
         )
 
         repeat(numShowtimes) {
@@ -98,22 +106,23 @@ object PerformanceTestDataGenerator {
      */
     fun createPerformancesPriceIn(
         place: PerformancePlace,
-        priceIn : List<Int>,
+        priceIn: List<Int>,
         numShowtimes: Int = 2,
         showTimeStartDateTime: ZonedDateTime = INIT_PERFORMANCE_DATE
     ): MutableList<Performance> {
         val result = mutableListOf<Performance>()
-        for(price in priceIn){
+        for (price in priceIn) {
             result.add(
                 createPerformance(
                     place = place,
-                    numShowtimes= numShowtimes,
+                    numShowtimes = numShowtimes,
                     showTimeStartDateTime = showTimeStartDateTime,
-                    price = price)
+                    price = price
+                )
             )
         }
 
-        return result;
+        return result
     }
 
     /**
@@ -121,18 +130,19 @@ object PerformanceTestDataGenerator {
      */
     fun createPerformancesDatesIn(
         place: PerformancePlace = createPerformancePlace(),
-        dateIn : List<ZonedDateTime>,
+        dateIn: List<ZonedDateTime>,
         numShowtimes: Int = 2,
         price: Int = 10000
     ): MutableList<Performance> {
         val result = mutableListOf<Performance>()
-        for(date in dateIn){
+        for (date in dateIn) {
             result.add(
                 createPerformance(
                     place = place,
-                    numShowtimes= numShowtimes,
+                    numShowtimes = numShowtimes,
                     showTimeStartDateTime = date,
-                    price = price)
+                    price = price
+                )
             )
         }
 
@@ -144,18 +154,19 @@ object PerformanceTestDataGenerator {
      */
     fun createPerformancesInNames(
         place: PerformancePlace,
-        nameIn : List<String>,
+        nameIn: List<String>,
         numShowtimes: Int = 2,
         price: Int = 10000
-    ) : MutableList<Performance>{
+    ): MutableList<Performance> {
         val result = mutableListOf<Performance>()
-        for(name in nameIn){
+        for (name in nameIn) {
             result.add(
                 createPerformance(
                     place = place,
-                    numShowtimes= numShowtimes,
+                    numShowtimes = numShowtimes,
                     name = name,
-                    price = price)
+                    price = price
+                )
             )
 
         }
@@ -176,11 +187,11 @@ object PerformanceTestDataGenerator {
     }
 
 
-    fun reset(){
-        regionCounter = 0;
-        seatCounter = 0;
-        performanceCounter = 0;
-        datetimeCounter = 0;
+    fun reset() {
+        regionCounter = 0
+        seatCounter = 0
+        performanceCounter = 0
+        datetimeCounter = 0
 
     }
 

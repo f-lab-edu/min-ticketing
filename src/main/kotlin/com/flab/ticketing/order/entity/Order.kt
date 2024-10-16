@@ -28,12 +28,8 @@ class Order(
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order", cascade = [CascadeType.ALL])
     val reservations: MutableList<Reservation> = mutableListOf()
 
-    var name: String
-
-    init {
-        name = generateName()
-    }
-
+    var name: String = generateName()
+    
     fun addReservation(reservation: Reservation) {
         reservations.add(reservation)
         name = generateName()

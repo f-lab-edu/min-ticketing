@@ -20,7 +20,7 @@ class CustomPerformanceRepositoryImpl(
         cursorInfoDto: CursorInfoDto
     ): List<PerformanceSummarySearchResult?> {
 
-        val searchResult = kotlinJdslJpqlExecutor.findPage(PageRequest.of(0, cursorInfoDto.limit)) {
+        val searchResult = kotlinJdslJpqlExecutor.findAll(PageRequest.of(0, cursorInfoDto.limit)) {
 
             val cursorSubQuery = select<Long>(path(Performance::id))
                 .from(entity(Performance::class))
@@ -94,7 +94,29 @@ class CustomPerformanceRepositoryImpl(
                 )
         }
 
-        return searchResult.content
+        return searchResult
     }
 
+    override fun search(cursorInfoDto: CursorInfoDto): List<Performance> {
+        val t = kotlinJdslJpqlExecutor.findAll(PageRequest.of(0, cursorInfoDto.limit)) {
+            val cursorSubQuery = select<Long>(path(Performance::id))
+                .from(entity(Performance::class))
+                .where(
+                    path(Performance::uid).eq(cursorInfoDto.cursor)
+                ).asSubquery()
+
+            select(entity(Performance::class))
+                .from(
+                    entity(Performance::class)
+                ).where(
+                    cursorInfoDto.cursor?.let {
+                        path(Performance::id).lessThanOrEqualTo(cursorSubQuery)
+                    }
+                ).orderBy(
+                    path(Performance::id).desc()
+                )
+        }
+
+        return t.filterNotNull()
+    }
 }
