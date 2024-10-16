@@ -27,7 +27,10 @@ class Performance(
     val performancePlace: PerformancePlace,
 
     @OneToMany(mappedBy = "performance", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
-    val performanceDateTime: MutableList<PerformanceDateTime> = mutableListOf()
+    val performanceDateTime: MutableList<PerformanceDateTime> = mutableListOf(),
+
+    val placeName: String,
+    val regionName: String
 ) : BaseEntity() {
 
     fun addDateTime(

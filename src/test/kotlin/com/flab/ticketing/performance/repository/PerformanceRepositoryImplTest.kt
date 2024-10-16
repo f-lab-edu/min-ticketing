@@ -388,6 +388,43 @@ class PerformanceRepositoryImplTest(
             actual.performancePlace.id shouldBe expected.performancePlace.id
             actual.performancePlace.seats.map { it.uid } shouldContainAll expected.performancePlace.seats.map { it.uid }
         }
+
+        "Performance를 List로 조회할 수 있다. - v2" {
+            val givenPerformanceCnt = 5
+
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = givenPerformanceCnt
+            )
+
+            savePerformance(performances)
+
+            val cursorSize = 5
+            val actual = performanceRepository.search(CursorInfoDto(limit = cursorSize))
+
+            val expected = performances.sortedBy { it.id }.asReversed()
+
+            actual.size shouldBe cursorSize
+            actual shouldContainExactly expected
+        }
+
+        "Performance를 Cursor로 포함하여 List로 조회할 수 있다. - v2" {
+            var performances =
+                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
+
+            savePerformance(performances)
+
+            performances = performances.sortedBy { it.id }.asReversed()
+
+            val limit = 5
+            val startIdx = 3
+            val actual = performanceRepository.search(
+                CursorInfoDto(performances[startIdx].uid, limit)
+            )
+
+            val expected = performances.subList(3, 8)
+
+            actual shouldContainExactly expected
+        }
     }
 
 
