@@ -8,7 +8,7 @@ import java.util.*
 @MappedSuperclass
 abstract class BaseEntity {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0L
         protected set
 

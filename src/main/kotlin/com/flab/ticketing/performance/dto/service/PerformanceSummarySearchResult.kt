@@ -8,18 +8,18 @@ data class PerformanceSummarySearchResult(
     val image: String,
     val title: String,
     val regionName: String,
-    val startDate: LocalDate,
-    val endDate: LocalDate
+    val startDate: LocalDate?,
+    val endDate: LocalDate?
 ) {
     constructor(
         uid: String,
         image: String,
         title: String,
         regionName: String,
-        startDate: ZonedDateTime,
-        endDate: ZonedDateTime
+        startDate: ZonedDateTime?,
+        endDate: ZonedDateTime?
     ) : this(
-        uid, image, title, regionName, startDate.toLocalDate(), endDate.toLocalDate()
+        uid, image, title, regionName, startDate?.toLocalDate(), endDate?.toLocalDate()
     )
 
 }
