@@ -11,7 +11,6 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializationContext
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import java.time.Duration
@@ -22,18 +21,21 @@ class CacheConfig {
 
     @Bean
     fun redisCacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+        // objectMapper가 모든 JSON을 직렬화/역직렬화하도록 설정
         val typeValidator = BasicPolymorphicTypeValidator.builder()
             .allowIfBaseType(Any::class.java)
             .build()
 
+        // Jackson ObjectMapper 설정(DateTime 처리, Kotlin 처리)
         val objectMapper = ObjectMapper().apply {
             registerModule(JavaTimeModule())
             registerModule(KotlinModule.Builder().build())
-            activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.EVERYTHING)
+            activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE)
         }
 
         val jsonSerializer = GenericJackson2JsonRedisSerializer(objectMapper)
 
+        // Redis 캐시 설정 구성(Key : String, Value : JSON, TTL : 30m)
         val cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer()))
             .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
@@ -43,7 +45,8 @@ class CacheConfig {
             .fromConnectionFactory(redisConnectionFactory)
             .cacheDefaults(cacheConfig)
             .build()
-    
+
     }
+
 
 }
