@@ -83,9 +83,17 @@ management:
       remote-fields:
         - x-request-id
         - db-name
+        - X-Service-Name
+        - X-Span-Kind
+        - X-Http-Method
+        - X-Http-Status
       correlation-fields:
         - x-request-id
         - db-name
+        - X-Service-Name
+        - X-Span-Kind
+        - X-Http-Method
+        - X-Http-Status
     propagation:
       type: B3,W3C
   zipkin:
