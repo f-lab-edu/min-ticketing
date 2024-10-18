@@ -10,6 +10,7 @@ import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.repository.reader.PerformanceReader
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -29,6 +30,11 @@ class PerformanceService(
         return performanceReader.searchPerformanceSummaryDto(searchConditions, cursorInfoDto)
     }
 
+
+    @Cacheable(
+        value = ["performanceSearchCache"],
+        key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+    )
     fun search(
         cursorInfoDto: CursorInfoDto
     ): List<PerformanceSummarySearchResult> {
