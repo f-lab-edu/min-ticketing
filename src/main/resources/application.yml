@@ -50,7 +50,7 @@ service:
 
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] [%X{traceId:-},%X{spanId:-}] - %msg%n"
   file:
     name: ticketing
     path: /app/logs
