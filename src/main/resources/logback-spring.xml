@@ -1,9 +1,11 @@
 <configuration>
     <timestamp key="TODAY" datePattern="yyyyMMdd"/>
-    
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] [%X{traceId:-},%X{spanId:-}] -
+                %msg%n
+            </pattern>
         </encoder>
     </appender>
 
@@ -15,10 +17,12 @@
             <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP}</totalSizeCap>
             <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY}</maxHistory>
         </rollingPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeTraceId>true</includeTraceId>
+            <includeSpanId>true</includeSpanId>
+        </encoder>
     </appender>
 
-    <!-- 로그 레벨 및 출력 설정 -->
     <root level="INFO">
         <appender-ref ref="LOG_FILE"/>
         <appender-ref ref="CONSOLE"/>
