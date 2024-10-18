@@ -27,11 +27,13 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       password: ${REDIS_PASSWORD}
+
 server:
   servlet:
     encoding:
       force-response: true
       charset: UTF-8
+
 
 jwt:
   secret: ${JWT_SECRET_KEY}
@@ -48,7 +50,7 @@ service:
 
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] [%X{traceId:-},%X{spanId:-}] - %msg%n"
   file:
     name: ticketing
     path: /app/logs
@@ -67,12 +69,25 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
+  tracing:
+    sampling:
+      probability: 1.0
+    baggage:
+      remote-fields: x-request-id
+      correlation-fields: x-request-id
+    propagation:
+      type: B3,W3C
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_BASE_URL}
 
 springdoc:
   api-docs:
     enabled: true
   swagger-ui:
     enabled: true
+
+
 ---
 
 spring:
