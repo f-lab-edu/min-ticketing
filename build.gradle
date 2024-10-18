@@ -64,6 +64,7 @@ dependencies {
 
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+    implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.9.2'
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
