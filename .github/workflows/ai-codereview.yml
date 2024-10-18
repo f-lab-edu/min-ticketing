@@ -2,22 +2,22 @@ name: AI Code Review
 
 on:
   pull_request:
-    branches: [feature/*]
+    branches: [develop]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
-  ai-code-review:
+  review:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Review This Pull Request
-        run: |
-          curl -X POST "https://careersupport.serveblog.net/api/code-review" \
-          -H "Content-Type: application/json" \
-          -H "X-API-TOKEN: ${{ secrets.CAREER_SUPPORT_API_TOKEN }}" \
-          -d '{
-            "githubToken": "${{ secrets.GITHUB_TOKEN }}",
-            "repositoryName": "${{ github.repository }}", 
-            "prNumber": "${{ github.event.pull_request.number || github.event.number }}", 
-          }'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run Code Review Bot
+        uses: careersupport-org/code-review-bot@v1.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          career-support-api-token: ${{ secrets.CAREER_SUPPORT_API_TOKEN }}
+          repository-name: ${{ github.repository }}
+          pr-number: ${{ github.event.pull_request.number }}
