@@ -30,7 +30,7 @@ class CacheConfig {
         val objectMapper = ObjectMapper().apply {
             registerModule(JavaTimeModule())
             registerModule(KotlinModule.Builder().build())
-            activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.OBJECT_AND_NON_CONCRETE)
+            activateDefaultTyping(typeValidator, ObjectMapper.DefaultTyping.NON_FINAL)
         }
 
         val jsonSerializer = GenericJackson2JsonRedisSerializer(objectMapper)
