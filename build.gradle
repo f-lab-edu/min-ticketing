@@ -62,6 +62,9 @@ dependencies {
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
+    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.kotest:kotest-assertions-core-jvm:5.9.1'
