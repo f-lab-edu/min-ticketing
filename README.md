@@ -8,7 +8,7 @@
 
 #### 02. 기능
 
-- 자체, Google 로그인 및 회원가입(회원가입 시 이메일 인증)
+- 자체 로그인 및 회원가입(회원가입 시 이메일 인증)
 - 공연 정보 및 좌석 정보 조회
 - 공연 좌석 예매
 - 결제(Toss Payments API 사용)
@@ -23,7 +23,8 @@
 ## 🏘️ 프로젝트 아키텍쳐
 
 ---
-![image](https://github.com/user-attachments/assets/fd21438a-d930-47f6-a5f4-5681a2f7038f)
+![image](https://github.com/user-attachments/assets/caf4e5d0-ed0e-40e6-800e-50636f3e530f)
+
 
 
 ## 🤔 프로젝트 주요 관심사
@@ -39,11 +40,12 @@
 ## 💡 Technical Issues
 
 ---
-- [Spring + Loki + Grafana로 로그 시스템 구축하기](https://flannel-dill-7dc.notion.site/Spring-Loki-Grafana-110fc957389c80d69bc5d33a9b5c2618?pvs=4)
+- [공연 정보 조회 API 병목 지점 파악하기](https://www.notion.so/API-123fc957389c80c28f8de0335e8d59f4?pvs=4)
+- [공연 정보 조회 API 개선하기](https://www.notion.so/API-11cfc957389c805aa7f9e0a4d0c1480b?pvs=4)
+- [Spring + Grafana Stack(Loki, Prometheus, Tempo)으로 모니터링 시스템 구축하기](https://flannel-dill-7dc.notion.site/Spring-Loki-Grafana-110fc957389c80d69bc5d33a9b5c2618?pvs=4)
 - [Spring Web MVC 비동기 메서드 호출 시 Request 정보를 유지하려면 어떻게 해야할까?](https://flannel-dill-7dc.notion.site/Request-10dfc957389c809ea4f0da9566ab90ba?pvs=4)
 - [공연 상세 조회 시 발생한 N + 1 문제를 해결하고, 확장성 있는 코드로 변경하기](https://flannel-dill-7dc.notion.site/N-1-ad7f7737e89e4ffba6866650f7925de6?pvs=4)
 - [테스트 코드 개선하기, TDD와 BDD의 관계](https://flannel-dill-7dc.notion.site/0d997311ea344437b6cae3cb63487d76?pvs=4)
-
 ## 📖 WIKI
 
 ---
@@ -52,6 +54,3 @@
 
 - [프로젝트 문서 바로가기](https://github.com/f-lab-edu/min-ticketing/wiki)
 
-## 🖥️ 프론트엔드 프로젝트 링크
-
-https://github.com/minturtle/min-ticketing-frontend
