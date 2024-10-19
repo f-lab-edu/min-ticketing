@@ -76,6 +76,7 @@ jobs:
           context: .
           push: true
           tags: minturtle/min-ticketing:latest
+          platforms: linux/arm64,linux/amd64
   deploy:
     name: Deploy to Oracle Cloud
     runs-on: ubuntu-latest
