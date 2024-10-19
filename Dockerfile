@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-alpine
+FROM openjdk:17.0.1-jdk-slim
 
 # gradle 설정으로 plain jar 파일은 생성되지 않습니다.
 WORKDIR /app
