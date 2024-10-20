@@ -40,7 +40,9 @@ server:
     encoding:
       force-response: true
       charset: UTF-8
-
+  tomcat:
+    mbeanregistry:
+      enabled: true
 
 jwt:
   secret: ${JWT_SECRET_KEY}
