@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.flab.ticketing.common.enums.CacheType
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +22,33 @@ class CacheConfig {
 
     @Bean
     fun redisCacheManager(redisConnectionFactory: RedisConnectionFactory): CacheManager {
+
+        val cacheConfig = cacheConfiguration()
+
+        return RedisCacheManager.RedisCacheManagerBuilder
+            .fromConnectionFactory(redisConnectionFactory)
+            .cacheDefaults(cacheConfig)
+            .withInitialCacheConfigurations(typedCacheConfiguration())
+            .build()
+
+    }
+
+
+    /**
+     *  Redis 캐시 설정 구성(Key : String, Value : JSON, TTL : 30m)
+     */
+    private fun cacheConfiguration(): RedisCacheConfiguration {
+        val keySerializer = RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer())
+        val valueSerializer = getValueSerializer()
+
+        val cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
+            .serializeKeysWith(keySerializer)
+            .serializeValuesWith(valueSerializer)
+            .entryTtl(Duration.ofMinutes(30L))
+        return cacheConfig
+    }
+
+    fun getValueSerializer(): RedisSerializationContext.SerializationPair<Any> {
         // objectMapper가 모든 JSON을 직렬화/역직렬화하도록 설정
         val typeValidator = BasicPolymorphicTypeValidator.builder()
             .allowIfBaseType(Any::class.java)
@@ -35,18 +63,14 @@ class CacheConfig {
 
         val jsonSerializer = GenericJackson2JsonRedisSerializer(objectMapper)
 
-        // Redis 캐시 설정 구성(Key : String, Value : JSON, TTL : 30m)
-        val cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-            .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer()))
-            .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
-            .entryTtl(Duration.ofMinutes(30L))
-
-        return RedisCacheManager.RedisCacheManagerBuilder
-            .fromConnectionFactory(redisConnectionFactory)
-            .cacheDefaults(cacheConfig)
-            .build()
-
+        return RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer)
     }
 
+    fun typedCacheConfiguration(): Map<String, RedisCacheConfiguration> {
+        return CacheType.values().associateBy(
+            keySelector = { it.cacheName },
+            valueTransform = { cacheConfiguration().entryTtl(it.ttl) }
+        )
+    }
 
 }

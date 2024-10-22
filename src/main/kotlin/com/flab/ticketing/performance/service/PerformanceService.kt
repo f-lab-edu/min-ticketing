@@ -32,7 +32,7 @@ class PerformanceService(
 
 
     @Cacheable(
-        value = ["performanceSearchCache"],
+        cacheNames = ["product"],
         key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
     )
     fun search(
