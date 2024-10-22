@@ -63,13 +63,13 @@ class PerformanceService(
 
     fun searchDetail(uid: String): PerformanceDetailResponse {
         val performance = performanceReader.findPerformanceDetailDto(uid)
-        val dateSummaryDtoList = performanceReader.findDateSummaryDto(uid)
+        val dateSummaryDtoList = performanceReader.findDateSummaryDto(performance.id)
         val dateInfo = convertDateDtoToDateInfo(dateSummaryDtoList)
 
         return PerformanceDetailResponse(
             performance.uid,
             performance.image,
-            performance.title,
+            performance.name,
             performance.regionName,
             performance.placeName,
             performance.price,

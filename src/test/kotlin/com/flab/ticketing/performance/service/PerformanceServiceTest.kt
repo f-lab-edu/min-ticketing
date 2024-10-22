@@ -10,7 +10,6 @@ import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
-import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
@@ -44,15 +43,6 @@ class PerformanceServiceTest : UnitTest() {
             val reservedSeats = 2L
             val cartedSeats = 3L
 
-            val givenPerformanceInfo = PerformanceDetailSearchResult(
-                uid = performance.uid,
-                image = performance.image,
-                title = performance.name,
-                regionName = performance.performancePlace.region.name,
-                placeName = performance.performancePlace.name,
-                price = performance.price,
-                description = performance.description
-            )
 
             val givenDateInfos = performance.performanceDateTime.map {
                 PerformanceDateSummaryResult(
@@ -64,8 +54,8 @@ class PerformanceServiceTest : UnitTest() {
                 )
             }
 
-            every { performanceReader.findPerformanceDetailDto(performance.uid) } returns givenPerformanceInfo
-            every { performanceReader.findDateSummaryDto(performance.uid) } returns givenDateInfos
+            every { performanceReader.findPerformanceDetailDto(performance.uid) } returns performance
+            every { performanceReader.findDateSummaryDto(performance.id) } returns givenDateInfos
 
             val (actualUid, actualImage, actualTitle, actualRegion, actualPlace, actualPrice, actualDesc, actualDateInfo) = performanceService.searchDetail(
                 performance.uid
