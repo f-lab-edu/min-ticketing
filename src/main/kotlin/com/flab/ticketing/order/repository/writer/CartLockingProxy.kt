@@ -34,6 +34,15 @@ class CartLockingProxy(
     }
 
 
+    @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.deleteAll(..))")
+    fun releaseLockBeforeRemove(joinPoint: ProceedingJoinPoint): Any? {
+        val keyList = joinPoint.extractKeyListFromCartList()
+
+        redisTemplate.delete(keyList)
+        return joinPoint.proceed()
+    }
+
+
     private fun setUpLockScript(): RedisScript<Boolean> {
         val ACQUIRE_LOCK_SCRIPT = """
             if redis.call('setnx', KEYS[1], ARGV[1]) == 1 then
@@ -58,6 +67,16 @@ class CartLockingProxy(
         return Pair(key, value)
     }
 
+    private fun ProceedingJoinPoint.extractKeyListFromCartList(): List<String> {
+        val carts: List<Cart> = this.args
+            .firstOrNull { it is List<*> && it.all { item -> item is Cart } }
+            ?.let { it as List<Cart> } ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
+
+        return carts.map { cart ->
+            "${LOCK_PREFIX}${cart.performanceDateTime.uid}_${cart.seat.uid}"
+        }
+    }
+
     private fun acquireLockOrThrows(key: String, value: String) {
         val result = redisTemplate.execute(
             acquireLockScript,
@@ -70,5 +89,6 @@ class CartLockingProxy(
             throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)
         }
     }
+
 
 }
