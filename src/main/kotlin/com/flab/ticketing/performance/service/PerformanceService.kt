@@ -1,5 +1,6 @@
 package com.flab.ticketing.performance.service
 
+import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
@@ -11,6 +12,7 @@ import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.repository.reader.PerformanceReader
 import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -31,9 +33,19 @@ class PerformanceService(
     }
 
 
-    @Cacheable(
-        cacheNames = ["product"],
-        key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+    @Caching(
+        cacheable = [
+            Cacheable(
+                cacheManager = CacheConfig.LOCAL_CACHE_MANAGER_NAME,
+                cacheNames = ["product"],
+                key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+            ),
+            Cacheable(
+                cacheManager = CacheConfig.GLOBAL_CACHE_MANAGER_NAME,
+                cacheNames = ["product"],
+                key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+            )
+        ]
     )
     fun search(
         cursorInfoDto: CursorInfoDto
