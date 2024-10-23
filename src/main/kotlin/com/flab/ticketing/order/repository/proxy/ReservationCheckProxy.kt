@@ -1,4 +1,4 @@
-package com.flab.ticketing.order.repository.writer
+package com.flab.ticketing.order.repository.proxy
 
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
@@ -9,25 +9,23 @@ import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.core.script.RedisScript
 import org.springframework.stereotype.Component
+import java.time.Duration
 
 
 @Aspect
 @Component
-class CartLockingProxy(
+class ReservationCheckProxy(
     private val redisTemplate: RedisTemplate<String, String>
 
 ) {
-    private val LOCK_PREFIX = "cart_lock:"
-    private val LOCK_TIMEOUT_MILLIS = 30L * 60_000L // 30분
-    private val acquireLockScript: RedisScript<Boolean> = setUpLockScript()
+    private val LOCK_PREFIX = "lock:"
+    private val LOCK_TIMEOUT_MILLIS = Duration.ofMillis(30L * 60_000L) // 30분
 
 
     @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.save(..))")
-    fun acquireLockBeforeSave(joinPoint: ProceedingJoinPoint): Any? {
+    fun acquireLock(joinPoint: ProceedingJoinPoint): Any? {
         val (key, value) = extractKVFromCart(joinPoint)
-
         acquireLockOrThrows(key, value)
 
         return joinPoint.proceed()
@@ -35,26 +33,22 @@ class CartLockingProxy(
 
 
     @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.deleteAll(..))")
-    fun releaseLockBeforeRemove(joinPoint: ProceedingJoinPoint): Any? {
+    fun releaseLock(joinPoint: ProceedingJoinPoint): Any? {
         val keyList = extractKeyListFromCartList(joinPoint)
 
         redisTemplate.delete(keyList)
         return joinPoint.proceed()
     }
 
+    private fun acquireLockOrThrows(key: String, value: String) {
+        val result = redisTemplate.opsForValue()
+            .setIfAbsent(key, value, LOCK_TIMEOUT_MILLIS)!!
 
-    private fun setUpLockScript(): RedisScript<Boolean> {
-        val ACQUIRE_LOCK_SCRIPT = """
-            if redis.call('setnx', KEYS[1], ARGV[1]) == 1 then
-                redis.call('pexpire', KEYS[1], ARGV[2])
-                return 1
-            else
-                return 0
-            end
-        """
-
-        return RedisScript.of(ACQUIRE_LOCK_SCRIPT, Boolean::class.java)
+        if (!result) {
+            throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)
+        }
     }
+
 
     private fun extractKVFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
         val cart: Cart = joinPoint.args
@@ -77,18 +71,7 @@ class CartLockingProxy(
         }
     }
 
-    private fun acquireLockOrThrows(key: String, value: String) {
-        val result = redisTemplate.execute(
-            acquireLockScript,
-            listOf(key),    // KEYS[1]
-            value,          // ARGV[1]
-            LOCK_TIMEOUT_MILLIS.toString()   // ARGV[2]
-        )
 
-        if (!result) {
-            throw DuplicatedException(OrderErrorInfos.ALREADY_RESERVED)
-        }
-    }
 
 
 }
