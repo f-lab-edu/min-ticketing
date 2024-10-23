@@ -15,19 +15,15 @@ class ElasticSearchConfig {
 
 
     @Configuration
-    @Profile("!prod")
+    @Profile("dev")
     internal class LocalElasticSearchConfig(
-        @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String,
-        @Value("\${spring.data.elasticsearch.api-key}") private val elasticApiKey: String
+        @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String
     ) : ElasticsearchConfiguration() {
 
         // 로컬 개발 용 ElasticSearch 설정으로, HTTPS를 Disabled 하였습니다.
         override fun clientConfiguration(): ClientConfiguration {
-            val httpHeaders = HttpHeaders()
-            httpHeaders.add("Authorization", "ApiKey $elasticApiKey")
             return ClientConfiguration.builder()
                 .connectedTo(elasticHost)
-                .withDefaultHeaders(httpHeaders)
                 .build()
         }
 
