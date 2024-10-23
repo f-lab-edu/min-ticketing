@@ -1,5 +1,6 @@
 package com.flab.ticketing.order.repository.proxy
 
+import com.flab.ticketing.common.aop.utils.CustomSpringELParser
 import com.flab.ticketing.common.aop.utils.CustomSpringELParser.getDynamicValue
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
@@ -34,7 +35,7 @@ class ReservationCheckProxy(
     }
 
 
-    @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.deleteAll(..))")
+    @Around("@annotation(com.flab.ticketing.order.repository.proxy.ReservationRelease)")
     fun releaseLock(joinPoint: ProceedingJoinPoint): Any? {
         val keyList = extractKeyListFromCartList(joinPoint)
 
@@ -65,12 +66,22 @@ class ReservationCheckProxy(
     }
 
     private fun extractKeyListFromCartList(joinPoint: ProceedingJoinPoint): List<String> {
-        val carts: List<Cart> = joinPoint.args
+        val signature = joinPoint.signature as MethodSignature
+        val method = signature.method
+        val annotation = method.getAnnotation(ReservationRelease::class.java)
+
+        val carts = joinPoint.args
             .firstOrNull { it is List<*> && it.all { item -> item is Cart } }
-            ?.let { it as List<Cart> } ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
+            ?.let { it as List<Cart> }
+            ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
 
         return carts.map { cart ->
-            "${LOCK_PREFIX}${cart.performanceDateTime.uid}_${cart.seat.uid}"
+            val key = getDynamicValue(
+                arrayOf("cart"),
+                arrayOf(cart),
+                annotation.key
+            )
+            "${LOCK_PREFIX}$key"
         }
     }
 

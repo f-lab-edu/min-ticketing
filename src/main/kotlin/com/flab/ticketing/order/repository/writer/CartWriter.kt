@@ -4,6 +4,7 @@ import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.proxy.ReservationCheck
+import com.flab.ticketing.order.repository.proxy.ReservationRelease
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,7 +25,9 @@ class CartWriter(
         cartRepository.save(cart)
     }
 
-
+    @ReservationRelease(
+        key = "#cart.seat.uid + '_' + #cart.performanceDateTime.uid",
+    )
     fun deleteAll(carts: List<Cart>) {
         cartRepository.deleteAll(carts)
     }
