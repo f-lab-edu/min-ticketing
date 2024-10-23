@@ -26,7 +26,7 @@ class CartLockingProxy(
 
     @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.save(..))")
     fun acquireLockBeforeSave(joinPoint: ProceedingJoinPoint): Any? {
-        val (key, value) = joinPoint.extractKVFromCart()
+        val (key, value) = extractKVFromCart(joinPoint)
 
         acquireLockOrThrows(key, value)
 
@@ -36,7 +36,7 @@ class CartLockingProxy(
 
     @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.deleteAll(..))")
     fun releaseLockBeforeRemove(joinPoint: ProceedingJoinPoint): Any? {
-        val keyList = joinPoint.extractKeyListFromCartList()
+        val keyList = extractKeyListFromCartList(joinPoint)
 
         redisTemplate.delete(keyList)
         return joinPoint.proceed()
@@ -56,8 +56,8 @@ class CartLockingProxy(
         return RedisScript.of(ACQUIRE_LOCK_SCRIPT, Boolean::class.java)
     }
 
-    private fun ProceedingJoinPoint.extractKVFromCart(): Pair<String, String> {
-        val cart: Cart = this.args
+    private fun extractKVFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
+        val cart: Cart = joinPoint.args
             .firstOrNull { it is Cart }
             ?.let { it as Cart } ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
 
@@ -67,8 +67,8 @@ class CartLockingProxy(
         return Pair(key, value)
     }
 
-    private fun ProceedingJoinPoint.extractKeyListFromCartList(): List<String> {
-        val carts: List<Cart> = this.args
+    private fun extractKeyListFromCartList(joinPoint: ProceedingJoinPoint): List<String> {
+        val carts: List<Cart> = joinPoint.args
             .firstOrNull { it is List<*> && it.all { item -> item is Cart } }
             ?.let { it as List<Cart> } ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
 
