@@ -1,5 +1,6 @@
 package com.flab.ticketing.order.repository.proxy
 
+import com.flab.ticketing.common.aop.utils.CustomSpringELParser.getDynamicValue
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InternalServerException
@@ -8,6 +9,7 @@ import com.flab.ticketing.order.exception.OrderErrorInfos
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
+import org.aspectj.lang.reflect.MethodSignature
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -23,7 +25,7 @@ class ReservationCheckProxy(
     private val LOCK_TIMEOUT_MILLIS = Duration.ofMillis(30L * 60_000L) // 30분
 
 
-    @Around("execution(* com.flab.ticketing.order.repository.writer.CartWriter.save(..))")
+    @Around("@annotation(com.flab.ticketing.order.repository.proxy.ReservationCheck)")
     fun acquireLock(joinPoint: ProceedingJoinPoint): Any? {
         val (key, value) = extractKVFromCart(joinPoint)
         acquireLockOrThrows(key, value)
@@ -51,12 +53,13 @@ class ReservationCheckProxy(
 
 
     private fun extractKVFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
-        val cart: Cart = joinPoint.args
-            .firstOrNull { it is Cart }
-            ?.let { it as Cart } ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
+        val signature = joinPoint.signature as MethodSignature
+        val method = signature.method
+        val annotation = method.getAnnotation(ReservationCheck::class.java)
 
-        val key = "${LOCK_PREFIX}${cart.performanceDateTime.uid}_${cart.seat.uid}"
-        val value = cart.user.uid
+
+        val key = "${LOCK_PREFIX}${getDynamicValue(signature.parameterNames, joinPoint.args, annotation.key)}"
+        val value = getDynamicValue(signature.parameterNames, joinPoint.args, annotation.value).toString()
 
         return Pair(key, value)
     }
@@ -70,8 +73,6 @@ class ReservationCheckProxy(
             "${LOCK_PREFIX}${cart.performanceDateTime.uid}_${cart.seat.uid}"
         }
     }
-
-
 
 
 }
