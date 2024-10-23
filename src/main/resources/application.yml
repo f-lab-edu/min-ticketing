@@ -131,6 +131,10 @@ spring:
     redis:
       host: localhost
       port: 6379
+    elasticsearch:
+      repositories:
+        enabled: true
+      url: localhost:9200
   web:
     resources:
       add-mappings: false
@@ -156,7 +160,7 @@ service:
 
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
+    console: "%msg%n"
   file:
     name: ticketing
     path: logs
