@@ -3,8 +3,8 @@ package com.flab.ticketing.order.repository.writer
 import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.repository.CartRepository
-import com.flab.ticketing.order.repository.proxy.ReservationCheck
-import com.flab.ticketing.order.repository.proxy.ReservationRelease
+import com.flab.ticketing.common.aop.DuplicatedCheck
+import com.flab.ticketing.common.aop.ReleaseDuplicateCheck
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,15 +17,15 @@ class CartWriter(
 ) {
 
 
-    @ReservationCheck(
+    @DuplicatedCheck(
         key = "#cart.seat.uid + '_' + #cart.performanceDateTime.uid",
     )
     fun save(cart: Cart) {
         cartRepository.save(cart)
     }
 
-    @ReservationRelease(
-        key = "#cart.seat.uid + '_' + #cart.performanceDateTime.uid",
+    @ReleaseDuplicateCheck(
+        key = "#carts.![seat.uid + '_' + performanceDateTime.uid]",
     )
     fun deleteAll(carts: List<Cart>) {
         cartRepository.deleteAll(carts)
