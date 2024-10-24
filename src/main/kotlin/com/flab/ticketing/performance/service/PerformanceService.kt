@@ -2,6 +2,7 @@ package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.enums.CacheType
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
@@ -37,7 +38,7 @@ class PerformanceService(
         cacheable = [
             Cacheable(
                 cacheManager = CacheConfig.LOCAL_CACHE_MANAGER_NAME,
-                cacheNames = ["product"],
+                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
                 key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
             ),
             Cacheable(
