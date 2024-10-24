@@ -25,7 +25,7 @@ class CustomPerformanceSearchRepositoryImpl(
             .withQuery(query)
             .withSearchAfter(sortValues)
             .withPageable(PageRequest.of(0, limit))
-            .withSort(Sort.by(Sort.Order.asc("id")))
+            .withSort(Sort.by(Sort.Order.desc("_score"), Sort.Order.asc("id")))
             .build()
 
         val searchHits = elasticsearchOperations.search<PerformanceSearchSchema>(nativeQuery).searchHits
