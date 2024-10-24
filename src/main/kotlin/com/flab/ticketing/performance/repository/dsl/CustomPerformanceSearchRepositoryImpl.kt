@@ -4,7 +4,8 @@ import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.elasticsearch.client.elc.NativeQuery
+import org.springframework.data.domain.Sort
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.search
 
@@ -20,13 +21,12 @@ class CustomPerformanceSearchRepositoryImpl(
         val boolQueryBuilder = BoolQuery.Builder()
         val query = boolQueryBuilder.build()._toQuery()
 
-        val nativeQuery = NativeQuery(query)
-        nativeQuery.setPageable<NativeQuery>(PageRequest.of(0, limit))
-
-
-        sortValues.let {
-            nativeQuery.searchAfter = it
-        }
+        val nativeQuery = NativeQueryBuilder()
+            .withQuery(query)
+            .withSearchAfter(sortValues)
+            .withPageable(PageRequest.of(0, limit))
+            .withSort(Sort.by(Sort.Order.asc("id")))
+            .build()
 
         val searchHits = elasticsearchOperations.search<PerformanceSearchSchema>(nativeQuery).searchHits
 

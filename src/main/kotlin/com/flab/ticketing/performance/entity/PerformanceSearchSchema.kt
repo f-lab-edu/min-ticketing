@@ -15,6 +15,7 @@ import java.time.ZonedDateTime
 class PerformanceSearchSchema(
 
     @Id
+    @Field(type = FieldType.Keyword)
     private val id: String,
 
     @Field(type = FieldType.Text)
@@ -30,9 +31,10 @@ class PerformanceSearchSchema(
     private val region: String,
 
     @Field(type = FieldType.Keyword, index = false)
-    private val image: String
+    private val image: String,
 
-
+    @Field(type = FieldType.Date)
+    private val createdAt: ZonedDateTime
 ) {
 
     companion object {
@@ -43,7 +45,8 @@ class PerformanceSearchSchema(
                 performance.performanceDateTime.map { it.showTime },
                 performance.price,
                 performance.regionName,
-                performance.image
+                performance.image,
+                ZonedDateTime.now()
             )
         }
     }

@@ -68,6 +68,27 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             actual.second.size shouldBe limit
         }
 
+        "다음 커서 정보를 받아 다음 데이터들을 가져올 수 있다." {
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 10,
+                numShowtimes = 1,
+                seatPerPlace = 1
+            ).map { PerformanceSearchSchema.of(it) }
+
+
+            performanceSearchRepository.saveAll(performances)
+
+
+            val limit = 5
+            val searchResult1 =
+                performanceSearchRepository.search(PerformanceSearchConditions(), null, limit)
+
+            val searchResult2 =
+                performanceSearchRepository.search(PerformanceSearchConditions(), searchResult1.first, limit)
+
+            searchResult1.second + searchResult2.second shouldContainAll performances
+        }
+
     }
 
     override suspend fun beforeEach(testCase: TestCase) {
