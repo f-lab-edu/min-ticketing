@@ -18,7 +18,7 @@ class CartWriter(
 
 
     @ReservationCheck(
-        key = "#cart.seat.uid + '_' + #cart.performanceDateTime.uid",
+        key = "'cart_save_' + #cart.seat.uid + '_' + #cart.performanceDateTime.uid",
         value = "#cart.user.uid"
     )
     fun save(cart: Cart) {
@@ -26,7 +26,7 @@ class CartWriter(
     }
 
     @ReservationRelease(
-        key = "#cart.seat.uid + '_' + #cart.performanceDateTime.uid",
+        key = "'cart_save_' + #cart.seat.uid + '_' + #cart.performanceDateTime.uid",
     )
     fun deleteAll(carts: List<Cart>) {
         cartRepository.deleteAll(carts)

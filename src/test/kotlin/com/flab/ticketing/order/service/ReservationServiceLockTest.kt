@@ -22,9 +22,6 @@ import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.Cache
-import org.springframework.cache.CacheManager
-import org.springframework.cache.get
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.ValueOperations
 
@@ -88,7 +85,7 @@ class ReservationServiceLockTest : IntegrationTest() {
 
         }
 
-        given("특정 공연 정보가 존재할 때 - Caching 추가 확인"){
+        given("특정 공연 정보가 존재할 때 - Caching 추가 확인") {
             val performance = PerformanceTestDataGenerator.createPerformance()
             val user = UserTestDataGenerator.createUser()
             val performanceDateTime = performance.performanceDateTime[0]
@@ -105,8 +102,8 @@ class ReservationServiceLockTest : IntegrationTest() {
             `when`("사용자가 이미 예약된 좌석에 대해 Redis에 Lock 정보가 남아있다면") {
                 reservationService.reserve(user.uid, performance.uid, performanceDateTime.uid, seat.uid)
 
-                then("Cache를 추가해 저장한다."){
-                    val key = "lock:${seat.uid}_${performanceDateTime.uid}"
+                then("Cache를 추가해 저장한다.") {
+                    val key = "lock:cart_save_${seat.uid}_${performanceDateTime.uid}"
                     val value = user.uid
                     verify(exactly = 1) { mockRedisOperation.setIfAbsent(key, value, any()) }
                 }

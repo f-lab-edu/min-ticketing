@@ -39,7 +39,7 @@ class PerformanceService(
             Cacheable(
                 cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
                 cacheNames = [CacheType.PRODUCT_CACHE_NAME],
-                key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
             )
         ]
     )
