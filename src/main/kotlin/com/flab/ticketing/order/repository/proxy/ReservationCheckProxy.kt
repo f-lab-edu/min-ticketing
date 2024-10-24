@@ -1,6 +1,5 @@
 package com.flab.ticketing.order.repository.proxy
 
-import com.flab.ticketing.common.aop.utils.CustomSpringELParser
 import com.flab.ticketing.common.aop.utils.CustomSpringELParser.getDynamicValue
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
@@ -28,7 +27,7 @@ class ReservationCheckProxy(
 
     @Around("@annotation(com.flab.ticketing.order.repository.proxy.ReservationCheck)")
     fun acquireLock(joinPoint: ProceedingJoinPoint): Any? {
-        val (key, value) = extractKVFromCart(joinPoint)
+        val (key, value) = extractKeyFromCart(joinPoint)
         acquireLockOrThrows(key, value)
 
         return joinPoint.proceed()
@@ -53,14 +52,14 @@ class ReservationCheckProxy(
     }
 
 
-    private fun extractKVFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
+    private fun extractKeyFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
         val signature = joinPoint.signature as MethodSignature
         val method = signature.method
         val annotation = method.getAnnotation(ReservationCheck::class.java)
 
 
         val key = "${LOCK_PREFIX}${getDynamicValue(signature.parameterNames, joinPoint.args, annotation.key)}"
-        val value = getDynamicValue(signature.parameterNames, joinPoint.args, annotation.value).toString()
+        val value = "${Thread.currentThread().id}:${System.currentTimeMillis()}"
 
         return Pair(key, value)
     }

@@ -19,7 +19,6 @@ class CartWriter(
 
     @ReservationCheck(
         key = "#cart.seat.uid + '_' + #cart.performanceDateTime.uid",
-        value = "#cart.user.uid"
     )
     fun save(cart: Cart) {
         cartRepository.save(cart)
