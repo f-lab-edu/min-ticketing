@@ -11,6 +11,7 @@ import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +29,9 @@ class PerformanceRepositoryImplTest(
 
     @Autowired
     private lateinit var placeRepository: PerformancePlaceRepository
+
+    @Autowired
+    private lateinit var performanceDateRepository: PerformanceDateRepository
 
     init {
 
@@ -296,17 +300,11 @@ class PerformanceRepositoryImplTest(
 
             savePerformance(listOf(performance))
 
-            val (uid, image, title, regionName, placeName, price, description) = performanceRepository.findByUid(
+            val findPerformance = performanceRepository.findByUid(
                 performance.uid
             )!!
 
-            uid shouldBe performance.uid
-            image shouldBe performance.image
-            title shouldBe performance.name
-            regionName shouldBe performance.performancePlace.region.name
-            placeName shouldBe performance.performancePlace.name
-            price shouldBe performance.price
-            description shouldBe performance.description
+            findPerformance shouldBeEqual performance
         }
 
         "Performance를 UID로 검색할 시 UID에 해당하는 정보만 나온다." {
@@ -354,7 +352,7 @@ class PerformanceRepositoryImplTest(
                 )
             }
 
-            val actual = performanceRepository.getDateInfo(performance.uid)
+            val actual = performanceDateRepository.getDateInfo(performance.id)
 
             actual shouldContainAll expected
         }
@@ -368,7 +366,7 @@ class PerformanceRepositoryImplTest(
 
             savePerformance(performances)
 
-            val actual = performanceRepository.getDateInfo(performances[0].uid)
+            val actual = performanceDateRepository.getDateInfo(performances[0].id)
             actual.size shouldBe datePerPerformance
             actual.map { it.uid } shouldContainAll performances[0].performanceDateTime.map { it.uid }
         }

@@ -1,6 +1,8 @@
 package com.flab.ticketing.performance.service
 
+import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.enums.CacheType
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
@@ -10,6 +12,8 @@ import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.repository.reader.PerformanceReader
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.cache.annotation.Caching
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -29,6 +33,16 @@ class PerformanceService(
         return performanceReader.searchPerformanceSummaryDto(searchConditions, cursorInfoDto)
     }
 
+
+    @Caching(
+        cacheable = [
+            Cacheable(
+                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
+                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
+                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+            )
+        ]
+    )
     fun search(
         cursorInfoDto: CursorInfoDto
     ): List<PerformanceSummarySearchResult> {
@@ -57,13 +71,13 @@ class PerformanceService(
 
     fun searchDetail(uid: String): PerformanceDetailResponse {
         val performance = performanceReader.findPerformanceDetailDto(uid)
-        val dateSummaryDtoList = performanceReader.findDateSummaryDto(uid)
+        val dateSummaryDtoList = performanceReader.findDateSummaryDto(performance.id)
         val dateInfo = convertDateDtoToDateInfo(dateSummaryDtoList)
 
         return PerformanceDetailResponse(
             performance.uid,
             performance.image,
-            performance.title,
+            performance.name,
             performance.regionName,
             performance.placeName,
             performance.price,

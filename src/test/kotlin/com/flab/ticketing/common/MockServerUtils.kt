@@ -1,7 +1,5 @@
 package com.flab.ticketing.common
 
-import jakarta.annotation.PostConstruct
-import jakarta.annotation.PreDestroy
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.springframework.boot.test.context.TestComponent
@@ -12,10 +10,10 @@ import org.springframework.http.MediaType
 @TestComponent
 class MockServerUtils {
 
-    private val mockWebServer = MockWebServer()
+    private lateinit var mockWebServer: MockWebServer
 
-    @PostConstruct
     fun runServer() {
+        mockWebServer = MockWebServer()
         mockWebServer.start(port = 2024)
     }
 
@@ -28,10 +26,10 @@ class MockServerUtils {
             MockResponse()
                 .setResponseCode(responseStatus.value())
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
-                .setBody(body))
+                .setBody(body)
+        )
     }
 
-    @PreDestroy
     fun shutDown() {
         mockWebServer.shutdown()
     }
