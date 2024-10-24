@@ -1,11 +1,13 @@
 package com.flab.ticketing.performance.repository
 
 import com.flab.ticketing.common.PerformanceTestDataGenerator
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
@@ -19,6 +21,9 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 
 
+/**
+ * CI/CD 환경에서는 Docker를 활용한 TestContainer 사용이 불가능 하기 때문에 로컬에서만 테스트하도록 설정하였습니다.
+ * */
 @SpringBootTest(classes = [ElasticSearchConfiguration::class, PerformanceSearchRepository::class])
 @DisabledIfEnvironmentVariable(named = "CI", matches = "true")
 class PerformanceSearchRepositoryTest : StringSpec() {
@@ -45,6 +50,24 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             //then
             foundDocuments shouldContainAll performanceDocuments
         }
+
+        "DB에 Performance List가 limit 이상의 갯수를 저장하고 있다면, 올바르게 limit개 만큼의 데이터를 갖고 올 수 있다." {
+
+            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                performanceCount = 10,
+                numShowtimes = 1,
+                seatPerPlace = 1
+            ).map { PerformanceSearchSchema.of(it) }
+
+
+            performanceSearchRepository.saveAll(performances)
+
+            val limit = 5
+            val actual = performanceSearchRepository.search(PerformanceSearchConditions(), null, limit)
+
+            actual.second.size shouldBe limit
+        }
+
     }
 
     override suspend fun beforeEach(testCase: TestCase) {
