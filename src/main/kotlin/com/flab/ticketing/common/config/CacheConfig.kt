@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.flab.ticketing.common.enums.CacheType
+import com.flab.ticketing.common.service.CustomCompositeCacheManager
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.springframework.cache.CacheManager
 import org.springframework.cache.caffeine.CaffeineCache
+import org.springframework.cache.support.CompositeCacheManager
 import org.springframework.cache.support.SimpleCacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -27,12 +29,24 @@ class CacheConfig(
 ) {
 
     companion object {
+        const val COMPOSITE_CACHE_MANAGER_NAME = "compositeCacheManager"
         const val LOCAL_CACHE_MANAGER_NAME = "localCacheManager"
         const val GLOBAL_CACHE_MANAGER_NAME = "globalCacheManager"
     }
 
-
     @Primary
+    @Bean(COMPOSITE_CACHE_MANAGER_NAME)
+    fun compositeCacheManager(
+        localCacheManager: CacheManager,
+        globalCacheManager: CacheManager
+    ): CacheManager{
+        return CustomCompositeCacheManager(
+            listOf(localCacheManager, globalCacheManager)
+        )
+    }
+
+
+
     @Bean(LOCAL_CACHE_MANAGER_NAME)
     fun localCacheManager(): CacheManager {
         val caches = CacheType.entries.map {

@@ -37,13 +37,8 @@ class PerformanceService(
     @Caching(
         cacheable = [
             Cacheable(
-                cacheManager = CacheConfig.LOCAL_CACHE_MANAGER_NAME,
+                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
                 cacheNames = [CacheType.PRODUCT_CACHE_NAME],
-                key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
-            ),
-            Cacheable(
-                cacheManager = CacheConfig.GLOBAL_CACHE_MANAGER_NAME,
-                cacheNames = ["product"],
                 key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
             )
         ]
