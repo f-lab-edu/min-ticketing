@@ -28,7 +28,7 @@ class DuplicationCheckProxy(
 
     @Around("@annotation(com.flab.ticketing.common.aop.DuplicatedCheck)")
     fun acquireLock(joinPoint: ProceedingJoinPoint): Any? {
-        val (key, value) = extractKeyFromCart(joinPoint)
+        val (key, value) = extractKeyFromAnnotation(joinPoint)
         acquireLockOrThrows(key, value)
 
         return joinPoint.proceed()
@@ -53,7 +53,7 @@ class DuplicationCheckProxy(
     }
 
 
-    private fun extractKeyFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
+    private fun extractKeyFromAnnotation(joinPoint: ProceedingJoinPoint): Pair<String, String> {
         val signature = joinPoint.signature as MethodSignature
         val method = signature.method
         val annotation = method.getAnnotation(DuplicatedCheck::class.java)
