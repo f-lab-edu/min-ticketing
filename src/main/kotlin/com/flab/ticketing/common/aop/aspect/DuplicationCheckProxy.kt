@@ -1,12 +1,12 @@
-package com.flab.ticketing.order.repository.proxy
+package com.flab.ticketing.common.aop.aspect
 
-import com.flab.ticketing.common.aop.utils.CustomSpringELParser
+import com.flab.ticketing.common.aop.DuplicatedCheck
 import com.flab.ticketing.common.aop.utils.CustomSpringELParser.getDynamicValue
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InternalServerException
-import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.exception.OrderErrorInfos
+import com.flab.ticketing.common.aop.ReleaseDuplicateCheck
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
@@ -18,7 +18,7 @@ import java.time.Duration
 
 @Aspect
 @Component
-class ReservationCheckProxy(
+class DuplicationCheckProxy(
     private val redisTemplate: RedisTemplate<String, String>
 
 ) {
@@ -26,18 +26,18 @@ class ReservationCheckProxy(
     private val LOCK_TIMEOUT_MILLIS = Duration.ofMillis(30L * 60_000L) // 30분
 
 
-    @Around("@annotation(com.flab.ticketing.order.repository.proxy.ReservationCheck)")
+    @Around("@annotation(com.flab.ticketing.common.aop.DuplicatedCheck)")
     fun acquireLock(joinPoint: ProceedingJoinPoint): Any? {
-        val (key, value) = extractKVFromCart(joinPoint)
+        val (key, value) = extractKeyFromAnnotation(joinPoint)
         acquireLockOrThrows(key, value)
 
         return joinPoint.proceed()
     }
 
 
-    @Around("@annotation(com.flab.ticketing.order.repository.proxy.ReservationRelease)")
+    @Around("@annotation(com.flab.ticketing.common.aop.ReleaseDuplicateCheck)")
     fun releaseLock(joinPoint: ProceedingJoinPoint): Any? {
-        val keyList = extractKeyListFromCartList(joinPoint)
+        val keyList = extractReleaseKeys(joinPoint)
 
         redisTemplate.delete(keyList)
         return joinPoint.proceed()
@@ -53,35 +53,31 @@ class ReservationCheckProxy(
     }
 
 
-    private fun extractKVFromCart(joinPoint: ProceedingJoinPoint): Pair<String, String> {
+    private fun extractKeyFromAnnotation(joinPoint: ProceedingJoinPoint): Pair<String, String> {
         val signature = joinPoint.signature as MethodSignature
         val method = signature.method
-        val annotation = method.getAnnotation(ReservationCheck::class.java)
+        val annotation = method.getAnnotation(DuplicatedCheck::class.java)
 
 
         val key = "${LOCK_PREFIX}${getDynamicValue(signature.parameterNames, joinPoint.args, annotation.key)}"
-        val value = getDynamicValue(signature.parameterNames, joinPoint.args, annotation.value).toString()
+        val value = "${Thread.currentThread().id}:${System.currentTimeMillis()}"
 
         return Pair(key, value)
     }
 
-    private fun extractKeyListFromCartList(joinPoint: ProceedingJoinPoint): List<String> {
+    private fun extractReleaseKeys(joinPoint: ProceedingJoinPoint): List<String> {
         val signature = joinPoint.signature as MethodSignature
         val method = signature.method
-        val annotation = method.getAnnotation(ReservationRelease::class.java)
+        val annotation = method.getAnnotation(ReleaseDuplicateCheck::class.java)
+        val parameterNames = signature.parameterNames
 
-        val carts = joinPoint.args
-            .firstOrNull { it is List<*> && it.all { item -> item is Cart } }
-            ?.let { it as List<Cart> }
-            ?: throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
 
-        return carts.map { cart ->
-            val key = getDynamicValue(
-                arrayOf("cart"),
-                arrayOf(cart),
-                annotation.key
+        return when (val result = getDynamicValue(parameterNames, joinPoint.args, annotation.key)) {
+            is List<*> -> result.filterNotNull().map { "${LOCK_PREFIX}$it" }
+            null -> throw InternalServerException(CommonErrorInfos.SERVICE_ERROR)
+            else -> listOf(
+                "${LOCK_PREFIX}$result"
             )
-            "${LOCK_PREFIX}$key"
         }
     }
 
