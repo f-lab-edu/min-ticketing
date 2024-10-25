@@ -3,10 +3,12 @@ package com.flab.ticketing.common
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.ErrorInfo
+import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.DummySSLSocketFactory
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetup
+import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
@@ -50,6 +52,9 @@ abstract class IntegrationTest : BehaviorSpec() {
     @Autowired
     private lateinit var redisServer: RedisServer
 
+
+    @MockkBean
+    private lateinit var performanceSearchRepository: PerformanceSearchRepository
 
     protected fun checkError(mvcResult: MvcResult, expectedStatus: HttpStatus, expectedErrorInfo: ErrorInfo) {
         checkError(mvcResult, expectedStatus, expectedErrorInfo.code, expectedErrorInfo.message)
