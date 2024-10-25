@@ -16,25 +16,25 @@ class PerformanceSearchSchema(
 
     @Id
     @Field(type = FieldType.Keyword)
-    private val id: String,
+    val id: String,
 
     @Field(type = FieldType.Text)
-    private val title: String,
+    val title: String,
 
     @Field(type = FieldType.Date)
-    private val showTimes: List<ZonedDateTime>,
+    val showTimes: List<ZonedDateTime>,
 
     @Field(type = FieldType.Integer)
-    private val price: Int,
+    val price: Int,
 
     @Field(type = FieldType.Keyword)
-    private val region: String,
+    val region: String,
 
     @Field(type = FieldType.Keyword, index = false)
-    private val image: String,
+    val image: String,
 
     @Field(type = FieldType.Date)
-    private val createdAt: ZonedDateTime
+    val createdAt: ZonedDateTime
 ) {
 
     companion object {

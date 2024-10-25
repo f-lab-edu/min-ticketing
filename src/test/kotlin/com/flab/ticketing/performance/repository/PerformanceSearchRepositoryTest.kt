@@ -19,6 +19,9 @@ import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.testcontainers.elasticsearch.ElasticsearchContainer
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 
 /**
@@ -87,6 +90,215 @@ class PerformanceSearchRepositoryTest : StringSpec() {
                 performanceSearchRepository.search(PerformanceSearchConditions(), searchResult1.first, limit)
 
             searchResult1.second + searchResult2.second shouldContainAll performances
+        }
+
+        "Performance를 Region 이름으로 필터링하여 조회할 수 있다." {
+
+            //given
+            val seoulRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                regionName = "서울",
+                performanceCount = 3
+            ).map { PerformanceSearchSchema.of(it) }
+
+            val gumiPerformanceCount = 3
+
+            val gumiRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+                regionName = "구미",
+                performanceCount = gumiPerformanceCount
+            ).map { PerformanceSearchSchema.of(it) }
+
+            performanceSearchRepository.saveAll(seoulRegionPerformances)
+            performanceSearchRepository.saveAll(gumiRegionPerformances)
+
+            // when
+            val regionName = gumiRegionPerformances[0].region
+            val actual = performanceSearchRepository.search(
+                PerformanceSearchConditions(region = regionName),
+                null,
+                10
+            ).second
+
+
+            actual.size shouldBe gumiPerformanceCount
+            actual.map { it.id } shouldContainAll gumiRegionPerformances.map { it.id }
+        }
+
+        "Performance를 최소 금액으로 필터링하여 조회할 수 있다." {
+
+            // given
+            val givenPriceRange = listOf(2000, 3000, 4000)
+            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+                priceIn = givenPriceRange
+            ).map { PerformanceSearchSchema.of(it) }
+
+            performanceSearchRepository.saveAll(performances)
+
+
+            // when
+            val minPrice = 3000
+            val actual =
+                performanceSearchRepository.search(PerformanceSearchConditions(minPrice = minPrice), null, 10).second
+
+            actual.size shouldBe 2
+            actual.filterNotNull().map { it.id } shouldContainAll listOf(
+                performances[1].id,
+                performances[2].id
+            )
+        }
+
+        "Performance를 최대 금액으로 필터링하여 조회할 수 있다." {
+
+            val givenPriceRange = listOf(2000, 3000, 4000)
+            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+                priceIn = givenPriceRange
+            ).map { PerformanceSearchSchema.of(it) }
+
+
+            performanceSearchRepository.saveAll(performances)
+
+            val maxPrice = 3000
+            val actual =
+                performanceSearchRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), null, 10).second
+
+            actual.size shouldBe 2
+
+            actual.filterNotNull().map { it.id } shouldContainAll listOf(
+                performances[0].id,
+                performances[1].id
+            )
+        }
+
+        "Performance를 공연 날짜로 필터링하여 조회할 수 있다." {
+
+            // 2024-1-1 10:00(Asia/Seoul) 공연 정보
+            val performance1 =
+                PerformanceSearchSchema.of(
+                    PerformanceTestDataGenerator.createPerformance(
+                        showTimeStartDateTime = ZonedDateTime.of(
+                            LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                            ZoneId.of("Asia/Seoul")
+                        ),
+                        numShowtimes = 2
+                    )
+                )
+
+            // 2023-1-1 10:00(Asia/Seoul) 공연 정보
+            val performance2 =
+                PerformanceSearchSchema.of(
+                    PerformanceTestDataGenerator.createPerformance(
+                        showTimeStartDateTime = ZonedDateTime.of(
+                            LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                            ZoneId.of("Asia/Seoul")
+                        ),
+                        numShowtimes = 2
+                    )
+                )
+
+            performanceSearchRepository.saveAll(listOf(performance1, performance2))
+
+            // 2024-1-1 00:00시(Asia/Seoul)로 검색
+            val searchShowTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 0, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+
+            val actual = performanceSearchRepository.search(
+                PerformanceSearchConditions(showTime = searchShowTime),
+                null,
+                10
+            ).second
+
+            actual.size shouldBe 1
+            actual[0].id shouldBe performance1.id
+
+        }
+
+        "Performance를 공연 이름으로 필터링하여 조회할 수 있다." {
+            val givenNames = listOf("예쁜 공연", "멋진 공연", "아주 멋진 공연", "공연 멋진", "공연")
+
+
+            val performances = PerformanceTestDataGenerator.createPerformancesInNames(
+                nameIn = givenNames
+            ).map { PerformanceSearchSchema.of(it) }
+
+
+            performanceSearchRepository.saveAll(performances)
+
+            val actual = performanceSearchRepository.search(PerformanceSearchConditions(q = "멋진"), null, 10).second
+
+            actual.size shouldBe 3
+            actual.map { it.title } shouldContainAll listOf("멋진 공연", "아주 멋진 공연", "공연 멋진")
+
+        }
+
+        "Performance를 모든 조건을 넣어 검색할 수 있다." {
+
+            val region = PerformanceTestDataGenerator.createRegion()
+            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+
+            val performance1DateTime = ZonedDateTime.of(
+                LocalDateTime.of(2024, 1, 1, 10, 0, 0),
+                ZoneId.of("Asia/Seoul")
+            )
+            val performance1Price = 50000
+            val performance1Name = "공공 공연"
+
+            val performance1 = PerformanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime,
+                price = performance1Price,
+                name = performance1Name
+            )
+
+            val performance2 = PerformanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = performance1DateTime,
+                price = 10000,
+                name = performance1Name
+            )
+
+            val performance3 = PerformanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                ),
+                price = performance1Price,
+                name = performance1Name
+            )
+
+            val performance4 = PerformanceTestDataGenerator.createPerformance(
+                place = place,
+                showTimeStartDateTime = ZonedDateTime.of(
+                    LocalDateTime.of(2023, 1, 1, 10, 0, 0),
+                    ZoneId.of("Asia/Seoul")
+                ),
+                price = 15000
+            )
+
+            performanceSearchRepository.saveAll(
+                listOf(
+                    performance1,
+                    performance2,
+                    performance3,
+                    performance4
+                ).map { PerformanceSearchSchema.of(it) })
+
+            val actual = performanceSearchRepository.search(
+                PerformanceSearchConditions(
+                    performance1DateTime,
+                    performance1Price - 1000,
+                    performance1Price + 1000,
+                    region.name,
+                    q = "공공"
+                ),
+                null,
+                10
+            ).second
+
+            actual.size shouldBe 1
+            actual[0].id shouldBe performance1.uid
+
         }
 
     }
