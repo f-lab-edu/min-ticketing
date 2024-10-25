@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface CartRepository : JpaRepository<Cart, Long> {
-
-    fun save(cart: Cart)
+    
 
     @Query("SELECT c FROM Cart c WHERE c.user.uid = :userUid")
     fun findByUserUid(@Param("userUid") userUid: String): List<Cart>

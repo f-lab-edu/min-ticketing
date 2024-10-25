@@ -5,7 +5,6 @@ import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
-import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
@@ -44,7 +43,7 @@ class PerformanceReader(
         return performanceDateRepository.findStartAndEndDate(performanceIdList)
     }
 
-    fun findPerformanceDetailDto(performanceUid: String): PerformanceDetailSearchResult {
+    fun findPerformanceDetailDto(performanceUid: String): Performance {
         return performanceRepository.findByUid(performanceUid)
             ?: throw NotFoundException(PerformanceErrorInfos.PERFORMANCE_NOT_FOUND)
     }
@@ -56,8 +55,8 @@ class PerformanceReader(
             )
     }
 
-    fun findDateSummaryDto(performanceUid: String): List<PerformanceDateSummaryResult> {
-        return performanceRepository.getDateInfo(performanceUid)
+    fun findDateSummaryDto(performanceId: Long): List<PerformanceDateSummaryResult> {
+        return performanceDateRepository.getDateInfo(performanceId)
     }
 
     fun findDateEntityByUid(performanceUid: String, dateUid: String): PerformanceDateTime {

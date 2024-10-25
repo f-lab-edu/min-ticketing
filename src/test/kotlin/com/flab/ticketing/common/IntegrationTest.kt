@@ -8,12 +8,11 @@ import com.icegreen.greenmail.util.DummySSLSocketFactory
 import com.icegreen.greenmail.util.GreenMail
 import com.icegreen.greenmail.util.ServerSetup
 import io.kotest.core.extensions.Extension
+import io.kotest.core.spec.Spec
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
-import jakarta.annotation.PostConstruct
-import jakarta.annotation.PreDestroy
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -48,6 +47,9 @@ abstract class IntegrationTest : BehaviorSpec() {
     @Autowired
     lateinit var greenMail: GreenMail
 
+    @Autowired
+    private lateinit var redisServer: RedisServer
+
 
     protected fun checkError(mvcResult: MvcResult, expectedStatus: HttpStatus, expectedErrorInfo: ErrorInfo) {
         checkError(mvcResult, expectedStatus, expectedErrorInfo.code, expectedErrorInfo.message)
@@ -67,28 +69,33 @@ abstract class IntegrationTest : BehaviorSpec() {
         responseBody.message shouldBeEqual expectedMessage
     }
 
+    override suspend fun beforeSpec(spec: Spec) {
+        super.beforeSpec(spec)
+        redisServer.start()
+        greenMail.start()
+        mockServerUtils.runServer()
+    }
+
+    override suspend fun afterSpec(spec: Spec) {
+        super.afterSpec(spec)
+        redisServer.stop()
+        greenMail.stop()
+        mockServerUtils.shutDown()
+    }
+
 }
 
 
 @TestConfiguration
-internal class IntegrationTestConfig(
-    @Value("\${spring.data.redis.port}") val port: Int
-) {
+internal class IntegrationTestConfig {
 
-    private val redisServer = RedisServer(port)
-
-    @PostConstruct
-    fun runRedisServer() {
-        redisServer.start()
-    }
-
-    @PreDestroy
-    fun stopRedisServer() {
-        redisServer.stop()
+    @Bean
+    fun redisServer(@Value("\${spring.data.redis.port}") port: Int): RedisServer {
+        return RedisServer(port)
     }
 
 
-    @Bean(initMethod = "start", destroyMethod = "stop")
+    @Bean
     fun greenMail(
         @Value("\${spring.mail.port}") port: Int,
     ): GreenMail {
