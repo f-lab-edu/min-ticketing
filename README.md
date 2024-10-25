@@ -17,8 +17,9 @@
 
 - `kotlin`
 - `Spring Boot`, `Spring Data JPA`
-- `MySQL`, `Redis`
+- `MySQL`, `Redis`, `ElasticSearch`
 - `koTest`, `mockk`
+- `Grafana`, `Prometheus`, `Loki`, `Grafana Tempo`
 
 ## 🏘️ 프로젝트 아키텍쳐
 
