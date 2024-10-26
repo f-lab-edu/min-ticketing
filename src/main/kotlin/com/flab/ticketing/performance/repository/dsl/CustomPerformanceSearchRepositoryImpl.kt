@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery
 import co.elastic.clients.elasticsearch._types.query_dsl.RangeQuery
 import co.elastic.clients.json.JsonData
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
+import com.flab.ticketing.performance.dto.service.PerformanceSearchResult
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -17,12 +18,12 @@ import java.time.format.DateTimeFormatter
 class CustomPerformanceSearchRepositoryImpl(
     private val elasticsearchOperations: ElasticsearchOperations
 ) : CustomPerformanceSearchRepository {
-    
+
     override fun search(
         searchConditions: PerformanceSearchConditions,
         sortValues: List<Any>?,
         limit: Int
-    ): Pair<List<Any>, List<PerformanceSearchSchema>> {
+    ): PerformanceSearchResult {
         val query = BoolQuery.Builder()
             .setUpQueries(searchConditions)
             .build()
@@ -39,7 +40,7 @@ class CustomPerformanceSearchRepositoryImpl(
 
         val nextCursor = searchHits.last().sortValues
 
-        return Pair(nextCursor, searchHits.map { it.content })
+        return PerformanceSearchResult(nextCursor, searchHits.map { it.content })
     }
 
     private fun BoolQuery.Builder.setUpQueries(searchConditions: PerformanceSearchConditions): BoolQuery.Builder {

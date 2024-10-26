@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.repository.dsl
 
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
-import com.flab.ticketing.performance.entity.PerformanceSearchSchema
+import com.flab.ticketing.performance.dto.service.PerformanceSearchResult
 
 interface CustomPerformanceSearchRepository {
 
@@ -9,6 +9,6 @@ interface CustomPerformanceSearchRepository {
         searchConditions: PerformanceSearchConditions,
         sortValues: List<Any>?,
         limit: Int
-    ): Pair<List<Any>, List<PerformanceSearchSchema>>
+    ): PerformanceSearchResult
 
 }

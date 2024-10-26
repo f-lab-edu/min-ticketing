@@ -68,7 +68,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             val limit = 5
             val actual = performanceSearchRepository.search(PerformanceSearchConditions(), null, limit)
 
-            actual.second.size shouldBe limit
+            actual.data.size shouldBe limit
         }
 
         "다음 커서 정보를 받아 다음 데이터들을 가져올 수 있다." {
@@ -87,9 +87,9 @@ class PerformanceSearchRepositoryTest : StringSpec() {
                 performanceSearchRepository.search(PerformanceSearchConditions(), null, limit)
 
             val searchResult2 =
-                performanceSearchRepository.search(PerformanceSearchConditions(), searchResult1.first, limit)
+                performanceSearchRepository.search(PerformanceSearchConditions(), searchResult1.cursor, limit)
 
-            searchResult1.second + searchResult2.second shouldContainAll performances
+            searchResult1.data + searchResult2.data shouldContainAll performances
         }
 
         "Performance를 Region 이름으로 필터링하여 조회할 수 있다." {
@@ -116,7 +116,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
                 PerformanceSearchConditions(region = regionName),
                 null,
                 10
-            ).second
+            ).data
 
 
             actual.size shouldBe gumiPerformanceCount
@@ -137,7 +137,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             // when
             val minPrice = 3000
             val actual =
-                performanceSearchRepository.search(PerformanceSearchConditions(minPrice = minPrice), null, 10).second
+                performanceSearchRepository.search(PerformanceSearchConditions(minPrice = minPrice), null, 10).data
 
             actual.size shouldBe 2
             actual.filterNotNull().map { it.id } shouldContainAll listOf(
@@ -158,7 +158,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
             val maxPrice = 3000
             val actual =
-                performanceSearchRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), null, 10).second
+                performanceSearchRepository.search(PerformanceSearchConditions(maxPrice = maxPrice), null, 10).data
 
             actual.size shouldBe 2
 
@@ -206,7 +206,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
                 PerformanceSearchConditions(showTime = searchShowTime),
                 null,
                 10
-            ).second
+            ).data
 
             actual.size shouldBe 1
             actual[0].id shouldBe performance1.id
@@ -224,7 +224,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
             performanceSearchRepository.saveAll(performances)
 
-            val actual = performanceSearchRepository.search(PerformanceSearchConditions(q = "멋진"), null, 10).second
+            val actual = performanceSearchRepository.search(PerformanceSearchConditions(q = "멋진"), null, 10).data
 
             actual.size shouldBe 3
             actual.map { it.title } shouldContainAll listOf("멋진 공연", "아주 멋진 공연", "공연 멋진")
@@ -294,7 +294,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
                 ),
                 null,
                 10
-            ).second
+            ).data
 
             actual.size shouldBe 1
             actual[0].id shouldBe performance1.uid
