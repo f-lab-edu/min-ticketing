@@ -24,7 +24,8 @@
 ## 🏘️ 프로젝트 아키텍쳐
 
 ---
-![image](https://github.com/user-attachments/assets/caf4e5d0-ed0e-40e6-800e-50636f3e530f)
+![image](https://github.com/user-attachments/assets/d8211aae-d34e-4f17-b467-39e13708723e)
+
 
 
 
