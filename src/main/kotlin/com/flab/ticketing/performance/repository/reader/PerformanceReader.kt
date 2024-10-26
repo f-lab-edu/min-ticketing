@@ -27,9 +27,9 @@ class PerformanceReader(
     private val performanceDateRepository: PerformanceDateRepository
 ) {
 
-    fun searchPerformanceSummaryDto(
+    fun search(
         searchConditions: PerformanceSearchConditions,
-        cursor: List<Any>,
+        cursor: List<Any>?,
         limit: Int
     ): PerformanceSearchResult {
         return performanceSearchRepository.search(searchConditions, cursor, limit)

@@ -3,7 +3,7 @@ package com.flab.ticketing.common.utils
 import java.util.*
 
 
-object Base64Encoder {
+object Base64Utils {
     fun encode(input: String): String {
         return Base64.getEncoder().encodeToString(input.toByteArray())
     }

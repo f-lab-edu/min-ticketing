@@ -10,10 +10,14 @@ import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.flab.ticketing.performance.service.PerformanceService
+import io.kotest.core.test.TestCase
+import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldBeIn
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import java.time.LocalDateTime
@@ -91,7 +95,7 @@ class PerformanceSearchIntegrationTest(
 
                     val expected = createSearchExpected(performances)
 
-                    actual.cursor shouldBe null
+                    actual.cursor shouldNotBe null
                     actual.data.size shouldBe 5
                     actual.data shouldContainAll expected
 
@@ -118,12 +122,12 @@ class PerformanceSearchIntegrationTest(
 
             `when`("특정 지역으로 공연을 검색할 시") {
                 val uri = "/api/performances"
-                val gumiRegionUid = gumiRegionPerformances[0].performancePlace.region.uid
+                val gumiRegionName = gumiRegionPerformances[0].performancePlace.region.name
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
                         .param("limit", "5")
-                        .param("region", gumiRegionUid)
+                        .param("region", gumiRegionName)
                 )
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
@@ -139,7 +143,6 @@ class PerformanceSearchIntegrationTest(
 
                     val expected = createSearchExpected(gumiRegionPerformances)
 
-                    actual.cursor shouldBe null
                     actual.data.size shouldBe gumiPerformanceCount
                     actual.data shouldContainAll expected
                 }
@@ -275,7 +278,6 @@ class PerformanceSearchIntegrationTest(
 
                     val expected = createSearchExpected(listOf(performances[0]))
 
-                    actual.cursor shouldBe null
                     actual.data shouldContainAll expected
                 }
             }
@@ -317,7 +319,6 @@ class PerformanceSearchIntegrationTest(
 
                     val expected = createSearchExpected(listOf(performances[0], performances[2]))
 
-                    actual.cursor shouldBe null
                     actual.data shouldContainAll expected
 
                 }
@@ -333,7 +334,7 @@ class PerformanceSearchIntegrationTest(
                 ZoneId.of("Asia/Seoul")
             )
             val performance1Price = 50000
-            val performance1Name = "공공공연"
+            val performance1Name = "공공 공연"
 
             val performance1 = PerformanceTestDataGenerator.createPerformance(
                 place = place,
@@ -369,7 +370,8 @@ class PerformanceSearchIntegrationTest(
                         .param("showTime", performance1DateTime.toString())
                         .param("minPrice", (performance1Price - 1000).toString())
                         .param("maxPrice", (performance1Price + 5000).toString())
-                        .param("region", region.uid)
+                        .param("region", region.name)
+                        .param("q", "공공")
                 )
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
@@ -385,7 +387,6 @@ class PerformanceSearchIntegrationTest(
 
                     val expected = createSearchExpected(listOf(performance1))
 
-                    actual.cursor shouldBe null
                     actual.data shouldContainAll expected
 
                 }
@@ -430,6 +431,13 @@ class PerformanceSearchIntegrationTest(
         }
     }
 
+
+    override suspend fun afterEach(testCase: TestCase, result: TestResult) {
+        super.afterEach(testCase, result)
+        withContext(Dispatchers.IO) {
+            performanceSearchRepository.deleteAll()
+        }
+    }
 
     private fun savePerformances(performances: List<Performance>) {
         val saved = performances.map { PerformanceSearchSchema.of(it) }

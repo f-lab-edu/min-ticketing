@@ -34,7 +34,7 @@ class PerformanceController(
         @ParameterObject @ModelAttribute cursorInfoDto: CursorInfoDto,
         @ParameterObject @ModelAttribute searchConditions: PerformanceSearchConditions
     ): CursoredResponse<PerformanceSummarySearchResult> {
-        return CursoredResponse(null, listOf())
+        return performanceService.search(cursorInfoDto, searchConditions)
     }
 
 

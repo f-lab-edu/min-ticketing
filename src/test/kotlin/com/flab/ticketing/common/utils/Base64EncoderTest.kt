@@ -13,7 +13,7 @@ class Base64EncoderTest : StringSpec({
             row("test", "dGVzdA=="),
             row("hello", "aGVsbG8=")
         ) { decoded, encoded ->
-            Base64Encoder.encode(decoded) shouldBe encoded
+            Base64Utils.encode(decoded) shouldBe encoded
         }
     }
 
@@ -24,7 +24,7 @@ class Base64EncoderTest : StringSpec({
             row("test", "dGVzdA=="),
             row("hello", "aGVsbG8=")
         ) { decoded, encoded ->
-            Base64Encoder.decode(encoded) shouldBe decoded
+            Base64Utils.decode(encoded) shouldBe decoded
         }
     }
 

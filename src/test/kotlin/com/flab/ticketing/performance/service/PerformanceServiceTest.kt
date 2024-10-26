@@ -1,5 +1,6 @@
 package com.flab.ticketing.performance.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
@@ -31,8 +32,9 @@ class PerformanceServiceTest : UnitTest() {
     private val performanceReader: PerformanceReader = mockk()
     private val reservationReader: ReservationReader = mockk()
     private val cartReader: CartReader = mockk()
+    private val objectMapper = ObjectMapper()
     private val performanceService: PerformanceService =
-        PerformanceService(performanceReader, reservationReader, cartReader)
+        PerformanceService(performanceReader, reservationReader, cartReader, objectMapper)
 
     init {
         "Performance Detail 정보를 검색할 수 있다." {
