@@ -1,8 +1,10 @@
 package com.flab.ticketing.performance.repository
 
 import com.flab.ticketing.common.PerformanceTestDataGenerator
+import com.flab.ticketing.common.conditions.NonCiEnvironment
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
+import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.core.test.TestCase
 import io.kotest.extensions.spring.SpringExtension
@@ -10,7 +12,6 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -28,7 +29,7 @@ import java.time.ZonedDateTime
  * CI/CD 환경에서는 Docker를 활용한 TestContainer 사용이 불가능 하기 때문에 로컬에서만 테스트하도록 설정하였습니다.
  * */
 @SpringBootTest(classes = [ElasticSearchConfiguration::class, PerformanceSearchRepository::class])
-@DisabledIfEnvironmentVariable(named = "CI", matches = "true")
+@EnabledIf(NonCiEnvironment::class)
 class PerformanceSearchRepositoryTest : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
