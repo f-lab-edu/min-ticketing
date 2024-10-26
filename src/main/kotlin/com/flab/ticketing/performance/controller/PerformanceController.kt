@@ -34,19 +34,7 @@ class PerformanceController(
         @ParameterObject @ModelAttribute cursorInfoDto: CursorInfoDto,
         @ParameterObject @ModelAttribute searchConditions: PerformanceSearchConditions
     ): CursoredResponse<PerformanceSummarySearchResult> {
-        val performances = performanceService.search(
-            CursorInfoDto(cursorInfoDto.cursor, cursorInfoDto.limit + 1),
-            searchConditions
-        )
-
-        if (performances.size == cursorInfoDto.limit + 1) {
-            return CursoredResponse(
-                performances[cursorInfoDto.limit].uid,
-                performances.dropLast(1)
-            )
-        }
-
-        return CursoredResponse(null, performances)
+        return CursoredResponse(null, listOf())
     }
 
 

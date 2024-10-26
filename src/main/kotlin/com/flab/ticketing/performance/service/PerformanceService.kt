@@ -1,6 +1,7 @@
 package com.flab.ticketing.performance.service
 
 import com.flab.ticketing.common.config.CacheConfig
+import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
@@ -22,14 +23,14 @@ import org.springframework.transaction.annotation.Transactional
 class PerformanceService(
     private val performanceReader: PerformanceReader,
     private val reservationReader: ReservationReader,
-    private val cartReader: CartReader
+    private val cartReader: CartReader,
 ) {
 
     fun search(
         cursorInfoDto: CursorInfoDto,
         searchConditions: PerformanceSearchConditions
-    ): List<PerformanceSummarySearchResult> {
-        return performanceReader.searchPerformanceSummaryDto(searchConditions, cursorInfoDto)
+    ): CursoredResponse<PerformanceSummarySearchResult> {
+        return CursoredResponse(null, listOf())
     }
 
 

@@ -2,6 +2,7 @@ package com.flab.ticketing.performance.repository
 
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.conditions.NonCiEnvironment
+import com.flab.ticketing.common.config.ElasticSearchConfiguration
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import io.kotest.core.annotation.EnabledIf
@@ -14,12 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.data.elasticsearch.client.ClientConfiguration
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration
-import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
-import org.testcontainers.elasticsearch.ElasticsearchContainer
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -311,42 +306,4 @@ class PerformanceSearchRepositoryTest : StringSpec() {
         }
     }
 
-}
-
-
-@TestConfiguration
-@EnableElasticsearchRepositories
-internal class ElasticSearchConfiguration : ElasticsearchConfiguration() {
-
-    @Bean(initMethod = "init", destroyMethod = "preDestroy")
-    fun elasticsearchTestContainer() = ElasticSearchTestContainerWrapper()
-
-    override fun clientConfiguration(): ClientConfiguration {
-        val esTestContainer = elasticsearchTestContainer()
-
-        return ClientConfiguration.builder()
-            .connectedTo(esTestContainer.getHttpHostAddress())
-            .build()
-    }
-}
-
-internal class ElasticSearchTestContainerWrapper {
-
-    private val elasticsearchContainer = ElasticsearchContainer("docker.elastic.co/elasticsearch/elasticsearch:8.13.4")
-
-    fun init() {
-        elasticsearchContainer
-            .apply {
-                withEnv("xpack.security.enabled", "false")
-                withEnv("discovery.type", "single-node")
-                start()
-            }
-    }
-
-    fun preDestroy() {
-        elasticsearchContainer.stop()
-    }
-
-
-    fun getHttpHostAddress(): String = elasticsearchContainer.httpHostAddress
 }

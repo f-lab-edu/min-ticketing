@@ -6,13 +6,14 @@ import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceDetailSearchResult
+import com.flab.ticketing.performance.dto.service.PerformanceSearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
-import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceDateRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
+import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,14 +23,16 @@ import org.springframework.transaction.annotation.Transactional
 @Logging
 class PerformanceReader(
     private val performanceRepository: PerformanceRepository,
+    private val performanceSearchRepository: PerformanceSearchRepository,
     private val performanceDateRepository: PerformanceDateRepository
 ) {
 
     fun searchPerformanceSummaryDto(
         searchConditions: PerformanceSearchConditions,
-        cursorInfoDto: CursorInfoDto
-    ): List<PerformanceSummarySearchResult> {
-        return performanceRepository.search(searchConditions, cursorInfoDto).filterNotNull()
+        cursor: List<Any>,
+        limit: Int
+    ): PerformanceSearchResult {
+        return performanceSearchRepository.search(searchConditions, cursor, limit)
     }
 
     fun findPerformanceEntityByCursor(
