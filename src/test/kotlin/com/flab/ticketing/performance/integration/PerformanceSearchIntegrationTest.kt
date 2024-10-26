@@ -39,7 +39,7 @@ class PerformanceSearchIntegrationTest(
 
 
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val limit = 5
 
                 val mvcResult = mockMvc.perform(
@@ -73,7 +73,7 @@ class PerformanceSearchIntegrationTest(
             savePerformances(performances)
 
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val limit = 5
 
                 val mvcResult = mockMvc.perform(
@@ -121,7 +121,7 @@ class PerformanceSearchIntegrationTest(
             savePerformances(gumiRegionPerformances)
 
             `when`("특정 지역으로 공연을 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val gumiRegionName = gumiRegionPerformances[0].performancePlace.region.name
 
                 val mvcResult = mockMvc.perform(
@@ -161,7 +161,7 @@ class PerformanceSearchIntegrationTest(
             savePerformances(performances)
 
             `when`("최저으로 공연을 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val minPrice = 3000
 
                 val mvcResult = mockMvc.perform(
@@ -202,7 +202,7 @@ class PerformanceSearchIntegrationTest(
             savePerformances(performances)
 
             `when`("최고 금액으로 공연을 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val maxPrice = 3000
 
                 val mvcResult = mockMvc.perform(
@@ -254,7 +254,7 @@ class PerformanceSearchIntegrationTest(
 
 
             `when`("특정 공연 날짜로 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val searchDate = performance1DateTime
 
                 val mvcResult = mockMvc.perform(
@@ -296,7 +296,7 @@ class PerformanceSearchIntegrationTest(
             savePerformances(performances)
 
             `when`("공연의 이름으로 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
                 val nameQuery = "멋진"
 
                 val mvcResult = mockMvc.perform(
@@ -362,7 +362,7 @@ class PerformanceSearchIntegrationTest(
             savePerformances(listOf(performance1, performance2, performance3))
 
             `when`("다양한 조건으로 공연을 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)
@@ -403,7 +403,7 @@ class PerformanceSearchIntegrationTest(
 
             val (cursor, prevPage) = performanceService.search(CursorInfoDto(limit = 5), PerformanceSearchConditions())
             `when`("특정 커서를 입력하여 공연 정보를 검색할 시") {
-                val uri = "/api/performances"
+                val uri = "/api/performances/search"
 
                 val mvcResult = mockMvc.perform(
                     MockMvcRequestBuilders.get(uri)

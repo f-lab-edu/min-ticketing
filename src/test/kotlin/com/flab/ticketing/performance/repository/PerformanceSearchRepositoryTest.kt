@@ -15,6 +15,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
+import org.springframework.test.context.ActiveProfiles
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -23,8 +25,10 @@ import java.time.ZonedDateTime
 /**
  * CI/CD 환경에서는 Docker를 활용한 TestContainer 사용이 불가능 하기 때문에 로컬에서만 테스트하도록 설정하였습니다.
  * */
-@SpringBootTest(classes = [ElasticSearchConfiguration::class, PerformanceSearchRepository::class])
+@SpringBootTest
+@Import(ElasticSearchConfiguration::class)
 @EnabledIf(NonCiEnvironment::class)
+@ActiveProfiles("test")
 class PerformanceSearchRepositoryTest : StringSpec() {
 
     override fun extensions() = listOf(SpringExtension)
