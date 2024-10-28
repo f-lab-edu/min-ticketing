@@ -21,7 +21,6 @@ import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
-import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.OrderReader
 import com.flab.ticketing.order.repository.writer.CartWriter
@@ -46,7 +45,6 @@ class OrderService(
     private val orderWriter: OrderWriter,
     private val tossPaymentClient: TossPaymentClient,
     private val fileService: FileService,
-    private val orderMetaDataRepository: OrderMetaDataRepository,
     @Value("\${service.url}") private val serviceUrl: String
 ) {
 
@@ -67,7 +65,7 @@ class OrderService(
             userUid = user.uid
         )
 
-        orderMetaDataRepository.save(orderMetaData)
+        orderWriter.save(orderMetaData)
 
         return OrderInfoResponse(orderMetaData.orderId, orderMetaData.amount)
     }
