@@ -21,6 +21,7 @@ import com.flab.ticketing.order.enums.TossPayCancelErrorCode
 import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
+import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.service.client.TossPaymentClient.Companion.TOSS_EXCEPTION_PREFIX
 import com.flab.ticketing.performance.entity.Performance
@@ -33,21 +34,18 @@ import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
-import io.kotest.matchers.collections.shouldContainAll
-import io.kotest.matchers.collections.shouldNotContainAll
 import io.kotest.matchers.equals.shouldBeEqual
-import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.transaction.annotation.Transactional
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -78,6 +76,9 @@ class OrderIntegrationTest : IntegrationTest() {
     @Autowired
     private lateinit var jwtTokenProvider: JwtTokenProvider
 
+    @Autowired
+    private lateinit var orderMetaDataRepository: OrderMetaDataRepository
+
 
     init {
 
@@ -100,7 +101,7 @@ class OrderIntegrationTest : IntegrationTest() {
             `when`("장바구니를 선택하여 주문 정보를 생성할 시") {
                 val uri = "/api/orders/toss/info"
                 val orderCartUidList = carts.subList(0, 3).map { it.uid }
-                val orderRequest = OrderInfoRequest("토스 뱅크", orderCartUidList)
+                val orderRequest = OrderInfoRequest(orderCartUidList)
                 val jwt = createJwt(user)
 
 
@@ -113,35 +114,16 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(print())
                     .andReturn()
 
-                then("주문 정보를 생성하여 반환하며, DB에 임시 주문 정보를 저장하며 Cart 정보를 DB에서 제거한다.") {
+                then("주문 정보를 생성하여 저장 후 반환한다.") {
                     mvcResult.response.status shouldBe HttpStatus.CREATED.value()
                     val actual =
                         objectMapper.readValue(mvcResult.response.contentAsString, OrderInfoResponse::class.java)
 
-                    val savedOrder = orderRepository.findByUser(user.uid)[0]
-                    val expectedReservedSeatAndDateTime = listOf(
-                        Pair(performancePlace.seats[0], performanceDateTime),
-                        Pair(performancePlace.seats[1], performanceDateTime),
-                        Pair(performancePlace.seats[2], performanceDateTime)
-                    )
+                    val savedOrderMetaData = orderMetaDataRepository.findById(actual.orderId).orElseThrow()
 
-
-                    actual.customerEmail shouldBeEqual user.email
-                    actual.customerName shouldBeEqual user.nickname
+                    actual.orderId shouldNotBe null
                     actual.amount shouldBe (performance.price * orderCartUidList.size)
-                    actual.orderId shouldBeEqual savedOrder.uid
-
-                    savedOrder.payment.paymentMethod shouldBeEqual orderRequest.payType
-                    savedOrder.payment.totalPrice shouldBe actual.amount
-                    savedOrder.user shouldBeEqual user
-                    savedOrder.reservations.map {
-                        Pair(
-                            it.seat,
-                            it.performanceDateTime
-                        )
-                    } shouldContainAll expectedReservedSeatAndDateTime
-
-                    cartRepository.findByUserUid(user.uid).map { it.uid } shouldNotContainAll orderCartUidList
+                    savedOrderMetaData.amount shouldBeEqual actual.amount
                 }
             }
 
@@ -167,7 +149,7 @@ class OrderIntegrationTest : IntegrationTest() {
                 val orderCartUidList = carts.subList(0, 3).map { it.uid }.toMutableList()
                 orderCartUidList.add("invalidCart001")
 
-                val orderRequest = OrderInfoRequest("토스 뱅크", orderCartUidList)
+                val orderRequest = OrderInfoRequest(orderCartUidList)
                 val jwt = createJwt(user)
 
 
@@ -498,7 +480,7 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
 
-        given("주문의 상태가 PENDING인 주문이 존재할 때"){
+        given("주문의 상태가 PENDING인 주문이 존재할 때") {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance()
 
@@ -506,7 +488,11 @@ class OrderIntegrationTest : IntegrationTest() {
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
             order.status = Order.OrderStatus.COMPLETED
 
-            val pendingOrder = OrderTestDataGenerator.createOrder(uid = "order-002", user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            val pendingOrder = OrderTestDataGenerator.createOrder(
+                uid = "order-002",
+                user = user,
+                payment = Order.Payment(1000, "카드", "abc123")
+            )
             pendingOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
             pendingOrder.status = Order.OrderStatus.PENDING
 
@@ -514,7 +500,7 @@ class OrderIntegrationTest : IntegrationTest() {
             savePerformance(listOf(performance))
             orderRepository.saveAll(listOf(order, pendingOrder))
 
-            `when`("주문이 Pending 상태인 주문을 조회할 시"){
+            `when`("주문이 Pending 상태인 주문을 조회할 시") {
                 val uri = "/api/orders"
                 val jwt = createJwt(user)
 
@@ -526,7 +512,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     print()
                 ).andReturn()
 
-                then("PENDING 상태의 주문을 반환한다."){
+                then("PENDING 상태의 주문을 반환한다.") {
                     val actual = objectMapper.readValue<CursoredResponse<OrderSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
@@ -534,7 +520,7 @@ class OrderIntegrationTest : IntegrationTest() {
                             OrderSummarySearchResult::class.java
                         )
                     )
-                    
+
                     actual.data.size shouldBe 1
                     actual.data[0].uid shouldBe pendingOrder.uid
                 }
@@ -556,6 +542,7 @@ class OrderIntegrationTest : IntegrationTest() {
             performanceRepository.deleteAll()
             placeRepository.deleteAll()
             regionRepository.deleteAll()
+            orderMetaDataRepository.deleteAll()
         }
     }
 

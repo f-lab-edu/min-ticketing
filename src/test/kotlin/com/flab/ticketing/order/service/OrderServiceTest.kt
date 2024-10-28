@@ -19,8 +19,10 @@ import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
+import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.OrderReader
 import com.flab.ticketing.order.repository.writer.CartWriter
@@ -34,6 +36,7 @@ import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.verify
 import java.awt.image.BufferedImage
 import java.time.ZonedDateTime
@@ -45,9 +48,9 @@ class OrderServiceTest : UnitTest() {
     private val cartWriter: CartWriter = mockk()
     private val orderReader: OrderReader = mockk()
     private val orderWriter: OrderWriter = mockk()
-    private val nanoIdGenerator: NanoIdGenerator = mockk()
     private val tossPaymentClient: TossPaymentClient = mockk()
     private val fileService: FileService = mockk()
+    private val orderMetaDataRepository: OrderMetaDataRepository = mockk()
 
     private val serviceUrl = "http://test.com"
 
@@ -59,11 +62,13 @@ class OrderServiceTest : UnitTest() {
         orderWriter = orderWriter,
         tossPaymentClient = tossPaymentClient,
         fileService = fileService,
-        serviceUrl = serviceUrl
+        serviceUrl = serviceUrl,
+        orderMetaDataRepository = orderMetaDataRepository,
     )
 
     init {
-        "Order 객체를 생성해 DB에 저장하고 주문 정보를 반환할 수 있다." {
+        "주문 생성 API 호출 시 주문 임시 데이터를 생성하고 Redis에 저장할 수 있다." {
+            mockkObject(NanoIdGenerator)
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
@@ -84,45 +89,48 @@ class OrderServiceTest : UnitTest() {
                     user
                 )
             )
-            val orderUid = "order001"
 
+
+            every { NanoIdGenerator.createNanoId() } returns "tempOrderId"
             every { userReader.findByUid(user.uid) } returns user
-            every { cartReader.findByUidList(listOf("cart001", "cart002")) } returns carts
-            every { orderWriter.save(any()) } returns Unit
-            every { cartWriter.deleteAll(any()) } returns Unit
-
-            val actual = orderService.saveRequestedOrderInfo(
-                AuthenticatedUserDto.of(CustomUserDetailsDto(user.uid, user.email, user.password, user.nickname)),
-                OrderInfoRequest("토스 페이", listOf("cart001", "cart002"))
+            every { cartReader.findByUidList(listOf("cart001", "cart002"), user) } returns carts
+            every { orderMetaDataRepository.save(any()) } returns OrderMetaData(
+                "tempOrderId",
+                performance.price * 2,
+                listOf("cart001", "cart002"),
+                user.uid
             )
 
-            verify { orderWriter.save(any()) }
-            verify { cartWriter.deleteAll(carts) }
+            val actual = orderService.createOrderMetaData(
+                AuthenticatedUserDto.of(CustomUserDetailsDto(user.uid, user.email, user.password, user.nickname)),
+                OrderInfoRequest(listOf("cart001", "cart002"))
+            )
 
+
+            verify(exactly = 1) { orderMetaDataRepository.save(any()) }
             actual.amount shouldBeEqual performance.price * 2
-            actual.customerName shouldBeEqual user.nickname
-            actual.customerEmail shouldBeEqual user.email
-            actual.orderName shouldBeEqual performance.name + " 좌석 외 1건"
+            actual.orderId shouldBeEqual "tempOrderId"
         }
 
         "Parameter Cart UID의 갯수와 Repository에서 조회한 Cart의 갯수가 다르면 InvalidValueException을 throw한다." {
+            mockkObject(NanoIdGenerator)
+
             val user = UserTestDataGenerator.createUser()
 
             every { userReader.findByUid(user.uid) } returns user
-            every { cartReader.findByUidList(listOf("cart001", "cart002")) } returns Collections.emptyList()
-            every { nanoIdGenerator.createNanoId() } returns "order001"
-            every { orderWriter.save(any()) } returns Unit
-
+            every { cartReader.findByUidList(listOf("cart001", "cart002"), user) } returns Collections.emptyList()
+            every { NanoIdGenerator.createNanoId() } returns "order001"
 
             val e = shouldThrow<InvalidValueException> {
-                orderService.saveRequestedOrderInfo(
+                orderService.createOrderMetaData(
                     AuthenticatedUserDto.of(CustomUserDetailsDto(user.uid, user.email, user.password, user.nickname)),
-                    OrderInfoRequest("토스 페이", listOf("cart001", "cart002"))
+                    OrderInfoRequest(listOf("cart001", "cart002"))
                 )
             }
 
             e.info shouldBe OrderErrorInfos.INVALID_CART_INFO
         }
+
 
         "생성된 주문이 존재 할때 Toss 결제 승인 API를 호출하고 Order의 상태를 COMPLETED로 변환할 수 있다." {
             val user = UserTestDataGenerator.createUser()

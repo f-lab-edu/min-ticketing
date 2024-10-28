@@ -17,16 +17,17 @@ import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
+import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.OrderReader
 import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -45,27 +46,30 @@ class OrderService(
     private val orderWriter: OrderWriter,
     private val tossPaymentClient: TossPaymentClient,
     private val fileService: FileService,
+    private val orderMetaDataRepository: OrderMetaDataRepository,
     @Value("\${service.url}") private val serviceUrl: String
 ) {
 
-    fun saveRequestedOrderInfo(
+    fun createOrderMetaData(
         userInfo: AuthenticatedUserDto,
         orderInfoRequest: OrderInfoRequest
     ): OrderInfoResponse {
 
         val user = userReader.findByUid(userInfo.uid)
-        val carts = cartReader.findByUidList(orderInfoRequest.carts)
+        val carts = cartReader.findByUidList(orderInfoRequest.cartUidList, user)
 
         checkValidOrderRequest(orderInfoRequest, carts)
-        val order = createOrder(user, orderInfoRequest, carts)
 
-        carts.forEach {
-            order.addReservation(Reservation(it.performanceDateTime, it.seat, order))
-        }
+        val orderMetaData = OrderMetaData(
+            orderId = NanoIdGenerator.createNanoId(),
+            amount = carts.calculatePrice(),
+            cartUidList = orderInfoRequest.cartUidList,
+            userUid = user.uid
+        )
 
-        orderWriter.save(order)
-        cartWriter.deleteAll(carts)
-        return OrderInfoResponse.of(user, order)
+        orderMetaDataRepository.save(orderMetaData)
+
+        return OrderInfoResponse(orderMetaData.orderId, orderMetaData.amount)
     }
 
 
@@ -123,7 +127,7 @@ class OrderService(
 
 
     private fun checkValidOrderRequest(orderInfoRequest: OrderInfoRequest, carts: List<Cart>) {
-        if (orderInfoRequest.carts.size != carts.size) {
+        if (orderInfoRequest.cartUidList.size != carts.size) {
             throw InvalidValueException(OrderErrorInfos.INVALID_CART_INFO)
         }
     }
@@ -165,16 +169,6 @@ class OrderService(
         }
     }
 
-    private fun createOrder(user: User, orderInfoRequest: OrderInfoRequest, carts: List<Cart>): Order {
-        return Order(
-            NanoIdGenerator.createNanoId(),
-            user,
-            payment = Order.Payment(
-                carts.map { it.performanceDateTime.performance.price }.sum(),
-                orderInfoRequest.payType
-            )
-        )
-    }
 
     private fun createReservationQRCode(order: Order) {
         order.reservations.forEach {
@@ -185,5 +179,9 @@ class OrderService(
 
     }
 
+
+    private fun List<Cart>.calculatePrice(): Int {
+        return this.map { it.performanceDateTime.performance.price }.sum()
+    }
 
 }

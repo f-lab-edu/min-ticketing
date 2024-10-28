@@ -1,24 +1,17 @@
 package com.flab.ticketing.order.dto.response
 
-import com.flab.ticketing.order.entity.Order
-import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.order.entity.OrderMetaData
 
 data class OrderInfoResponse(
-    val orderName: String,
     val orderId: String,
-    val customerEmail: String,
-    val customerName: String,
     val amount: Int
 ) {
 
     companion object {
-        fun of(user: User, order: Order): OrderInfoResponse {
+        fun of(orderMetaData: OrderMetaData): OrderInfoResponse {
             return OrderInfoResponse(
-                order.name,
-                order.uid,
-                user.email,
-                user.nickname,
-                order.payment.totalPrice
+                orderMetaData.orderId,
+                orderMetaData.amount
             )
         }
     }
