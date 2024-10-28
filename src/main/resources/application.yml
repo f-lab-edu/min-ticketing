@@ -107,7 +107,8 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
-
+cors:
+  origins: ${CORS_ORIGINS}
 
 ---
 
@@ -184,3 +185,6 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+cors:
+  origins: http://localhost:3000
