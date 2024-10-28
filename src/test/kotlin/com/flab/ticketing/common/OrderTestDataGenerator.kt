@@ -11,7 +11,7 @@ object OrderTestDataGenerator {
     fun createOrder(
         uid: String = "order-001",
         user: User,
-        payment: Order.Payment = Order.Payment(10000, "KAKAO_PAY")
+        payment: Order.Payment = Order.Payment(10000, "KAKAO_PAY", "paymentkey")
     ): Order {
         return Order(
             uid,

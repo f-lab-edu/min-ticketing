@@ -26,4 +26,8 @@ class OrderWriter(
     fun delete(order: Order) {
         orderRepository.delete(order)
     }
+
+    fun deleteMetaData(orderMetaData: OrderMetaData) {
+        orderMetaDataRepository.delete(orderMetaData)
+    }
 }

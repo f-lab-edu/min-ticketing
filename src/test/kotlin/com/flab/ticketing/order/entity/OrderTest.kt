@@ -16,7 +16,7 @@ class OrderTest : UnitTest() {
             val order = Order(
                 "order001",
                 user,
-                payment = Order.Payment(1000, "토스 페이")
+                payment = Order.Payment(1000, "토스 페이", "paymentkey")
             )
 
             order.name shouldBe ""
@@ -31,7 +31,7 @@ class OrderTest : UnitTest() {
             val order = Order(
                 "order001",
                 user,
-                payment = Order.Payment(1000, "토스 페이")
+                payment = Order.Payment(1000, "토스 페이", "paymentkey")
             )
 
             order.addReservation(performanceDateTime, seats[0])
@@ -52,7 +52,7 @@ class OrderTest : UnitTest() {
             val order = Order(
                 "order001",
                 user,
-                payment = Order.Payment(1000, "토스 페이")
+                payment = Order.Payment(1000, "토스 페이", "paymentkey")
             )
 
             order.addReservation(performance1.performanceDateTime[0], performance1.performancePlace.seats[0])

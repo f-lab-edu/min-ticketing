@@ -17,6 +17,7 @@ import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.enums.TossPayCancelErrorCode
 import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
@@ -175,25 +176,28 @@ class OrderIntegrationTest : IntegrationTest() {
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val seats = performance.performancePlace.seats
+            val carts = listOf(
+                Cart("cart1", seats[0], performanceDateTime, user),
+                Cart("cart2", seats[1], performanceDateTime, user)
+            )
 
             userRepository.save(user)
             savePerformance(listOf(performance))
-
-            val order = OrderTestDataGenerator.createOrder(
-                user = user,
-                payment = Order.Payment(performance.price * 2, "카드")
+            cartRepository.saveAll(carts)
+            orderMetaDataRepository.save(
+                OrderMetaData(
+                    "order-001",
+                    performance.price * 2,
+                    carts.map { it.uid },
+                    user.uid
+                )
             )
-
-            order.addReservation(performanceDateTime, seats[0])
-            order.addReservation(performanceDateTime, seats[1])
-
-            orderRepository.save(order)
 
             val orderConfirmRequest = OrderConfirmRequest(
                 paymentType = "카드",
-                orderId = order.uid,
+                orderId = "order-001",
                 paymentKey = "payment001",
-                amount = order.payment.totalPrice
+                amount = performance.price * 2
             )
 
             val tossPayApiConfirmResp = setUpTossPaymentConfirmResponse(orderConfirmRequest)
@@ -210,11 +214,13 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(print())
                     .andReturn()
 
-                then("토스 결제 승인 API를 호출하고, Order의 상태를 COMPLETED로 바꾼다.") {
+                then("토스 결제 승인 API를 호출하고, Order를 저장한다.") {
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
-                    val actual = orderRepository.findByUid(order.uid)!!
+                    val actual = orderRepository.findByUid("order-001")!!
 
-                    actual.payment.paymentKey!! shouldBeEqual tossPayApiConfirmResp!!.paymentKey
+                    actual.user shouldBeEqual user
+                    actual.reservations.size shouldBe 2
+                    actual.payment.paymentKey shouldBeEqual tossPayApiConfirmResp!!.paymentKey
                     actual.status shouldBe Order.OrderStatus.COMPLETED
                 }
             }
@@ -227,32 +233,37 @@ class OrderIntegrationTest : IntegrationTest() {
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val seats = performance.performancePlace.seats
+            val carts = listOf(
+                Cart("cart1", seats[0], performanceDateTime, user),
+                Cart("cart2", seats[1], performanceDateTime, user)
+            )
 
             userRepository.save(user)
             savePerformance(listOf(performance))
+            cartRepository.saveAll(carts)
 
-            val order = OrderTestDataGenerator.createOrder(
-                user = user,
-                payment = Order.Payment(performance.price * 2, "카드")
+            orderMetaDataRepository.save(
+                OrderMetaData(
+                    "order-001",
+                    performance.price * 2,
+                    carts.map { it.uid },
+                    user.uid
+                )
             )
-
-            order.addReservation(performanceDateTime, seats[0])
-            order.addReservation(performanceDateTime, seats[1])
-
-            orderRepository.save(order)
 
             val orderConfirmRequest = OrderConfirmRequest(
                 paymentType = "카드",
-                orderId = order.uid,
+                orderId = "order-001",
                 paymentKey = "payment001",
-                amount = order.payment.totalPrice
+                amount = performance.price * 2
             )
+
             `when`("다른 유저로 Order 주문 확정 API 호출 시") {
                 val user2 = UserTestDataGenerator.createUser(
                     uid = "user002",
                     email = "email2@email.com"
                 )
-                userRepository.save(user)
+                userRepository.save(user2)
                 val jwt = createJwt(user2)
 
                 val uri = "/api/orders/toss/confirm"
@@ -279,26 +290,31 @@ class OrderIntegrationTest : IntegrationTest() {
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val seats = performance.performancePlace.seats
+            val carts = listOf(
+                Cart("cart1", seats[0], performanceDateTime, user),
+                Cart("cart2", seats[1], performanceDateTime, user)
+            )
 
             userRepository.save(user)
             savePerformance(listOf(performance))
+            cartRepository.saveAll(carts)
 
-            val order = OrderTestDataGenerator.createOrder(
-                user = user,
-                payment = Order.Payment(performance.price * 2, "카드")
+            orderMetaDataRepository.save(
+                OrderMetaData(
+                    "order-001",
+                    performance.price * 2,
+                    carts.map { it.uid },
+                    user.uid
+                )
             )
-
-            order.addReservation(performanceDateTime, seats[0])
-            order.addReservation(performanceDateTime, seats[1])
-
-            orderRepository.save(order)
 
             val orderConfirmRequest = OrderConfirmRequest(
                 paymentType = "카드",
-                orderId = order.uid,
+                orderId = "order-001",
                 paymentKey = "payment001",
-                amount = order.payment.totalPrice
+                amount = performance.price * 2
             )
+
             val tossPayResponse = setUpTossPaymentFailConfirmResponse()
 
             `when`("결제 승인 API를 호출 시") {
@@ -314,14 +330,14 @@ class OrderIntegrationTest : IntegrationTest() {
                     .andDo(print())
                     .andReturn()
 
-                then("토스 페이 API의 응답 정보를 반환하고, 주문을 PENDING 상태로 변경한다.") {
+                then("토스 페이 API의 응답 정보를 반환하고, 주문 확정 작업을 롤백한다.") {
                     checkError(
                         mvcResult,
                         HttpStatus.NOT_FOUND,
                         CommonErrorInfos.EXTERNAL_API_ERROR.code,
                         TOSS_EXCEPTION_PREFIX + tossPayResponse.message
                     )
-                    orderRepository.findByUid(order.uid)!!.status shouldBe Order.OrderStatus.PENDING
+                    orderRepository.findByUid("order-001") shouldBe null
                 }
             }
 
@@ -480,7 +496,7 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
 
-        given("주문의 상태가 PENDING인 주문이 존재할 때") {
+        given("주문의 상태가 CANCELED인 주문이 존재할 때") {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance()
 
@@ -488,31 +504,31 @@ class OrderIntegrationTest : IntegrationTest() {
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
             order.status = Order.OrderStatus.COMPLETED
 
-            val pendingOrder = OrderTestDataGenerator.createOrder(
+            val canceledOrder = OrderTestDataGenerator.createOrder(
                 uid = "order-002",
                 user = user,
                 payment = Order.Payment(1000, "카드", "abc123")
             )
-            pendingOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
-            pendingOrder.status = Order.OrderStatus.PENDING
+            canceledOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
+            canceledOrder.status = Order.OrderStatus.CANCELED
 
             userRepository.save(user)
             savePerformance(listOf(performance))
-            orderRepository.saveAll(listOf(order, pendingOrder))
+            orderRepository.saveAll(listOf(order, canceledOrder))
 
-            `when`("주문이 Pending 상태인 주문을 조회할 시") {
+            `when`("주문이 CANCELED 상태인 주문을 조회할 시") {
                 val uri = "/api/orders"
                 val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
                     get(uri)
-                        .param("status", Order.OrderStatus.PENDING.toString())
+                        .param("status", Order.OrderStatus.CANCELED.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
                 ).andDo(
                     print()
                 ).andReturn()
 
-                then("PENDING 상태의 주문을 반환한다.") {
+                then("CANCELED 상태의 주문을 반환한다.") {
                     val actual = objectMapper.readValue<CursoredResponse<OrderSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(
@@ -522,7 +538,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     )
 
                     actual.data.size shouldBe 1
-                    actual.data[0].uid shouldBe pendingOrder.uid
+                    actual.data[0].uid shouldBe canceledOrder.uid
                 }
             }
 
