@@ -37,8 +37,8 @@ interface PerformanceDateRepository : CrudRepository<PerformanceDateTime, Long> 
         "SELECT new com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult(pd.uid, pd.showTime, count(ss), count(rs.seat), count(c.seat)) FROM PerformanceDateTime pd " +
                 "JOIN PerformancePlace pp ON pd.performance.performancePlace = pp " +
                 "JOIN pp.seats ss " +
-                "LEFT JOIN Reservation rs ON ss = rs.seat " +
-                "LEFT JOIN Cart c ON ss = c.seat " +
+                "LEFT JOIN Reservation rs ON ss = rs.seat AND rs.performanceDateTime = pd " +
+                "LEFT JOIN Cart c ON ss = c.seat AND c.performanceDateTime = pd " +
                 "WHERE pd.performance.id = :performanceId " +
                 "GROUP BY pd.id"
     )
