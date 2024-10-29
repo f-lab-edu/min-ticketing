@@ -3,7 +3,7 @@ package com.flab.ticketing.performance.repository.dsl
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.service.PerformanceSearchResult
 
-interface CustomPerformanceSearchRepository {
+interface EsPerformanceSearchRepository {
 
     fun search(
         searchConditions: PerformanceSearchConditions,

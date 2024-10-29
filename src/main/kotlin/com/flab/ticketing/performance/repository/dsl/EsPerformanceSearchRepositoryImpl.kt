@@ -15,9 +15,9 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.core.search
 import java.time.format.DateTimeFormatter
 
-class CustomPerformanceSearchRepositoryImpl(
+class EsPerformanceSearchRepositoryImpl(
     private val elasticsearchOperations: ElasticsearchOperations
-) : CustomPerformanceSearchRepository {
+) : EsPerformanceSearchRepository {
 
     override fun search(
         searchConditions: PerformanceSearchConditions,
