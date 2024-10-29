@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.enums.CacheType
 import com.flab.ticketing.common.utils.Base64Utils
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
@@ -47,14 +48,9 @@ class PerformanceService(
     @Caching(
         cacheable = [
             Cacheable(
-                cacheManager = CacheConfig.LOCAL_CACHE_MANAGER_NAME,
-                cacheNames = ["product"],
-                key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
-            ),
-            Cacheable(
-                cacheManager = CacheConfig.GLOBAL_CACHE_MANAGER_NAME,
-                cacheNames = ["product"],
-                key = "(#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
+                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
+                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
             )
         ]
     )
@@ -86,13 +82,13 @@ class PerformanceService(
 
     fun searchDetail(uid: String): PerformanceDetailResponse {
         val performance = performanceReader.findPerformanceDetailDto(uid)
-        val dateSummaryDtoList = performanceReader.findDateSummaryDto(uid)
+        val dateSummaryDtoList = performanceReader.findDateSummaryDto(performance.id)
         val dateInfo = convertDateDtoToDateInfo(dateSummaryDtoList)
 
         return PerformanceDetailResponse(
             performance.uid,
             performance.image,
-            performance.title,
+            performance.name,
             performance.regionName,
             performance.placeName,
             performance.price,

@@ -3,8 +3,10 @@ package com.flab.ticketing.auth.config
 import com.flab.ticketing.auth.filter.CustomUsernamePasswordAuthFilter
 import com.flab.ticketing.auth.filter.JwtAuthenticateFilter
 import com.flab.ticketing.common.filter.ExceptionHandlerFilter
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
@@ -18,6 +20,9 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.AuthenticationEntryPoint
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +34,8 @@ class SecurityConfig {
         usernamePasswordAuthFilter: CustomUsernamePasswordAuthFilter,
         exceptionHandlerFilter: ExceptionHandlerFilter,
         jwtAuthenticateFilter: JwtAuthenticateFilter,
-        authenticationEntryPoint: AuthenticationEntryPoint
+        authenticationEntryPoint: AuthenticationEntryPoint,
+        myCorsConfig: CorsConfigurationSource
     ): SecurityFilterChain {
         http
             .csrf { csrfConfig -> csrfConfig.disable() }
@@ -54,9 +60,10 @@ class SecurityConfig {
             .addFilterAt(usernamePasswordAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(jwtAuthenticateFilter, UsernamePasswordAuthenticationFilter::class.java)
             .addFilterBefore(exceptionHandlerFilter, JwtAuthenticateFilter::class.java)
-
+            .cors { it.configurationSource(myCorsConfig) }
         return http.build()
     }
+
 
     @Bean
     fun passwordEncoder(): PasswordEncoder {
@@ -78,4 +85,20 @@ class SecurityConfig {
         return authenticationProvider
     }
 
+    @Bean("myCorsConfig")
+    @Profile("!test")
+    fun corsConfigurationSource(
+        @Value("\${cors.origins}") origins: List<String>
+    ): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+        configuration.allowedOrigins = origins
+        configuration.setAllowedMethods(listOf("GET", "POST", "PUT", "DELETE"))
+        configuration.allowCredentials = true
+        configuration.addAllowedHeader("*")
+        configuration.addExposedHeader("authorization")
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
+    }
 }
