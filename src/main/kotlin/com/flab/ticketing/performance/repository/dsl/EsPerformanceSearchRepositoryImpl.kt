@@ -44,11 +44,23 @@ class EsPerformanceSearchRepositoryImpl(
     }
 
     private fun BoolQuery.Builder.setUpQueries(searchConditions: PerformanceSearchConditions): BoolQuery.Builder {
+
+        // region 이름 검색 : {'bool' : [ {'match' : {'region' : '$regionName'} ] }
         searchConditions.region?.let {
             this.must(MatchQuery.Builder().field("region").query(it).build()._toQuery())
         }
 
 
+        // 가격 범위 검색, 둘중 하나만 있어도 검색이 가능합니다.:
+        // { "bool":
+        //  { "must": [
+        //     { "range": {
+        //         "price": {
+        //             "gte": $minPrice,
+        //             "lte": $maxPrice
+        //         }
+        //     } }
+        // ] } }
         with(searchConditions) {
             if (minPrice == null && maxPrice == null) {
                 return@with
@@ -62,6 +74,15 @@ class EsPerformanceSearchRepositoryImpl(
 
         }
 
+        // 공연 시간 검색:
+        // { "bool": { "must": [
+        //     { "range": {
+        //         "showTimes": {
+        //             "gte": "2024-03-15T00:00:00+09:00",
+        //             "lt": "2024-03-16T00:00:00+09:00"
+        //         }
+        //     } }
+        // ] } }
         searchConditions.showTime?.let { time ->
             val startOfDay = time.toLocalDate().atStartOfDay(time.zone)
             val endOfDay = startOfDay.plusDays(1)
@@ -76,6 +97,10 @@ class EsPerformanceSearchRepositoryImpl(
             this.must(rangeQuery)
         }
 
+        // 제목 검색, match_phrase를 사용해서 단어의 "포함" 뿐 아니라 단어간의 순서도 일치해야 합니다.:
+        // { "bool": { "must": [
+        //     { "match_phrase": { "title": "$searchText" } }
+        // ] } }
         searchConditions.q?.let {
             this.must(
                 MatchPhraseQuery.Builder().field("title").query(it).build()._toQuery()
