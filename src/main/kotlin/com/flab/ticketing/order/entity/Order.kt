@@ -25,6 +25,36 @@ class Order(
     var status: OrderStatus = OrderStatus.COMPLETED
 
 ) : BaseEntity() {
+
+    companion object {
+
+        fun of(
+            metaData: OrderMetaData,
+            user: User,
+            payment: Payment,
+            orderStatus: OrderStatus = OrderStatus.COMPLETED,
+            carts: List<Cart> = listOf()
+        ): Order {
+            val order = Order(
+                metaData.orderId,
+                user,
+                payment,
+                orderStatus
+            )
+            carts.map {
+                Reservation(
+                    it.performanceDateTime,
+                    it.seat,
+                    order
+                )
+            }.forEach { order.addReservation(it) }
+
+            return order
+        }
+
+    }
+
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order", cascade = [CascadeType.ALL])
     val reservations: MutableList<Reservation> = mutableListOf()
 

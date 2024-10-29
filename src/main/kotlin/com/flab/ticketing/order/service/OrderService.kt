@@ -26,7 +26,6 @@ import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -71,14 +70,18 @@ class OrderService(
     }
 
 
-    @Transactional
     fun confirmOrder(userUid: String, orderConfirmRequest: OrderConfirmRequest) {
         val orderMetaData = orderReader.findMetaData(orderConfirmRequest.orderId)
         val user = userReader.findByUid(userUid)
         val cartList = cartReader.findByUidList(orderMetaData.cartUidList, user)
         checkValidOrderConfirmRequest(userUid, orderMetaData)
 
-        val order = createOrder(orderMetaData, user, orderConfirmRequest, cartList)
+        val order = Order.of(
+            metaData = orderMetaData,
+            user = user,
+            payment = orderConfirmRequest.ofPayments(),
+            carts = cartList
+        )
 
         orderWriter.deleteMetaData(orderMetaData)
         tossPaymentClient.confirm(orderConfirmRequest)
@@ -117,34 +120,11 @@ class OrderService(
 
         checkValidOrderCancelRequest(userUid, order, compareTime)
 
-        tossPaymentClient.cancel(order.payment.paymentKey!!, reason.reason)
+        tossPaymentClient.cancel(order.payment.paymentKey, reason.reason)
 
         order.status = Order.OrderStatus.CANCELED
     }
 
-
-    private fun createOrder(
-        orderMetaData: OrderMetaData,
-        user: User,
-        orderConfirmRequest: OrderConfirmRequest,
-        cartList: List<Cart>
-    ): Order {
-        val order = Order(
-            orderMetaData.orderId,
-            user,
-            Order.Payment(orderConfirmRequest.amount, orderConfirmRequest.paymentType, orderConfirmRequest.paymentKey),
-            Order.OrderStatus.COMPLETED
-        )
-
-        cartList.map {
-            Reservation(
-                it.performanceDateTime,
-                it.seat,
-                order
-            )
-        }.forEach { order.addReservation(it) }
-        return order
-    }
 
     private fun checkValidOrderRequest(orderInfoRequest: OrderInfoRequest, carts: List<Cart>) {
         if (orderInfoRequest.cartUidList.size != carts.size) {
