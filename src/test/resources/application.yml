@@ -13,6 +13,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         show_sql: true
+  batch:
+    job:
+      enabled: false
   mail:
     sender: noreply@minticketing.com
     host: localhost

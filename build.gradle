@@ -71,6 +71,8 @@ dependencies {
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.9.2'
 
+    implementation 'org.springframework.boot:spring-boot-starter-batch'
+    testImplementation 'org.springframework.batch:spring-batch-test'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.kotest:kotest-assertions-core-jvm:5.9.1'
