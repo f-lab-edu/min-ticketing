@@ -16,6 +16,8 @@ spring:
   batch:
     job:
       enabled: false
+    performance-migration:
+      chunk-size: 10
   mail:
     sender: noreply@minticketing.com
     host: localhost

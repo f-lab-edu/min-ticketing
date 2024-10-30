@@ -2,7 +2,9 @@ package com.flab.ticketing.common
 
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.ninjasquad.springmockk.MockkBean
+import io.kotest.core.extensions.Extension
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.extensions.spring.SpringExtension
 import org.springframework.batch.test.context.SpringBatchTest
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.TestConfiguration
@@ -20,8 +22,10 @@ import javax.sql.DataSource
 @ActiveProfiles("test")
 abstract class BatchIntegrationTest : StringSpec() {
 
+    override fun extensions(): List<Extension> = listOf(SpringExtension)
+
     @MockkBean
-    private lateinit var performanceSearchRepository: PerformanceSearchRepository
+    protected lateinit var performanceSearchRepository: PerformanceSearchRepository
 
 }
 
