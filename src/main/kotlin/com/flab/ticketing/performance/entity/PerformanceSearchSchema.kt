@@ -10,7 +10,7 @@ import org.springframework.data.elasticsearch.annotations.WriteTypeHint
 import java.time.ZonedDateTime
 
 
-@Document(indexName = "performance_index", writeTypeHint = WriteTypeHint.FALSE)
+@Document(indexName = "performance_index", writeTypeHint = WriteTypeHint.FALSE, createIndex = false)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 class PerformanceSearchSchema(
 
