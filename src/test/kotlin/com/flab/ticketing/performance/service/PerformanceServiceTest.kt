@@ -11,6 +11,7 @@ import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.response.RegionInfoResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceSearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
@@ -219,6 +220,21 @@ class PerformanceServiceTest : UnitTest() {
             // then
             cursor shouldBe null
             verify(exactly = 0){ objectMapper.writeValueAsString(any<List<Any>>()) }
+        }
+
+        "Region 객체를 조회하여 RegionInfoResponse로 변환할 수 있다."{
+            // given
+            val regions = MutableList(5) {
+                PerformanceTestDataGenerator.createRegion("region$it")
+            }
+
+            every { performanceReader.getRegions() } returns regions
+            // when
+            val actual = performanceService.getRegions()
+
+            // then
+            actual shouldContainAll regions.map { RegionInfoResponse(it.uid, it.name) }
+
         }
     }
 

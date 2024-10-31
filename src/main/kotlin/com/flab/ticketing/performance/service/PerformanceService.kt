@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.response.CursoredResponse
+import com.flab.ticketing.common.dto.response.ListedResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.enums.CacheType
 import com.flab.ticketing.common.utils.Base64Utils
@@ -12,6 +13,7 @@ import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.response.RegionInfoResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
@@ -172,5 +174,19 @@ class PerformanceService(
 
         val notEncoded = objectMapper.writeValueAsString(cursor)
         return Base64Utils.encode(notEncoded)
+    }
+
+
+    @Caching(
+        cacheable = [
+            Cacheable(
+                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
+                cacheNames = [CacheType.REGION_CACHE_NAME],
+                key = "'region_list'"
+            )
+        ]
+    )
+    fun getRegions(): List<RegionInfoResponse> {
+        return performanceReader.getRegions().map { RegionInfoResponse.of(it) }
     }
 }

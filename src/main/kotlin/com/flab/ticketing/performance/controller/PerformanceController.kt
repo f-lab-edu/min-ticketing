@@ -2,10 +2,12 @@ package com.flab.ticketing.performance.controller
 
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.response.ErrorResponse
+import com.flab.ticketing.common.dto.response.ListedResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.response.RegionInfoResponse
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.service.PerformanceService
 import io.swagger.v3.oas.annotations.Operation
@@ -108,4 +110,10 @@ class PerformanceController(
         )
     }
 
+    @GetMapping("/regions")
+    fun getRegions(): ListedResponse<RegionInfoResponse>{
+        return ListedResponse(
+            performanceService.getRegions()
+        )
+    }
 }

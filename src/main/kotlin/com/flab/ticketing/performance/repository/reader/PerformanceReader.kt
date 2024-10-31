@@ -2,6 +2,7 @@ package com.flab.ticketing.performance.repository.reader
 
 import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.dto.service.CursorInfoDto
+import com.flab.ticketing.common.entity.Region
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
@@ -13,6 +14,7 @@ import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformanceDateRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
+import com.flab.ticketing.performance.repository.RegionRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -23,7 +25,8 @@ import org.springframework.transaction.annotation.Transactional
 class PerformanceReader(
     private val performanceRepository: PerformanceRepository,
     private val performanceSearchRepository: PerformanceSearchRepository,
-    private val performanceDateRepository: PerformanceDateRepository
+    private val performanceDateRepository: PerformanceDateRepository,
+    private val regionRepository: RegionRepository
 ) {
 
     fun search(
@@ -66,6 +69,10 @@ class PerformanceReader(
         return performanceDateRepository.findPerformanceDateTime(performanceUid, dateUid) ?: throw NotFoundException(
             PerformanceErrorInfos.PERFORMANCE_DATE_NOT_FOUND
         )
+    }
+
+    fun getRegions(): MutableIterable<Region> {
+        return regionRepository.findAll()
     }
 
 }
