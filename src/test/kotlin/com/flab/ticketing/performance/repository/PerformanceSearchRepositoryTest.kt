@@ -301,6 +301,19 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
         }
 
+        "Performance 검색 결과가 존재하지 않을 시, 빈 data 배열과 null cursor를 반환한다."{
+            // given
+
+            // when
+            val (cursor, data) = performanceSearchRepository.search(PerformanceSearchConditions(), null, 10)
+
+
+            // then
+            cursor shouldBe null
+            data.size shouldBe 0
+
+        }
+
     }
 
     override suspend fun beforeEach(testCase: TestCase) {

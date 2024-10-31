@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations
+import org.springframework.data.elasticsearch.core.SearchHit
 import org.springframework.data.elasticsearch.core.search
 import java.time.format.DateTimeFormatter
 
@@ -38,7 +39,7 @@ class EsPerformanceSearchRepositoryImpl(
 
         val searchHits = elasticsearchOperations.search<PerformanceSearchSchema>(nativeQuery).searchHits
 
-        val nextCursor = searchHits.last().sortValues
+        val nextCursor = createNextCursor(searchHits, limit)
 
         return PerformanceSearchResult(nextCursor, searchHits.map { it.content })
     }
@@ -108,5 +109,13 @@ class EsPerformanceSearchRepositoryImpl(
         }
 
         return this
+    }
+
+
+    private fun createNextCursor(searchHits : List<SearchHit<PerformanceSearchSchema>>, expectedSize: Int) : List<Any>?{
+        if(searchHits.size == expectedSize){
+            return searchHits.last().sortValues
+        }
+        return null
     }
 }
