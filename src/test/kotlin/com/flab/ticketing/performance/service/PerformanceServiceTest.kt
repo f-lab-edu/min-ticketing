@@ -1,5 +1,6 @@
 package com.flab.ticketing.performance.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.common.PerformanceTestDataGenerator
 import com.flab.ticketing.common.UnitTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
@@ -7,9 +8,12 @@ import com.flab.ticketing.common.entity.BaseEntity
 import com.flab.ticketing.common.exception.NotFoundException
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
+import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.dto.response.PerformanceDateDetailResponse
 import com.flab.ticketing.performance.dto.response.PerformanceDetailResponse
+import com.flab.ticketing.performance.dto.response.RegionInfoResponse
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
+import com.flab.ticketing.performance.dto.service.PerformanceSearchResult
 import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
 import com.flab.ticketing.performance.dto.service.PerformanceSummarySearchResult
 import com.flab.ticketing.performance.entity.Performance
@@ -23,6 +27,8 @@ import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.verify
 import java.time.ZonedDateTime
 
 class PerformanceServiceTest : UnitTest() {
@@ -30,8 +36,9 @@ class PerformanceServiceTest : UnitTest() {
     private val performanceReader: PerformanceReader = mockk()
     private val reservationReader: ReservationReader = mockk()
     private val cartReader: CartReader = mockk()
+    private val objectMapper = spyk<ObjectMapper>()
     private val performanceService: PerformanceService =
-        PerformanceService(performanceReader, reservationReader, cartReader)
+        PerformanceService(performanceReader, reservationReader, cartReader, objectMapper)
 
     init {
         "Performance Detail 정보를 검색할 수 있다." {
@@ -197,6 +204,37 @@ class PerformanceServiceTest : UnitTest() {
             val actual = performanceService.search(CursorInfoDto())
 
             actual shouldContainExactly expected
+        }
+
+        "performance Search 검색 cursor가 null일 시 cursor를 String으로 변환하지 않고 null을 반환한다."{
+
+            //given
+            val givenReturnData = PerformanceSearchResult(null, listOf())
+
+            every { performanceReader.search(any<PerformanceSearchConditions>(), any(), any()) } returns givenReturnData
+
+            // when
+            val (cursor, _) = performanceService.search(CursorInfoDto(), PerformanceSearchConditions())
+
+
+            // then
+            cursor shouldBe null
+            verify(exactly = 0){ objectMapper.writeValueAsString(any<List<Any>>()) }
+        }
+
+        "Region 객체를 조회하여 RegionInfoResponse로 변환할 수 있다."{
+            // given
+            val regions = MutableList(5) {
+                PerformanceTestDataGenerator.createRegion("region$it")
+            }
+
+            every { performanceReader.getRegions() } returns regions
+            // when
+            val actual = performanceService.getRegions()
+
+            // then
+            actual shouldContainAll regions.map { RegionInfoResponse(it.uid, it.name) }
+
         }
     }
 

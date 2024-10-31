@@ -47,7 +47,7 @@ class OrderController(
         @LoginUser userInfo: AuthenticatedUserDto,
         @RequestBody orderInfoRequest: OrderInfoRequest
     ): OrderInfoResponse {
-        return orderService.saveRequestedOrderInfo(userInfo, orderInfoRequest)
+        return orderService.createOrderMetaData(userInfo, orderInfoRequest)
     }
 
 

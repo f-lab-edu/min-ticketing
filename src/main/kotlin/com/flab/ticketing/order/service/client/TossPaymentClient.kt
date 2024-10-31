@@ -5,6 +5,7 @@ import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.common.exception.ExternalAPIException
 import com.flab.ticketing.common.exception.InternalServerException
+import com.flab.ticketing.common.utils.Base64Utils
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.dto.service.TossPayErrorResponse
@@ -46,7 +47,7 @@ class TossPaymentClient(
 
         val response = restClient.post()
             .uri(URI.create("$tossServerUrl$confirmUri"))
-            .header(HttpHeaders.AUTHORIZATION, "Basic $tossAccessToken")
+            .header(HttpHeaders.AUTHORIZATION, "Basic ${Base64Utils.encode(tossAccessToken + ":")}")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(tossOrderConfirmRequest)
             .retrieve()
@@ -65,7 +66,7 @@ class TossPaymentClient(
     fun cancel(paymentKey: String, reason: String) {
         restClient.post()
             .uri(URI.create("$tossServerUrl${String.format(cancelUriFormat, paymentKey)}"))
-            .header(HttpHeaders.AUTHORIZATION, "Basic $tossAccessToken")
+            .header(HttpHeaders.AUTHORIZATION, "Basic ${Base64Utils.encode(tossAccessToken + ":")}")
             .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .body(TossOrderCancelRequest(reason))
             .retrieve()

@@ -3,6 +3,7 @@ package com.flab.ticketing.order.repository.reader
 import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.repository.CartRepository
+import com.flab.ticketing.user.entity.User
 import org.springframework.stereotype.Component
 
 
@@ -20,7 +21,7 @@ class CartReader(
         return cartRepository.findSeatUidByDateUidAndPlaceIn(performanceDateTimeUid, placeId)
     }
 
-    fun findByUidList(uidList: List<String>): List<Cart> {
-        return cartRepository.findByUidListInJoinWith(uidList)
+    fun findByUidList(uidList: List<String>, user: User): List<Cart> {
+        return cartRepository.findByUidListInJoinWith(uidList, user)
     }
 }

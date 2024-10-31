@@ -86,6 +86,26 @@ class PerformanceServiceCacheTest : IntegrationTest() {
 
         }
 
+        given("region list를 조회할 때"){
+            // given
+            val regions = MutableList(5) {
+                PerformanceTestDataGenerator.createRegion("region$it")
+            }
+
+            every { performanceReader.getRegions() } returns regions
+
+            `when`("두번이상 region list를 조회한다면"){
+                val result1 = performanceService.getRegions()
+                val result2 = performanceService.getRegions()
+
+                then("두번째 부터는 캐싱된다."){
+                    verify(exactly = 1) {  performanceReader.getRegions() }
+                    result1 shouldContainExactly result2
+                }
+            }
+        }
+
+
     }
 
 }

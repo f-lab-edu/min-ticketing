@@ -4,7 +4,6 @@ import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.common.aop.Logging
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
-import com.flab.ticketing.common.exception.ExternalAPIException
 import com.flab.ticketing.common.exception.ForbiddenException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.service.FileService
@@ -17,6 +16,7 @@ import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
+import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.entity.Reservation
 import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.exception.OrderErrorInfos
@@ -26,7 +26,6 @@ import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -48,42 +47,47 @@ class OrderService(
     @Value("\${service.url}") private val serviceUrl: String
 ) {
 
-    fun saveRequestedOrderInfo(
+    fun createOrderMetaData(
         userInfo: AuthenticatedUserDto,
         orderInfoRequest: OrderInfoRequest
     ): OrderInfoResponse {
 
         val user = userReader.findByUid(userInfo.uid)
-        val carts = cartReader.findByUidList(orderInfoRequest.carts)
+        val carts = cartReader.findByUidList(orderInfoRequest.cartUidList, user)
 
         checkValidOrderRequest(orderInfoRequest, carts)
-        val order = createOrder(user, orderInfoRequest, carts)
 
-        carts.forEach {
-            order.addReservation(Reservation(it.performanceDateTime, it.seat, order))
-        }
+        val orderMetaData = OrderMetaData(
+            orderId = NanoIdGenerator.createNanoId(),
+            amount = carts.calculatePrice(),
+            cartUidList = orderInfoRequest.cartUidList,
+            userUid = user.uid
+        )
 
-        orderWriter.save(order)
-        cartWriter.deleteAll(carts)
-        return OrderInfoResponse.of(user, order)
+        orderWriter.save(orderMetaData)
+
+        return OrderInfoResponse(orderMetaData.orderId, orderMetaData.amount)
     }
 
 
-    @Transactional(noRollbackFor = [ExternalAPIException::class])
     fun confirmOrder(userUid: String, orderConfirmRequest: OrderConfirmRequest) {
-        val order = orderReader.findByUid(orderConfirmRequest.orderId)
-        checkValidOrderConfirmRequest(userUid, order)
+        val orderMetaData = orderReader.findMetaData(orderConfirmRequest.orderId)
+        val user = userReader.findByUid(userUid)
+        val cartList = cartReader.findByUidList(orderMetaData.cartUidList, user)
+        checkValidOrderConfirmRequest(userUid, orderMetaData)
 
-        runCatching {
-            val apiResponse = tossPaymentClient.confirm(orderConfirmRequest)
-            order.status = Order.OrderStatus.COMPLETED
-            order.payment.paymentKey = apiResponse.paymentKey
-            createReservationQRCode(order)
-        }.onFailure {
-            order.status = Order.OrderStatus.PENDING
-            throw it
-        }
+        val order = Order.of(
+            metaData = orderMetaData,
+            user = user,
+            payment = orderConfirmRequest.ofPayments(),
+            carts = cartList
+        )
 
+        orderWriter.deleteMetaData(orderMetaData)
+        tossPaymentClient.confirm(orderConfirmRequest)
+        createReservationQRCode(order)
+        orderWriter.save(order)
+        cartWriter.deleteAll(cartList)
     }
 
 
@@ -116,20 +120,20 @@ class OrderService(
 
         checkValidOrderCancelRequest(userUid, order, compareTime)
 
-        tossPaymentClient.cancel(order.payment.paymentKey!!, reason.reason)
+        tossPaymentClient.cancel(order.payment.paymentKey, reason.reason)
 
         order.status = Order.OrderStatus.CANCELED
     }
 
 
     private fun checkValidOrderRequest(orderInfoRequest: OrderInfoRequest, carts: List<Cart>) {
-        if (orderInfoRequest.carts.size != carts.size) {
+        if (orderInfoRequest.cartUidList.size != carts.size) {
             throw InvalidValueException(OrderErrorInfos.INVALID_CART_INFO)
         }
     }
 
-    private fun checkValidOrderConfirmRequest(userUid: String, order: Order) {
-        checkUser(userUid, order.user.uid)
+    private fun checkValidOrderConfirmRequest(userUid: String, order: OrderMetaData) {
+        checkUser(userUid, order.userUid)
     }
 
     private fun checkValidOrderCancelRequest(userUid: String, order: Order, compareTime: ZonedDateTime) {
@@ -165,16 +169,6 @@ class OrderService(
         }
     }
 
-    private fun createOrder(user: User, orderInfoRequest: OrderInfoRequest, carts: List<Cart>): Order {
-        return Order(
-            NanoIdGenerator.createNanoId(),
-            user,
-            payment = Order.Payment(
-                carts.map { it.performanceDateTime.performance.price }.sum(),
-                orderInfoRequest.payType
-            )
-        )
-    }
 
     private fun createReservationQRCode(order: Order) {
         order.reservations.forEach {
@@ -185,5 +179,9 @@ class OrderService(
 
     }
 
+
+    private fun List<Cart>.calculatePrice(): Int {
+        return this.map { it.performanceDateTime.performance.price }.sum()
+    }
 
 }
