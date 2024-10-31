@@ -176,8 +176,17 @@ class PerformanceService(
         return Base64Utils.encode(notEncoded)
     }
 
+
+    @Caching(
+        cacheable = [
+            Cacheable(
+                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
+                cacheNames = [CacheType.REGION_CACHE_NAME],
+                key = "'region_list'"
+            )
+        ]
+    )
     fun getRegions(): List<RegionInfoResponse> {
-        // TODO
         return performanceReader.getRegions().map { RegionInfoResponse.of(it) }
     }
 }
