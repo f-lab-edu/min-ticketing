@@ -110,6 +110,14 @@ class PerformanceController(
         )
     }
 
+
+    @Operation(
+        summary = "공연 지역 조회",
+        description = "공연이 진행되는 지역의 리스트를 조회합니다.",
+        responses = [
+            ApiResponse(responseCode = "200", description = "성공적으로 공연 지역을 조회함"),
+        ]
+    )
     @GetMapping("/regions")
     fun getRegions(): ListedResponse<RegionInfoResponse>{
         return ListedResponse(
