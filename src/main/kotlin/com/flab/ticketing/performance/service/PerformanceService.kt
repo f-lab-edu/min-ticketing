@@ -1,8 +1,12 @@
 package com.flab.ticketing.performance.service
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.flab.ticketing.common.config.CacheConfig
+import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.enums.CacheType
+import com.flab.ticketing.common.utils.Base64Utils
 import com.flab.ticketing.order.repository.reader.CartReader
 import com.flab.ticketing.order.repository.reader.ReservationReader
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
@@ -23,14 +27,21 @@ import org.springframework.transaction.annotation.Transactional
 class PerformanceService(
     private val performanceReader: PerformanceReader,
     private val reservationReader: ReservationReader,
-    private val cartReader: CartReader
+    private val cartReader: CartReader,
+    private val objectMapper: ObjectMapper
 ) {
 
     fun search(
         cursorInfoDto: CursorInfoDto,
         searchConditions: PerformanceSearchConditions
-    ): List<PerformanceSummarySearchResult> {
-        return performanceReader.searchPerformanceSummaryDto(searchConditions, cursorInfoDto)
+    ): CursoredResponse<PerformanceSummarySearchResult> {
+        val decodedCursor = decodeCursor(cursorInfoDto.cursor)
+
+        val (cursor, data) = performanceReader.search(searchConditions, decodedCursor, cursorInfoDto.limit)
+        return CursoredResponse(
+            encodeCursor(cursor),
+            data.map { PerformanceSummarySearchResult.of(it) }
+        )
     }
 
 
@@ -145,5 +156,21 @@ class PerformanceService(
                 it.totalSeats - it.reservedSeats - it.cartSeats
             )
         }
+    }
+
+
+    private fun decodeCursor(cursor: String?): List<Any>? {
+        if (cursor == null) return null
+
+        return objectMapper.readValue<List<Any>>(Base64Utils.decode(cursor))
+    }
+
+    private fun encodeCursor(cursor: List<Any>?): String? {
+        if (cursor == null) {
+            return null
+        }
+
+        val notEncoded = objectMapper.writeValueAsString(cursor)
+        return Base64Utils.encode(notEncoded)
     }
 }

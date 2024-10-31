@@ -23,20 +23,33 @@ class PerformanceController(
 ) {
 
     @Operation(
-        summary = "공연 목록 조회",
+        summary = "공연 목록 검색",
         description = "여러 조건으로 공연 목록을 조회합니다. 커서 기반 페이징을 지원합니다.",
         responses = [
             ApiResponse(responseCode = "200", description = "성공적으로 공연 목록을 조회함")
         ]
     )
-    @GetMapping
-    fun getList(
+    @GetMapping("/search")
+    fun search(
         @ParameterObject @ModelAttribute cursorInfoDto: CursorInfoDto,
         @ParameterObject @ModelAttribute searchConditions: PerformanceSearchConditions
     ): CursoredResponse<PerformanceSummarySearchResult> {
+        return performanceService.search(cursorInfoDto, searchConditions)
+    }
+
+    @Operation(
+        summary = "공연 목록 조회",
+        description = "조건 없이 공연 목록을 조회합니다. 커서 기반 페이징을 지원합니다.",
+        responses = [
+            ApiResponse(responseCode = "200", description = "성공적으로 공연 목록을 조회함")
+        ]
+    )
+    @GetMapping()
+    fun getListV2(
+        @ParameterObject @ModelAttribute cursorInfoDto: CursorInfoDto
+    ): CursoredResponse<PerformanceSummarySearchResult> {
         val performances = performanceService.search(
-            CursorInfoDto(cursorInfoDto.cursor, cursorInfoDto.limit + 1),
-            searchConditions
+            CursorInfoDto(cursorInfoDto.cursor, cursorInfoDto.limit + 1)
         )
 
         if (performances.size == cursorInfoDto.limit + 1) {

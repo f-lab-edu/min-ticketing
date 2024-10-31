@@ -105,7 +105,7 @@ object PerformanceTestDataGenerator {
      * Performance를 가격별로 생성하는 메소드로, 순서는 PriceIn과 동일합니다.
      */
     fun createPerformancesPriceIn(
-        place: PerformancePlace,
+        place: PerformancePlace = createPerformancePlace(),
         priceIn: List<Int>,
         numShowtimes: Int = 2,
         showTimeStartDateTime: ZonedDateTime = INIT_PERFORMANCE_DATE
@@ -153,7 +153,7 @@ object PerformanceTestDataGenerator {
      * Performance를 이름별로 생성하는 메소드로, 순서는 nameIn과 동일합니다.
      */
     fun createPerformancesInNames(
-        place: PerformancePlace,
+        place: PerformancePlace = createPerformancePlace(),
         nameIn: List<String>,
         numShowtimes: Int = 2,
         price: Int = 10000
