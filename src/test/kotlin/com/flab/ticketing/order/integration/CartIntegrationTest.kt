@@ -27,6 +27,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -56,6 +57,9 @@ class CartIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var cartRepository: CartRepository
+
+    @Autowired
+    private lateinit var redisTemplate: RedisTemplate<String, String>
 
     init {
 
@@ -244,6 +248,7 @@ class CartIntegrationTest : IntegrationTest() {
             performanceRepository.deleteAll()
             placeRepository.deleteAll()
             regionRepository.deleteAll()
+            redisTemplate.connectionFactory?.connection?.flushAll()
         }
 
 
