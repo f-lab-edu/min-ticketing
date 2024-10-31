@@ -42,17 +42,16 @@ class PerformanceMigrationJobConfig(
 
     @Bean("performanceMigrationStep")
     fun performanceMigrationStep(
-        trasactionManager: PlatformTransactionManager,
+        transactionManager: PlatformTransactionManager,
         @Qualifier("performanceItemReader") itemReader: ItemReader<Performance>,
-        @Qualifier("performanceConvertProcessor") itemProcessor: ItemProcessor<Performance, PerformanceSearchSchema>,
-        @Qualifier("performanceItemWriter") itemWriter: ItemWriter<PerformanceSearchSchema>
-    ): Step {
+        performanceSearchRepository: PerformanceSearchRepository
+        ): Step {
 
         return StepBuilder("performanceMigrationStep", jobRepository)
-            .chunk<Performance, PerformanceSearchSchema>(chunkSize, trasactionManager)
+            .chunk<Performance, PerformanceSearchSchema>(chunkSize, transactionManager)
             .reader(itemReader)
-            .processor(itemProcessor)
-            .writer(itemWriter)
+            .processor { PerformanceSearchSchema.of(it) }
+            .writer{ performanceSearchRepository.saveAll(it.items)}
             .build()
     }
 
@@ -64,18 +63,6 @@ class PerformanceMigrationJobConfig(
             .entityManagerFactory(emf)
             .pageSize(chunkSize)
             .build()
-    }
-
-    @Bean("performanceConvertProcessor")
-    fun performanceConvertItemProcessor(): PerformanceConvertItemProcessor {
-        return PerformanceConvertItemProcessor()
-    }
-
-    @Bean("performanceItemWriter")
-    fun performanceItemWriter(
-        performanceSearchRepository: PerformanceSearchRepository
-    ): ItemWriter<PerformanceSearchSchema> {
-        return PerformanceItemWriter(performanceSearchRepository)
     }
 
 

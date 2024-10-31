@@ -26,30 +26,42 @@ import org.springframework.batch.item.ItemWriter
 import org.springframework.batch.item.database.JpaPagingItemReader
 import org.springframework.batch.test.JobLauncherTestUtils
 import org.springframework.batch.test.JobRepositoryTestUtils
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 
 
 class PerformanceMigrationBatchTest(
-    private val jobRepositoryTestUtils: JobRepositoryTestUtils,
-    private val jobLauncher: JobLauncher,
-    private val jobRepository: JobRepository,
-    @Qualifier("performanceMigrationJob") private val job: Job,
-    @Qualifier("performanceItemReader") private val itemReader: JpaPagingItemReader<Performance>,
-    @Qualifier("performanceConvertProcessor") private val itemProcessor: ItemProcessor<Performance, PerformanceSearchSchema>,
-    @Qualifier("performanceItemWriter") private val itemWriter: ItemWriter<PerformanceSearchSchema>,
-    private val regionRepository: RegionRepository,
-    private val placeRepository: PerformancePlaceRepository,
-    private val performanceRepository: PerformanceRepository,
     @Value("\${spring.batch.performance-migration.chunk-size}") private val chunkSize: Int
 ) : BatchIntegrationTest() {
 
 
-    private val jobLauncherTestUtils = setUpPerformanceMigrationJobLaunchTestUtils()
+    @Autowired
+    private lateinit var jobRepositoryTestUtils: JobRepositoryTestUtils
 
+    @Autowired
+    private lateinit var jobLauncher: JobLauncher
+
+    @Autowired
+    private lateinit var jobRepository: JobRepository
+
+    @Qualifier("performanceMigrationJob")
+    @Autowired
+    private lateinit var job: Job
+
+    @Autowired
+    @Qualifier("performanceItemReader")
+    private lateinit var itemReader: JpaPagingItemReader<Performance>
+
+    private lateinit var regionRepository: RegionRepository
+
+    private lateinit var placeRepository: PerformancePlaceRepository
+
+    private lateinit var performanceRepository: PerformanceRepository
+
+    private lateinit var jobLauncherTestUtils : JobLauncherTestUtils
 
     init {
-
         "Performance 데이터를 읽어서 ElasticSearch에 저장할 수 있다." {
             // given
             val performanceCount = chunkSize * 2
@@ -85,44 +97,13 @@ class PerformanceMigrationBatchTest(
             }
             itemReader.close()
         }
-
-        "Performance 데이터를 PerformanceSchema로 변환할 수 있다." {
-            // given
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
-                performanceCount = 10
-            )
-
-            // when & then
-            for (performance in performances) {
-                val converted = itemProcessor.process(performance)
-
-                converted shouldNotBe null
-                converted shouldBe PerformanceSearchSchema.of(performance)
-
-            }
-
-
-        }
-
-        "PerformanceSearchScheme를 ElasticSearch에 저장할 수 있다." {
-            // given
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
-                performanceCount = 10
-            ).map { PerformanceSearchSchema.of(it) }
-
-            every { performanceSearchRepository.saveAll(any<List<PerformanceSearchSchema>>()) } returns performances
-
-            // when
-            itemWriter.write(Chunk(performances))
-
-            // then
-            verify(exactly = 1) { performanceSearchRepository.saveAll(any<List<PerformanceSearchSchema>>()) }
-        }
     }
 
 
     override suspend fun beforeEach(testCase: TestCase) {
         jobRepositoryTestUtils.removeJobExecutions()
+        jobLauncherTestUtils = setUpPerformanceMigrationJobLaunchTestUtils()
+
     }
 
 
