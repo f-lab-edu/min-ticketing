@@ -41,6 +41,7 @@ import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -80,6 +81,9 @@ class OrderIntegrationTest : IntegrationTest() {
     @Autowired
     private lateinit var orderMetaDataRepository: OrderMetaDataRepository
 
+
+    @Autowired
+    private lateinit var redisTemplate: RedisTemplate<String, String>
 
     init {
 
@@ -559,6 +563,7 @@ class OrderIntegrationTest : IntegrationTest() {
             placeRepository.deleteAll()
             regionRepository.deleteAll()
             orderMetaDataRepository.deleteAll()
+            redisTemplate.connectionFactory?.connection?.flushAll()
         }
     }
 
