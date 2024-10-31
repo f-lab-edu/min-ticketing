@@ -1,5 +1,6 @@
 package com.flab.ticketing.common.config
 
+import org.apache.http.ssl.SSLContextBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -7,6 +8,7 @@ import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.springframework.data.elasticsearch.support.HttpHeaders
+import java.security.cert.X509Certificate
 
 
 @Configuration
@@ -39,9 +41,14 @@ class ElasticSearchConfig {
         override fun clientConfiguration(): ClientConfiguration {
             val httpHeaders = HttpHeaders()
             httpHeaders.add("Authorization", "ApiKey $elasticApiKey")
+            // SSL Context 설정
+            val sslContext = SSLContextBuilder.create()
+                .loadTrustMaterial(null) { _: Array<X509Certificate>, _: String -> true }
+                .build()
+
             return ClientConfiguration.builder()
                 .connectedTo(elasticHost)
-                .usingSsl()
+                .usingSsl(sslContext)
                 .withDefaultHeaders(httpHeaders)
                 .build()
         }
