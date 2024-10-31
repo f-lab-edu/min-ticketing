@@ -53,12 +53,16 @@ class PerformanceMigrationBatchTest(
     @Qualifier("performanceItemReader")
     private lateinit var itemReader: JpaPagingItemReader<Performance>
 
+    @Autowired
     private lateinit var regionRepository: RegionRepository
 
+    @Autowired
     private lateinit var placeRepository: PerformancePlaceRepository
 
+    @Autowired
     private lateinit var performanceRepository: PerformanceRepository
 
+    @Autowired
     private lateinit var jobLauncherTestUtils : JobLauncherTestUtils
 
     init {
