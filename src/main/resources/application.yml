@@ -52,7 +52,7 @@ jwt:
 service:
   url: https://minturtle.kro.kr
   toss:
-    url: https://api.tosspayments.com/
+    url: https://api.tosspayments.com
     confirm-uri: /v1/payments/confirm
     cancel-uri: /v1/payments/%s/cancel
     access-token: ${TOSS_ACCESS_TOKEN}
@@ -156,10 +156,10 @@ jwt:
 service:
   url: http://localhost
   toss:
-    url: https://api.tosspayments.com/
+    url: https://api.tosspayments.com
     confirm-uri: /v1/payments/confirm
     cancel-uri: /v1/payments/%s/cancel
-    access-token: dGVzdF9za196WExrS0V5cE5BcldtbzUwblgzbG1lYXhZRzVSOg== # Toss Payments 임시 키
+    access-token: test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6 # Toss Payments 임시 키
 
 logging:
   pattern:

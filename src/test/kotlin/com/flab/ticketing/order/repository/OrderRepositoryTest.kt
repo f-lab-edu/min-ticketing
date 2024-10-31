@@ -23,7 +23,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.domain.PageRequest
 
 class OrderRepositoryTest : RepositoryTest() {
 
@@ -93,7 +92,11 @@ class OrderRepositoryTest : RepositoryTest() {
 
             val sortedOrders = orders.sortedByDescending { it.id }
 
-            val actual = orderRepository.findByUser(user.uid, CursorInfoDto(cursor = sortedOrders[2].uid), OrderSearchConditions())
+            val actual = orderRepository.findByUser(
+                user.uid,
+                CursorInfoDto(cursor = sortedOrders[2].uid),
+                OrderSearchConditions()
+            )
             val expectedUidList = listOf(sortedOrders[2].uid, sortedOrders[3].uid, sortedOrders[4].uid)
 
             actual.map { it.uid } shouldContainExactly expectedUidList
@@ -104,7 +107,7 @@ class OrderRepositoryTest : RepositoryTest() {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance()
 
-            val order = Order("order-001", user, Order.Payment(0, "카드"))
+            val order = Order("order-001", user, Order.Payment(0, "카드", "paymentkey"))
 
             userRepository.save(user)
             performanceRepository.save(performance)
@@ -117,7 +120,7 @@ class OrderRepositoryTest : RepositoryTest() {
 
         }
 
-        "주문을 조회할 때 Status로 조회할 수 있다."{
+        "주문을 조회할 때 Status로 조회할 수 있다." {
             val user = UserTestDataGenerator.createUser()
             val performance = PerformanceTestDataGenerator.createPerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)

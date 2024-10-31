@@ -22,14 +22,44 @@ class Order(
     val payment: Payment,
 
     @Enumerated(EnumType.STRING)
-    var status: OrderStatus = OrderStatus.REQUESTED
+    var status: OrderStatus = OrderStatus.COMPLETED
 
 ) : BaseEntity() {
+
+    companion object {
+
+        fun of(
+            metaData: OrderMetaData,
+            user: User,
+            payment: Payment,
+            orderStatus: OrderStatus = OrderStatus.COMPLETED,
+            carts: List<Cart> = listOf()
+        ): Order {
+            val order = Order(
+                metaData.orderId,
+                user,
+                payment,
+                orderStatus
+            )
+            carts.map {
+                Reservation(
+                    it.performanceDateTime,
+                    it.seat,
+                    order
+                )
+            }.forEach { order.addReservation(it) }
+
+            return order
+        }
+
+    }
+
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order", cascade = [CascadeType.ALL])
     val reservations: MutableList<Reservation> = mutableListOf()
 
     var name: String = generateName()
-    
+
     fun addReservation(reservation: Reservation) {
         reservations.add(reservation)
         name = generateName()
@@ -65,11 +95,11 @@ class Order(
     class Payment(
         val totalPrice: Int,
         val paymentMethod: String,
-        var paymentKey: String? = null
+        var paymentKey: String
     )
 
 
     enum class OrderStatus {
-        REQUESTED, PENDING, COMPLETED, FAILED, CANCELED
+        COMPLETED, CANCELED
     }
 }
