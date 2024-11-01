@@ -150,7 +150,9 @@ server:
     encoding:
       force-response: true
       charset: UTF-8
-
+  tomcat:
+    threads:
+      max: ${SERVER_THREAD_MAX_SIZE}
 jwt:
   secret: UshUVcHhZ8olLFeQVCnjoRjp1EjY8vRY6UUR12QKCWDh8LcJFmPrrxRYSQSdZZVc
 
