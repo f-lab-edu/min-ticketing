@@ -47,7 +47,8 @@ server:
   tomcat:
     mbeanregistry:
       enabled: true
-
+    threads:
+      max: ${SERVER_THREAD_MAX_SIZE}
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-token:
@@ -150,9 +151,7 @@ server:
     encoding:
       force-response: true
       charset: UTF-8
-  tomcat:
-    threads:
-      max: ${SERVER_THREAD_MAX_SIZE}
+
 jwt:
   secret: UshUVcHhZ8olLFeQVCnjoRjp1EjY8vRY6UUR12QKCWDh8LcJFmPrrxRYSQSdZZVc
 
