@@ -9,12 +9,16 @@ import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
 import com.flab.ticketing.performance.repository.reader.PerformanceReader
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
+import io.kotest.core.annotation.Ignored
 import io.kotest.matchers.collections.shouldContainExactly
 import io.mockk.every
 import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
 
+
+
+@Ignored
 class PerformanceServiceCacheTest : IntegrationTest() {
 
     @MockkBean

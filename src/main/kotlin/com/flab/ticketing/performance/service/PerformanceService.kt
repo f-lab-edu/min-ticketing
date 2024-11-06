@@ -47,15 +47,15 @@ class PerformanceService(
     }
 
 
-    @Caching(
-        cacheable = [
-            Cacheable(
-                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
-                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
-                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
-            )
-        ]
-    )
+//    @Caching(
+//        cacheable = [
+//            Cacheable(
+//                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
+//                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
+//                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+//            )
+//        ]
+//    )
     fun search(
         cursorInfoDto: CursorInfoDto
     ): List<PerformanceSummarySearchResult> {
