@@ -68,7 +68,7 @@ dependencies {
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
-    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
+    //implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.9.2'
 
 
