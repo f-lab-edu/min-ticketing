@@ -9,12 +9,10 @@ import net.ttddyy.dsproxy.listener.QueryExecutionListener
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import javax.sql.DataSource
 
-@Configuration
-@Profile("prod")
+//@Configuration
+//@Profile("prod")
 class DataSourceTraceConfig(
     private val properties: DataSourceProperties,
     private val observationRegistry: ObservationRegistry
