@@ -23,28 +23,8 @@
         </encoder>
     </appender>
 
-    <!-- Async appender for Console -->
-    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="CONSOLE"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-        <neverBlock>true</neverBlock>
-        <metrics>true</metrics>
-    </appender>
-
-    <!-- Async appender for File -->
-    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="LOG_FILE"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-        <neverBlock>true</neverBlock>
-        <metrics>true</metrics>
-    </appender>
-
     <root level="INFO">
-        <appender-ref ref="ASYNC_FILE"/>
-        <appender-ref ref="ASYNC_CONSOLE"/>
+        <appender-ref ref="LOG_FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
 </configuration>
