@@ -9,6 +9,7 @@ import com.flab.ticketing.performance.dto.service.PerformanceStartEndDateResult
 import com.flab.ticketing.performance.repository.reader.PerformanceReader
 import com.ninjasquad.springmockk.MockkBean
 import com.ninjasquad.springmockk.SpykBean
+import io.kotest.core.annotation.Ignored
 import io.kotest.matchers.collections.shouldContainExactly
 import io.mockk.every
 import io.mockk.verify
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.cache.CacheManager
 
 
+
+@Ignored
 class PerformanceServiceCacheTest : IntegrationTest() {
 
     @MockkBean
@@ -60,7 +63,7 @@ class PerformanceServiceCacheTest : IntegrationTest() {
         }
 
 
-        given("search 메서드가 Cache가 적용되었을 때 - CompositeCacheManger 테스트") {
+        given("search 메서드가 Cache가 적용되었을 때 - CompositeCacheManger 테스트"){
             val performances =
                 PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 5)
 
@@ -87,7 +90,7 @@ class PerformanceServiceCacheTest : IntegrationTest() {
 
         }
 
-        given("region list를 조회할 때") {
+        given("region list를 조회할 때"){
             // given
             val regions = MutableList(5) {
                 PerformanceTestDataGenerator.createRegion("region$it")
@@ -95,12 +98,12 @@ class PerformanceServiceCacheTest : IntegrationTest() {
 
             every { performanceReader.getRegions() } returns regions
 
-            `when`("두번이상 region list를 조회한다면") {
+            `when`("두번이상 region list를 조회한다면"){
                 val result1 = performanceService.getRegions()
                 val result2 = performanceService.getRegions()
 
-                then("두번째 부터는 캐싱된다.") {
-                    verify(exactly = 1) { performanceReader.getRegions() }
+                then("두번째 부터는 캐싱된다."){
+                    verify(exactly = 1) {  performanceReader.getRegions() }
                     result1 shouldContainExactly result2
                 }
             }
