@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.response.CursoredResponse
+import com.flab.ticketing.common.dto.response.ListedResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.enums.CacheType
 import com.flab.ticketing.common.utils.Base64Utils
@@ -46,15 +47,15 @@ class PerformanceService(
     }
 
 
-    @Caching(
-        cacheable = [
-            Cacheable(
-                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
-                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
-                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
-            )
-        ]
-    )
+//    @Caching(
+//        cacheable = [
+//            Cacheable(
+//                cacheManager = CacheConfig.COMPOSITE_CACHE_MANAGER_NAME,
+//                cacheNames = [CacheType.PRODUCT_CACHE_NAME],
+//                key = "'performance_' + (#cursorInfoDto.cursor ?: 'first_page') + '_' + #cursorInfoDto.limit"
+//            )
+//        ]
+//    )
     fun search(
         cursorInfoDto: CursorInfoDto
     ): List<PerformanceSummarySearchResult> {
