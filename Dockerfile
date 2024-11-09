@@ -31,4 +31,5 @@ ENTRYPOINT ["sh", "-c", "java \
     -Dprofiler.transport.grpc.collector.ip=${PINPOINT_COLLECTOR_IP} \
     -Dprofiler.sampling.counting.sampling-rate=${PROFILER_SAMPLING_COUNTING_SAMPLING_RATE} \
     -Dprofiler.sampling.percent.sampling-rate=${PROFILER_SAMPLING_PERCENT_SAMPLING_RATE} \
+    -Dprofiler.proxy.http.header.enable=true \
     -jar /app/app.jar"]
