@@ -17,7 +17,7 @@ RUN mkdir -p ${AGENT_PATH} \
 # Create logs directory
 RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 
-COPY build/libs/ticketing-0.0.1-SNAPSHOT.jar app.jar
+COPY app/app.jar app.jar
 
 EXPOSE 8080
 EXPOSE 9090
