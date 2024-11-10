@@ -1,4 +1,4 @@
-uspring:
+spring:
   application:
     name: min-ticketing
   config:
@@ -48,7 +48,7 @@ server:
     mbeanregistry:
       enabled: true
     threads:
-      max: ${SERVER_THREAD_MAX_SIZE}
+      max: ${SERVER_THREAD_MAX_SIZE|200}
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-token:
@@ -80,32 +80,7 @@ management:
     web:
       exposure:
         include: health, prometheus
-  metrics:
-    tags:
-      application: ${spring.application.name}
-  tracing:
-    sampling:
-      probability: 1.0
-    baggage:
-      remote-fields:
-        - x-request-id
-        - db-name
-        - X-Service-Name
-        - X-Span-Kind
-        - X-Http-Method
-        - X-Http-Status
-      correlation-fields:
-        - x-request-id
-        - db-name
-        - X-Service-Name
-        - X-Span-Kind
-        - X-Http-Method
-        - X-Http-Status
-    propagation:
-      type: B3,W3C
-  zipkin:
-    tracing:
-      endpoint: ${ZIPKIN_BASE_URL}
+
 
 springdoc:
   api-docs:
