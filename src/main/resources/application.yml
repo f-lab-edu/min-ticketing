@@ -1,4 +1,4 @@
-spring:
+uspring:
   application:
     name: min-ticketing
   config:
