@@ -48,7 +48,7 @@ server:
     mbeanregistry:
       enabled: true
     threads:
-      max: ${SERVER_THREAD_MAX_SIZE|200}
+      max: ${SERVER_THREAD_MAX_SIZE:200}
 jwt:
   secret: ${JWT_SECRET_KEY}
   access-token:
