@@ -1,9 +1,13 @@
 package com.flab.ticketing.common.config
 
+import com.flab.ticketing.performance.entity.PerformanceSearchSchema
+import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.test.context.TestConfiguration
+import org.springframework.context.ApplicationListener
 import org.springframework.context.annotation.Bean
 import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 
@@ -11,6 +15,7 @@ import org.testcontainers.elasticsearch.ElasticsearchContainer
 @TestConfiguration
 @EnableElasticsearchRepositories
 class ElasticSearchConfiguration : ElasticsearchConfiguration() {
+
 
     @Bean(initMethod = "init", destroyMethod = "preDestroy")
     fun elasticsearchTestContainer() = ElasticSearchTestContainerWrapper()
@@ -22,6 +27,18 @@ class ElasticSearchConfiguration : ElasticsearchConfiguration() {
             .connectedTo(esTestContainer.getHttpHostAddress())
             .build()
     }
+
+    @Bean
+    fun indexCreator(elasticsearchOperations: ElasticsearchOperations): ApplicationListener<ApplicationReadyEvent> {
+        return ApplicationListener { event ->
+            val indexOps = elasticsearchOperations.indexOps(PerformanceSearchSchema::class.java)
+            if (!indexOps.exists()) {
+                indexOps.create()
+                indexOps.putMapping(indexOps.createMapping())
+            }
+        }
+    }
+
 }
 
 class ElasticSearchTestContainerWrapper {
