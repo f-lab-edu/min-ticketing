@@ -97,6 +97,6 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=accept-new $USER@$HOST << EOF
             cd /home/ubuntu/min-ticketing
-            sudo docker compose pull
-            sudo docker compose up -d
+            sudo docker compose pull min-ticketing
+            sudo docker compose up -d min-ticketing
           EOF
