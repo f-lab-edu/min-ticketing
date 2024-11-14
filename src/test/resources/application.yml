@@ -28,6 +28,7 @@ spring:
       add-mappings: false
 
 server:
+
   servlet:
     encoding:
       force-response: true
