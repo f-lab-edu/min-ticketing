@@ -1,4 +1,11 @@
 <configuration>
+    <springProperty scope="context" name="mqHost" source="mq.host" defaultValue="localhost"/>
+    <springProperty scope="context" name="mqPort" source="mq.port" defaultValue="5672"/>
+    <springProperty scope="context" name="mqUsername" source="mq.username"/>
+    <springProperty scope="context" name="mqPassword" source="mq.password"/>
+    <springProperty scope="context" name="mqExchange" source="mq.exchange"/>
+    <springProperty scope="context" name="mqRoutingKey" source="mq.routingKey"/>
+
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -19,12 +26,12 @@
                 <message>message</message>
             </fieldNames>
         </encoder>
-        <host>${MQ_HOST}</host>
-        <port>${MQ_PORT}</port>
-        <username>${MQ_USERNAME}</username>
-        <password>${MQ_PASSWORD}</password>
-        <exchangeName>${MQ_EXCHANGENAME}</exchangeName>
-        <routingKeyPattern>${MQ_ROUTING_KEY_NAME}</routingKeyPattern>
+        <host>${mqHost}</host>
+        <port>${mqPort}</port>
+        <username>${mqUsername}</username>
+        <password>${mqPassword}</password>
+        <exchangeName>${mqExchange}</exchangeName>
+        <routingKeyPattern>${mqRoutingKey}</routingKeyPattern>
         <charset>UTF-8</charset>
         <deliveryMode>PERSISTENT</deliveryMode>
         <contentType>application/json</contentType>
