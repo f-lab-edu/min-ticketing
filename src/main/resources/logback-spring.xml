@@ -47,11 +47,9 @@
     </springProfile>
 
     <springProfile name="prod">
-        <logger name="CONSOLE" level="WARN" additivity="false">
-            <appender-ref ref="CONSOLE"/>
-        </logger>
         <root level="INFO">
             <appender-ref ref="AMQP"/>
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 </configuration>
