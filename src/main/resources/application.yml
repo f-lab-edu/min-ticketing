@@ -63,15 +63,7 @@ service:
 
 logging:
   pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] [%X{traceId:-},%X{spanId:-}] - %msg%n"
-  file:
-    name: ticketing
-    path: /app/logs
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      total-size-cap: 1GB
-      max-history: 30
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n"
 management:
   server:
     port: 9090
@@ -143,14 +135,7 @@ service:
 logging:
   pattern:
     console: "%msg%n"
-  file:
-    name: ticketing
-    path: logs
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      total-size-cap: 1GB
-      max-history: 30
+
 
 management:
   server:

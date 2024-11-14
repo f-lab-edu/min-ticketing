@@ -1,50 +1,50 @@
 <configuration>
-    <timestamp key="TODAY" datePattern="yyyyMMdd"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] [%X{traceId:-},%X{spanId:-}] -
-                %msg%n
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n
             </pattern>
         </encoder>
     </appender>
 
-    <appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}_${TODAY}.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyyMMdd}_%i.log</fileNamePattern>
-            <maxFileSize>${LOGBACK_ROLLINGPOLICY_MAX_FILE_SIZE}</maxFileSize>
-            <totalSizeCap>${LOGBACK_ROLLINGPOLICY_TOTAL_SIZE_CAP}</totalSizeCap>
-            <maxHistory>${LOGBACK_ROLLINGPOLICY_MAX_HISTORY}</maxHistory>
-        </rollingPolicy>
+    <appender name="AMQP" class="org.springframework.amqp.rabbit.logback.AmqpAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeTraceId>true</includeTraceId>
-            <includeSpanId>true</includeSpanId>
+            <timestampPattern>yyyy-MM-dd HH:mm:ss.SSS</timestampPattern>
+            <includeMdc>false</includeMdc>
+            <includeCallerData>false</includeCallerData>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <level>level</level>
+                <message>message</message>
+            </fieldNames>
         </encoder>
+        <host>${MQ_HOST}</host>
+        <port>${MQ_PORT}</port>
+        <username>${MQ_USERNAME}</username>
+        <password>${MQ_PASSWORD}</password>
+        <exchangeName>${MQ_EXCHANGENAME}</exchangeName>
+        <routingKeyPattern>${MQ_ROUTING_KEY_NAME}</routingKeyPattern>
+        <charset>UTF-8</charset>
+        <deliveryMode>PERSISTENT</deliveryMode>
+        <contentType>application/json</contentType>
+        <declareExchange>false</declareExchange>
+        <addMdcAsHeaders>false</addMdcAsHeaders>
     </appender>
 
-    <!-- Async appender for Console -->
-    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="CONSOLE"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-        <neverBlock>true</neverBlock>
-        <metrics>true</metrics>
-    </appender>
 
-    <!-- Async appender for File -->
-    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="LOG_FILE"/>
-        <queueSize>512</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-        <neverBlock>true</neverBlock>
-        <metrics>true</metrics>
-    </appender>
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
 
-    <root level="INFO">
-        <appender-ref ref="ASYNC_FILE"/>
-        <appender-ref ref="ASYNC_CONSOLE"/>
-    </root>
+    <springProfile name="prod">
+        <logger name="CONSOLE" level="WARN" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+        <root level="INFO">
+            <appender-ref ref="AMQP"/>
+        </root>
+    </springProfile>
 </configuration>
