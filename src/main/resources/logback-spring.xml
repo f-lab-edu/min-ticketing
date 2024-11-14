@@ -4,7 +4,7 @@
     <springProperty scope="context" name="mqUsername" source="mq.username"/>
     <springProperty scope="context" name="mqPassword" source="mq.password"/>
     <springProperty scope="context" name="mqExchange" source="mq.exchange"/>
-    <springProperty scope="context" name="mqRoutingKey" source="mq.routingKey"/>
+    <springProperty scope="context" name="mqRoutingkey" source="mq.routingkey"/>
 
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -31,7 +31,7 @@
         <username>${mqUsername}</username>
         <password>${mqPassword}</password>
         <exchangeName>${mqExchange}</exchangeName>
-        <routingKeyPattern>${mqRoutingKey}</routingKeyPattern>
+        <routingKeyPattern>${mqRoutingkey}</routingKeyPattern>
         <charset>UTF-8</charset>
         <deliveryMode>PERSISTENT</deliveryMode>
         <contentType>application/json</contentType>
