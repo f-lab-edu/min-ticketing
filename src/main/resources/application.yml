@@ -67,6 +67,8 @@ logging:
 management:
   server:
     port: 9090
+    ssl:
+      enabled: false
   endpoints:
     web:
       exposure:
