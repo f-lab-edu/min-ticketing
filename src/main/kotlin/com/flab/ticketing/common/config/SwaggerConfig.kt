@@ -40,7 +40,7 @@ class SwaggerConfig : WebMvcConfigurer {
             .components(components)
             .servers(
                 listOf(
-                    Server().url("https://minturtle.kro.kr").description("Production server"),
+                    Server().url("https://api.minticketing.org").description("Production server"),
                     Server().url("http://localhost:8080").description("Development server")
                 )
             )

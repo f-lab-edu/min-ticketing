@@ -1,5 +1,6 @@
 package com.flab.ticketing.auth.integration
 
+import com.flab.ticketing.auth.dto.UserInfoResponse
 import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.dto.request.UserPasswordUpdateRequest
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
@@ -9,6 +10,7 @@ import com.flab.ticketing.common.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
+import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import org.springframework.beans.factory.annotation.Autowired
@@ -360,6 +362,42 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
                 then("400 오류와 적절한 메시지를 반환한다.") {
                     checkError(mvcResult, HttpStatus.BAD_REQUEST, AuthErrorInfos.PASSWORD_CONFIRM_NOT_EQUALS)
+                }
+            }
+        }
+
+        given("회원가입과 로그인이 완료된 사용자가") {
+            val email = "email@email.com"
+            val userPW = "abc1234!"
+            val userUid = "userUid"
+            val userNickname = "nickname"
+
+            val givenToken = saveUserAndCreateJwt(
+                email = email,
+                password = userPW,
+                uid = userUid,
+                nickname = userNickname
+            )
+
+            `when`("AccessToken을 사용하여 자신의 정보를 요청할 시") {
+                val uri = "/api/user/info"
+
+                val mvcResult = mockMvc.perform(
+                    MockMvcRequestBuilders.get(uri)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer $givenToken")
+                )
+                    .andDo(MockMvcResultHandlers.print())
+                    .andReturn()
+
+                then("사용자의 정보를 반환한다.") {
+                    mvcResult.response.status shouldBeExactly 200
+                    val (id, nickname) = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        UserInfoResponse::class.java
+                    )
+
+                    id shouldBeEqual userUid
+                    nickname shouldBeEqual userNickname
                 }
             }
         }
