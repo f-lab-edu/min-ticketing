@@ -48,6 +48,7 @@ class SecurityConfig {
                     .requestMatchers("/actuator").permitAll()
                     .requestMatchers(
                         "/api/health-check",
+                        "api/user/info",
                         "/api/orders/**",
                         "/api/reservations/**",
                         "/api/performances/*/dates/**"
