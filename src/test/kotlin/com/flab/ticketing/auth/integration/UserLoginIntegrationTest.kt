@@ -367,13 +367,13 @@ class UserLoginIntegrationTest : IntegrationTest() {
         }
 
         given("회원가입과 로그인이 완료된 사용자가") {
-            val email = "email@email.com"
+            val userEmail = "email@email.com"
             val userPW = "abc1234!"
             val userUid = "userUid"
             val userNickname = "nickname"
 
             val givenToken = saveUserAndCreateJwt(
-                email = email,
+                email = userEmail,
                 password = userPW,
                 uid = userUid,
                 nickname = userNickname
@@ -391,13 +391,14 @@ class UserLoginIntegrationTest : IntegrationTest() {
 
                 then("사용자의 정보를 반환한다.") {
                     mvcResult.response.status shouldBeExactly 200
-                    val (id, nickname) = objectMapper.readValue(
+                    val (id, nickname, email) = objectMapper.readValue(
                         mvcResult.response.contentAsString,
                         UserInfoResponse::class.java
                     )
 
                     id shouldBeEqual userUid
                     nickname shouldBeEqual userNickname
+                    email shouldBeEqual userEmail
                 }
             }
         }
