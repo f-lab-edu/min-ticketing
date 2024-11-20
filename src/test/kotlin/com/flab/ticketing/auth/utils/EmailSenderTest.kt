@@ -17,13 +17,16 @@ class EmailSenderTest : UnitTest() {
 
     init {
         "수신자 이메일과 제목, 내용을 입력해 이메일을 전송할 수 있다." {
+            // given
             val email = "email@email.com"
             val title = "제목"
             val content = "내용"
 
             every { javaEmailSender.send(ofType<SimpleMailMessage>()) } returns Unit
+            // when
             emailSender.sendEmail(email, title, content)
 
+            // then
             verify { javaEmailSender.send(ofType<SimpleMailMessage>()) }
         }
 

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.exception.InvalidValueException
+import com.flab.ticketing.testutils.UnitTest
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.equals.shouldBeEqual
 import io.mockk.every
@@ -22,6 +22,7 @@ class UserLoginInfoConverterTest : UnitTest() {
     init {
 
         "UserLoginDTO에 맞는 json 문자열과 이에 맞는 Charset이 들어올 경우 정상적으로 객체를 변환할 수 있다." {
+            // given
             val email = "email@email.com"
             val userPW = "abc1234!"
             val charSet = StandardCharsets.UTF_8
@@ -29,12 +30,15 @@ class UserLoginInfoConverterTest : UnitTest() {
             val inputStream = """{email : "$email", password : "$userPW"}""".byteInputStream(charSet)
             every { objectMapper.readValue(any<String>(), UserLoginRequest::class.java) } returns mockk()
 
+            // when
             userLoginInfoConverter.convert(inputStream, charSet)
 
+            // then
             verify { objectMapper.readValue(any<String>(), UserLoginRequest::class.java) }
         }
 
         "RequestBody의 문자열이 올바르지 않은 경우 InvalidValueException을 throw 한다." {
+            // given
             val charSet = StandardCharsets.UTF_8
 
             val inputStream = """{"hello" : "world"}""".byteInputStream(charSet)
@@ -45,7 +49,7 @@ class UserLoginInfoConverterTest : UnitTest() {
                 )
             } throws JsonMappingException("에러 메시지")
 
-
+            // when & then
             val e = shouldThrow<InvalidValueException> {
                 userLoginInfoConverter.convert(inputStream, charSet)
             }
@@ -54,9 +58,11 @@ class UserLoginInfoConverterTest : UnitTest() {
         }
 
         "RequestBody가 아무것도 들어오지 않은 경우 InvalidValueException을 throw 한다." {
+            // given
             val inputStream = InputStream.nullInputStream()
             val charSet = StandardCharsets.UTF_8
-
+            
+            // when & then
             val e = shouldThrow<InvalidValueException> {
                 userLoginInfoConverter.convert(inputStream, charSet)
             }
