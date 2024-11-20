@@ -3,6 +3,7 @@ package com.flab.ticketing.common.config
 import org.apache.http.ssl.SSLContextBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
@@ -17,22 +18,22 @@ class ElasticSearchConfig {
 
     //    @Configuration
 //    @Profile("dev")
-    internal class LocalElasticSearchConfig(
-        @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String
-    ) : ElasticsearchConfiguration() {
-
-        // 로컬 개발 용 ElasticSearch 설정으로, HTTPS를 Disabled 하였습니다.
-        override fun clientConfiguration(): ClientConfiguration {
-            return ClientConfiguration.builder()
-                .connectedTo(elasticHost)
-                .build()
-        }
-
-    }
+//    internal class LocalElasticSearchConfig(
+//        @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String
+//    ) : ElasticsearchConfiguration() {
+//
+//        // 로컬 개발 용 ElasticSearch 설정으로, HTTPS를 Disabled 하였습니다.
+//        override fun clientConfiguration(): ClientConfiguration {
+//            return ClientConfiguration.builder()
+//                .connectedTo(elasticHost)
+//                .build()
+//        }
+//
+//    }
 
     @Configuration
-//    @Profile("prod")
-    internal class ProductionElasticSearchConfig(
+    @Profile("!test")
+    internal class ElasticSearchConfig(
         @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String,
         @Value("\${spring.data.elasticsearch.api-key}") private val elasticApiKey: String
     ) : ElasticsearchConfiguration() {

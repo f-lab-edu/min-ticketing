@@ -1,4 +1,4 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer

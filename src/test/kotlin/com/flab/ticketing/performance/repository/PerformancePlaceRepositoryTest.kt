@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.RepositoryTest
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
+import com.flab.ticketing.testutils.RepositoryTest
 import com.flab.ticketing.performance.entity.PerformancePlace
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -23,7 +23,7 @@ class PerformancePlaceRepositoryTest : RepositoryTest() {
 
     init {
         "Seat객체를 Place에 추가하고 생성하면 이름이 자동으로 설정되어 DB에 저장된다." {
-            val region = PerformanceTestDataGenerator.createRegion()
+            val region = PerformanceFixture.createRegion()
             val place = PerformancePlace(region, "장소")
 
             place.addSeat("seat001", 1, 1)

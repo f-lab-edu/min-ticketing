@@ -6,7 +6,7 @@ import com.flab.ticketing.auth.dto.request.UserRegisterRequest
 import com.flab.ticketing.auth.entity.EmailVerifyInfo
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
-import com.flab.ticketing.common.IntegrationTest
+import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
@@ -378,7 +378,7 @@ class UserRegisterIntegrationTest : IntegrationTest() {
         afterEach {
             userRepository.deleteAll()
         }
-        
+
 
     }
 

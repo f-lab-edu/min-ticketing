@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.service
 
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.IntegrationTest
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.enums.CacheType
@@ -34,7 +34,7 @@ class PerformanceServiceCacheTest : IntegrationTest() {
     init {
         given("search 메서드가 Cache가 적용되었을 때") {
             val performances =
-                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 5)
+                PerformanceFixture.createPerformanceGroupbyRegion(performanceCount = 5)
 
             every { performanceReader.findPerformanceEntityByCursor(any()) } returns performances
             every { performanceReader.findPerformanceStartAndEndDate(any()) } returns performances.map { performance ->
@@ -64,7 +64,7 @@ class PerformanceServiceCacheTest : IntegrationTest() {
 
         given("search 메서드가 Cache가 적용되었을 때 - LocalCacheManger 테스트") {
             val performances =
-                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 5)
+                PerformanceFixture.createPerformanceGroupbyRegion(performanceCount = 5)
 
             every { performanceReader.findPerformanceEntityByCursor(any()) } returns performances
             every { performanceReader.findPerformanceStartAndEndDate(any()) } returns performances.map { performance ->
@@ -91,7 +91,7 @@ class PerformanceServiceCacheTest : IntegrationTest() {
         given("region list를 조회할 때") {
             // given
             val regions = MutableList(5) {
-                PerformanceTestDataGenerator.createRegion("region$it")
+                PerformanceFixture.createRegion("region$it")
             }
 
             every { performanceReader.getRegions() } returns regions
