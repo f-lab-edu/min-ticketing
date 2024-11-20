@@ -3,7 +3,7 @@ package com.flab.ticketing.performance.repository
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.testutils.RepositoryTest
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
@@ -25,9 +25,9 @@ class PerformanceRepositoryImplTest(
 
         "Performance에 커서 정보를 넣어 커서 이상의 정보를 검색할 수 있다." {
             var performances =
-                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
+                PerformanceFixture.createPerformanceGroupbyRegion(performanceCount = 10)
 
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             performances = performances.asReversed()
 
@@ -43,7 +43,7 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 UID로 검색할 수 있다." {
-            val performance = performanceTestUtils.createAndSavePerformance()
+            val performance = performancePersistenceUtils.createAndSavePerformance()
 
             val findPerformance = performanceRepository.findByUid(
                 performance.uid
@@ -53,11 +53,11 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 UID로 검색할 시 UID에 해당하는 정보만 나온다." {
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 5
             )
 
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             val actual = performanceRepository.findByUid(performances[2].uid)
 
@@ -66,11 +66,11 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance의 DateInfo를 검색할 수 있다." {
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(),
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(),
                 numShowtimes = 2
             )
-            val totalSeatCount = PerformanceTestDataGenerator.INIT_PERFORMANCE_PLACE_SEAT_COUNT
+            val totalSeatCount = PerformanceFixture.INIT_PERFORMANCE_PLACE_SEAT_COUNT
 
             val expected = performance.performanceDateTime.map {
                 PerformanceDateSummaryResult(
@@ -90,12 +90,12 @@ class PerformanceRepositoryImplTest(
 
         "PerformanceDate를 UID로 검색할 시 해당 UID에 해당하는 Date정보만 조회한다." {
 
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 2
             )
             val searchPerformance = performances[0]
 
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             val actual = performanceDateRepository.getDateInfo(searchPerformance.id)
             actual.size shouldBe searchPerformance.performanceDateTime.size
@@ -103,11 +103,11 @@ class PerformanceRepositoryImplTest(
         }
 
         "Performance를 UID로 FETCH JOIN해 검색할 수 있다." {
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 2
             )
 
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             val actual =
                 performanceRepository.findPerformanceByUidJoinWithPlaceAndSeat(performances[0].uid)
@@ -121,11 +121,11 @@ class PerformanceRepositoryImplTest(
         "Performance를 List로 조회할 수 있다." {
             val givenPerformanceCnt = 5
 
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = givenPerformanceCnt
             )
 
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             val cursorSize = 5
             val actual = performanceRepository.search(CursorInfoDto(limit = cursorSize))
@@ -138,9 +138,9 @@ class PerformanceRepositoryImplTest(
 
         "Performance를 Cursor로 포함하여 List로 조회할 수 있다." {
             var performances =
-                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 10)
+                PerformanceFixture.createPerformanceGroupbyRegion(performanceCount = 10)
 
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             performances = performances.sortedBy { it.id }.asReversed()
 
@@ -159,7 +159,7 @@ class PerformanceRepositoryImplTest(
 
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
-        PerformanceTestDataGenerator.reset()
-        performanceTestUtils.clearContext()
+        PerformanceFixture.reset()
+        performancePersistenceUtils.clearContext()
     }
 }

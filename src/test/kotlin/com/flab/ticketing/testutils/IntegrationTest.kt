@@ -6,9 +6,9 @@ import com.flab.ticketing.common.exception.ErrorInfo
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.flab.ticketing.testutils.config.IntegrationTestConfig
 import com.flab.ticketing.testutils.config.TestUtilConfig
-import com.flab.ticketing.testutils.persistence.OrderTestUtils
-import com.flab.ticketing.testutils.persistence.PerformanceTestUtils
-import com.flab.ticketing.testutils.persistence.UserTestUtils
+import com.flab.ticketing.testutils.persistence.OrderPersistenceUtils
+import com.flab.ticketing.testutils.persistence.PerformancePersistenceUtils
+import com.flab.ticketing.testutils.persistence.UserPersistenceUtils
 import com.icegreen.greenmail.util.GreenMail
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
@@ -48,13 +48,13 @@ abstract class IntegrationTest : BehaviorSpec() {
     protected lateinit var greenMail: GreenMail
 
     @Autowired
-    protected lateinit var userTestUtils: UserTestUtils
+    protected lateinit var userPersistenceUtils: UserPersistenceUtils
 
     @Autowired
-    protected lateinit var performanceTestUtils: PerformanceTestUtils
+    protected lateinit var performancePersistenceUtils: PerformancePersistenceUtils
 
     @Autowired
-    protected lateinit var orderTestUtils: OrderTestUtils
+    protected lateinit var orderPersistenceUtils: OrderPersistenceUtils
 
     @Autowired
     private lateinit var redisServer: RedisServer

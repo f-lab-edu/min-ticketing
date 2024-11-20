@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.integration
 
 import com.flab.ticketing.testutils.NonCiIntegrationTest
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
@@ -32,7 +32,7 @@ class PerformanceSearchIntegrationTest(
     init {
         given("공연 정보가 6개 이상 존재할 때") {
 
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 6
             )
             savePerformances(performances)
@@ -67,7 +67,7 @@ class PerformanceSearchIntegrationTest(
 
         given("공연 정보가 5개 이하로 존재할 시") {
 
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 5
             )
             savePerformances(performances)
@@ -105,14 +105,14 @@ class PerformanceSearchIntegrationTest(
 
         given("공연 정보가 존재할 때 - 지역 검색") {
 
-            val seoulRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val seoulRegionPerformances = PerformanceFixture.createPerformanceGroupbyRegion(
                 regionName = "서울",
                 performanceCount = 3
             )
 
             val gumiPerformanceCount = 3
 
-            val gumiRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val gumiRegionPerformances = PerformanceFixture.createPerformanceGroupbyRegion(
                 regionName = "구미",
                 performanceCount = gumiPerformanceCount
             )
@@ -149,12 +149,12 @@ class PerformanceSearchIntegrationTest(
             }
         }
         given("공연 정보가 존재할 때 - 최저 금액 검색") {
-            val region = PerformanceTestDataGenerator.createRegion()
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceFixture.createRegion()
+            val place = PerformanceFixture.createPerformancePlace(region)
 
             val performancePrices = listOf(2000, 3000, 4000)
 
-            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+            val performances = PerformanceFixture.createPerformancesPriceIn(
                 place = place,
                 priceIn = performancePrices
             )
@@ -190,12 +190,12 @@ class PerformanceSearchIntegrationTest(
         }
         given("공연 정보가 존재할 때 - 최고 금액 검색") {
 
-            val region = PerformanceTestDataGenerator.createRegion()
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceFixture.createRegion()
+            val place = PerformanceFixture.createPerformancePlace(region)
 
             val performancePrices = listOf(2000, 3000, 4000)
 
-            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+            val performances = PerformanceFixture.createPerformancesPriceIn(
                 place = place,
                 priceIn = performancePrices
             )
@@ -233,8 +233,8 @@ class PerformanceSearchIntegrationTest(
 
         given("공연 정보가 존재할 때 - 공연 날짜 검색") {
 
-            val region = PerformanceTestDataGenerator.createRegion()
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceFixture.createRegion()
+            val place = PerformanceFixture.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -245,7 +245,7 @@ class PerformanceSearchIntegrationTest(
                 ZoneId.of("Asia/Seoul")
             )
 
-            val performances = PerformanceTestDataGenerator.createPerformancesDatesIn(
+            val performances = PerformanceFixture.createPerformancesDatesIn(
                 place = place,
                 dateIn = listOf(performance1DateTime, performance2DateTime)
             )
@@ -286,10 +286,10 @@ class PerformanceSearchIntegrationTest(
         given("공연 정보가 존재할 때 - 공연 이름 검색") {
             val givenNames = listOf("멋진 공연", "예쁜 공연", "아주 멋진 공연")
 
-            val region = PerformanceTestDataGenerator.createRegion()
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceFixture.createRegion()
+            val place = PerformanceFixture.createPerformancePlace(region)
 
-            val performances = PerformanceTestDataGenerator.createPerformancesInNames(
+            val performances = PerformanceFixture.createPerformancesInNames(
                 place = place,
                 nameIn = givenNames
             )
@@ -326,8 +326,8 @@ class PerformanceSearchIntegrationTest(
         }
         given("공연 정보가 존재할 때 - 멀티 조건 검색") {
 
-            val region = PerformanceTestDataGenerator.createRegion()
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceFixture.createRegion()
+            val place = PerformanceFixture.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -336,21 +336,21 @@ class PerformanceSearchIntegrationTest(
             val performance1Price = 50000
             val performance1Name = "공공 공연"
 
-            val performance1 = PerformanceTestDataGenerator.createPerformance(
+            val performance1 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = performance1Price,
                 name = performance1Name
             )
 
-            val performance2 = PerformanceTestDataGenerator.createPerformance(
+            val performance2 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = 10000,
                 name = performance1Name
             )
 
-            val performance3 = PerformanceTestDataGenerator.createPerformance(
+            val performance3 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
@@ -395,7 +395,7 @@ class PerformanceSearchIntegrationTest(
 
         given("다수의 공연 정보가 존재할 때") {
 
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 10
             )
 

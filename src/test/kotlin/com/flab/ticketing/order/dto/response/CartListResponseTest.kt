@@ -2,8 +2,8 @@ package com.flab.ticketing.order.dto.response
 
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.testutils.UnitTest
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
+import com.flab.ticketing.testutils.fixture.UserFixture
 import io.kotest.matchers.collections.shouldContainAll
 
 class CartListResponseTest : UnitTest() {
@@ -11,9 +11,9 @@ class CartListResponseTest : UnitTest() {
     init {
         "Cart 리스트를 입력받아 CartListResponse 객체를 생성할 수 있다." {
             // given
-            val user = UserTestDataGenerator.createUser()
+            val user = UserFixture.createUser()
 
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val performance = PerformanceFixture.createPerformance()
             val performanceDateTime = performance.performanceDateTime[0]
 
             val carts = listOf(

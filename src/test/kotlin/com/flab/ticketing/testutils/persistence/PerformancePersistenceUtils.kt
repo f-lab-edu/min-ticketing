@@ -6,14 +6,14 @@ import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import java.time.ZonedDateTime
 
 /**
  * performance 데이터를 영속화하는데 도움을 주는 클래스입니다.
  * @author minseok kim
  */
-class PerformanceTestUtils(
+class PerformancePersistenceUtils(
     private val performanceRepository: PerformanceRepository,
     private val performancePlaceRepository: PerformancePlaceRepository,
     private val regionRepository: RegionRepository
@@ -35,13 +35,13 @@ class PerformanceTestUtils(
      * @author minseok kim
      */
     fun createAndSavePerformance(
-        place: PerformancePlace = PerformanceTestDataGenerator.createPerformancePlace(),
+        place: PerformancePlace = PerformanceFixture.createPerformancePlace(),
         name: String = "공연",
         numShowtimes: Int = 1,
-        showTimeStartDateTime: ZonedDateTime = PerformanceTestDataGenerator.INIT_PERFORMANCE_DATE,
+        showTimeStartDateTime: ZonedDateTime = PerformanceFixture.INIT_PERFORMANCE_DATE,
         price: Int = 10000
     ): Performance {
-        val performance = PerformanceTestDataGenerator.createPerformance(
+        val performance = PerformanceFixture.createPerformance(
             place, name, numShowtimes, showTimeStartDateTime, price
         )
 
@@ -69,7 +69,7 @@ class PerformanceTestUtils(
     }
 
     fun clearContext() {
-        PerformanceTestDataGenerator.reset()
+        PerformanceFixture.reset()
         performanceRepository.deleteAll()
         performancePlaceRepository.deleteAll()
         regionRepository.deleteAll()

@@ -33,7 +33,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
         given("유저 정보가 DB에 저장되어 있을 때 - 정상 처리") {
             val email = "email@email.com"
             val userPW = "abc1234!"
-            userTestUtils.saveNewUser(
+            userPersistenceUtils.saveNewUser(
                 email = email,
                 rawPassword = userPW
             )
@@ -90,7 +90,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            userTestUtils.saveNewUser(
+            userPersistenceUtils.saveNewUser(
                 email = email,
                 rawPassword = userPW
             )
@@ -140,7 +140,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -200,7 +200,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -223,7 +223,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(
                 email = email,
                 rawPassword = userPW,
                 createDate = Date(0)
@@ -249,7 +249,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("올바른 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
                 val uri = "/api/user/password"
@@ -281,7 +281,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("잘못된 현재 비밀번호, 올바른 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
                 val uri = "/api/user/password"
@@ -313,7 +313,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("영문, 숫자, 특수문자를 포함한 8글자 조건을 만족하지 못한 새 비밀번호로 변경을 시도할 시") {
                 val uri = "/api/user/password"
@@ -346,7 +346,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("서로 다른 newPassword와 newPasswordConfirm 입력시") {
                 val uri = "/api/user/password"
@@ -378,7 +378,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val userUid = "userUid"
             val userNickname = "nickname"
 
-            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(
+            val (_, givenToken) = userPersistenceUtils.saveUserAndCreateJwt(
                 uid = userUid,
                 email = userEmail,
                 rawPassword = userPW,
@@ -410,7 +410,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
         }
 
         afterEach {
-            userTestUtils.clearContext()
+            userPersistenceUtils.clearContext()
         }
     }
 

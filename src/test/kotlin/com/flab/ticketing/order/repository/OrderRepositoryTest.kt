@@ -6,8 +6,8 @@ import com.flab.ticketing.order.dto.request.OrderSearchConditions
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.testutils.RepositoryTest
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.OrderFixture
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -27,13 +27,13 @@ class OrderRepositoryTest : RepositoryTest() {
     init {
         "커서가 존재하지 않을 때 사용자 별로 주문 최신순으로 정렬해 조회할 수 있다." {
             // given
-            val user = userTestUtils.saveNewUser()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = userPersistenceUtils.saveNewUser()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
 
             val orders = List(5) {
-                OrderTestDataGenerator.createOrder(
+                OrderFixture.createOrder(
                     user = user
                 )
             }
@@ -55,13 +55,13 @@ class OrderRepositoryTest : RepositoryTest() {
 
         "커서가 존재할 때 사용자 별로 주문 최신순으로 정렬해 조회할 수 있다." {
             // given
-            val user = userTestUtils.saveNewUser()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = userPersistenceUtils.saveNewUser()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
 
             val orders = List(5) {
-                OrderTestDataGenerator.createOrder(
+                OrderFixture.createOrder(
                     user = user
                 )
             }
@@ -88,7 +88,7 @@ class OrderRepositoryTest : RepositoryTest() {
 
         "주문을 저장할 때 주문의 Reservation 객체가 0개라면 exception을 throw한다." {
             // given
-            val user = userTestUtils.saveNewUser()
+            val user = userPersistenceUtils.saveNewUser()
 
             val order = Order("order-001", user, Order.Payment(0, "카드", "paymentkey"))
 
@@ -103,13 +103,13 @@ class OrderRepositoryTest : RepositoryTest() {
 
         "주문을 조회할 때 Status로 조회할 수 있다." {
             // given
-            val user = userTestUtils.saveNewUser()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = userPersistenceUtils.saveNewUser()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
 
             val orders = List(5) {
-                OrderTestDataGenerator.createOrder(
+                OrderFixture.createOrder(
                     user = user
                 )
             }
@@ -140,8 +140,8 @@ class OrderRepositoryTest : RepositoryTest() {
 
         withContext(Dispatchers.IO) {
             orderRepository.deleteAll()
-            userTestUtils.clearContext()
-            performanceTestUtils.clearContext()
+            userPersistenceUtils.clearContext()
+            performancePersistenceUtils.clearContext()
         }
     }
 }

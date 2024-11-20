@@ -1,12 +1,10 @@
 package com.flab.ticketing.order.integration
 
 import com.flab.ticketing.order.dto.response.CartListResponse
-import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
-import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
@@ -24,7 +22,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class CartIntegrationTest : IntegrationTest() {
-    
+
     @Autowired
     private lateinit var cartRepository: CartRepository
 
@@ -34,14 +32,14 @@ class CartIntegrationTest : IntegrationTest() {
     init {
 
         given("시작하지 않은 공연 정보가 존재할 때") {
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
 
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
 
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
 
             `when`("로그인된 사용자가 에약되지 않은 좌석에 예약을 시도할 시") {
@@ -71,16 +69,16 @@ class CartIntegrationTest : IntegrationTest() {
         }
 
         given("시작하지 않은 공연 정보가 존재할 때 - 카트 중복") {
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
             val reservedSeat = place.seats[0]
 
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
-            orderTestUtils.createAndSaveCarts(
+            orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performanceDateTime,
                 seats = listOf(reservedSeat)
@@ -103,17 +101,17 @@ class CartIntegrationTest : IntegrationTest() {
         }
 
         given("시작하지 않은 공연 정보가 존재할 때 - 예약 중복") {
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
             val reservedSeat = place.seats[0]
 
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
             // 이미 존재하는 예약
-            orderTestUtils.createAndSaveOrder(
+            orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performanceDateTime,
                 seats = place.seats.subList(0, 1)
@@ -136,12 +134,12 @@ class CartIntegrationTest : IntegrationTest() {
         }
 
         given("장바구니의 요소가 존재할 때") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
-            val performance = performanceTestUtils.createAndSavePerformance()
+            val performance = performancePersistenceUtils.createAndSavePerformance()
             val performanceDateTime = performance.performanceDateTime[0]
 
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performanceDateTime,
                 seats = performance.performancePlace.seats.subList(0, 2)
@@ -183,11 +181,11 @@ class CartIntegrationTest : IntegrationTest() {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
 
-        PerformanceTestDataGenerator.reset()
+        PerformanceFixture.reset()
         withContext(Dispatchers.IO) {
-            orderTestUtils.clearContext()
-            userTestUtils.clearContext()
-            performanceTestUtils.clearContext()
+            orderPersistenceUtils.clearContext()
+            userPersistenceUtils.clearContext()
+            performancePersistenceUtils.clearContext()
             redisTemplate.connectionFactory?.connection?.flushAll()
         }
 

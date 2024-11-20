@@ -1,9 +1,9 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.testutils.UnitTest
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
+import com.flab.ticketing.testutils.fixture.UserFixture
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException
@@ -45,8 +45,8 @@ class ReservationServiceTest : UnitTest() {
 
     init {
         "예약 정보를 저장할 수 있다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance()
             val performanceDateTime = performance.performanceDateTime[0]
             val seatUid = performance.performancePlace.seats[0].uid
 
@@ -93,7 +93,7 @@ class ReservationServiceTest : UnitTest() {
         }
 
         "예약시 Performance가 DB에 저장되지 않다면 NotFoundException을 throw한다." {
-            val user = UserTestDataGenerator.createUser()
+            val user = UserFixture.createUser()
             val performanceUid = "perform001"
             val dateUid = "date001"
             val seatUid = "seat001"
@@ -111,8 +111,8 @@ class ReservationServiceTest : UnitTest() {
         }
 
         "예약시 PerformanceDateTime이 DB에 저장되어 있지 않다면 NotFoundException을 throw한다. " {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance()
             val dateUid = "date001"
             val seatUid = "seat001"
 
@@ -130,8 +130,8 @@ class ReservationServiceTest : UnitTest() {
         }
 
         "예약시 공연 장소에 seatUid가 포함되어 있지 않다면 InvalidValueException을 throw한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance()
             val performanceDateTime = performance.performanceDateTime[0]
             val seatUid = "invalidUid"
 
@@ -154,8 +154,8 @@ class ReservationServiceTest : UnitTest() {
         }
 
         "예약 정보가 이미 저장되어 있다면 DuplicatedException을 throw한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance()
             val performanceDateTime = performance.performanceDateTime[0]
             val seatUid = performance.performancePlace.seats[0].uid
 
@@ -183,8 +183,8 @@ class ReservationServiceTest : UnitTest() {
         }
 
         "예약시 이미 저장된 Cart가 존재한다면  DuplicatedException을 throw한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance()
             val performanceDateTime = performance.performanceDateTime[0]
             val seatUid = performance.performancePlace.seats[0].uid
 

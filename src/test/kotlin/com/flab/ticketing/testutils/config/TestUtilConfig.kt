@@ -6,9 +6,9 @@ import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
-import com.flab.ticketing.testutils.persistence.OrderTestUtils
-import com.flab.ticketing.testutils.persistence.PerformanceTestUtils
-import com.flab.ticketing.testutils.persistence.UserTestUtils
+import com.flab.ticketing.testutils.persistence.OrderPersistenceUtils
+import com.flab.ticketing.testutils.persistence.PerformancePersistenceUtils
+import com.flab.ticketing.testutils.persistence.UserPersistenceUtils
 import com.flab.ticketing.user.repository.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -42,8 +42,8 @@ class TestUtilConfig {
         jwtTokenProvider: JwtTokenProvider,
         userRepository: UserRepository,
         passwordEncoder: PasswordEncoder
-    ): UserTestUtils {
-        return UserTestUtils(userRepository, jwtTokenProvider, passwordEncoder)
+    ): UserPersistenceUtils {
+        return UserPersistenceUtils(userRepository, jwtTokenProvider, passwordEncoder)
     }
 
     @Bean
@@ -52,8 +52,8 @@ class TestUtilConfig {
         performancePlaceRepository: PerformancePlaceRepository,
         regionRepository: RegionRepository
 
-    ): PerformanceTestUtils {
-        return PerformanceTestUtils(
+    ): PerformancePersistenceUtils {
+        return PerformancePersistenceUtils(
             performanceRepository,
             performancePlaceRepository,
             regionRepository
@@ -64,8 +64,8 @@ class TestUtilConfig {
     fun orderTestUtils(
         cartRepository: CartRepository,
         orderRepository: OrderRepository
-    ): OrderTestUtils {
-        return OrderTestUtils(
+    ): OrderPersistenceUtils {
+        return OrderPersistenceUtils(
             cartRepository,
             orderRepository
         )

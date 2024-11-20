@@ -2,20 +2,20 @@ package com.flab.ticketing.testutils.persistence
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
+import com.flab.ticketing.testutils.fixture.UserFixture
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.*
 
 
-class UserTestUtils(
+class UserPersistenceUtils(
     private val userRepository: UserRepository,
     private val jwtTokenProvider: JwtTokenProvider,
     private val passwordEncoder: PasswordEncoder
 ) {
 
-    
+
     /**
      * 사용자 객체를 생성하고 DB에 저장 합니다.
      * @author minseok kim
@@ -26,7 +26,7 @@ class UserTestUtils(
         rawPassword: String = "enc123Rypt42ed",
         nickname: String = "nickname"
     ): User {
-        val user = UserTestDataGenerator.createUser(
+        val user = UserFixture.createUser(
             uid, email, passwordEncoder.encode(rawPassword), nickname
         )
 
@@ -46,7 +46,7 @@ class UserTestUtils(
         nickname: String = "nickname",
         createDate: Date = Date()
     ): Pair<User, String> {
-        val user = UserTestDataGenerator.createUser(
+        val user = UserFixture.createUser(
             uid, email, passwordEncoder.encode(rawPassword), nickname
         )
 

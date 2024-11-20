@@ -6,7 +6,7 @@ import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
+import com.flab.ticketing.testutils.fixture.OrderFixture
 import com.flab.ticketing.user.entity.User
 
 
@@ -14,7 +14,7 @@ import com.flab.ticketing.user.entity.User
  * order 관련 DB 저장을 도와주는 클래스로, Order 저장에 필요한 User와 Performance는 이미 영속화 되어 있다고 가정합니다.
  * @author minseok kim
  */
-class OrderTestUtils(
+class OrderPersistenceUtils(
     private val cartRepository: CartRepository,
     private val orderRepository: OrderRepository
 ) {
@@ -50,10 +50,10 @@ class OrderTestUtils(
     ): Order {
         assert(seats.isNotEmpty())
 
-        val reservations = OrderTestDataGenerator.createReservations(
+        val reservations = OrderFixture.createReservations(
             performanceDateTime,
             seats,
-            OrderTestDataGenerator.createOrder(user = user, payment = orderPayment, status = orderStatus)
+            OrderFixture.createOrder(user = user, payment = orderPayment, status = orderStatus)
         )
 
         val order = reservations[0].order
@@ -73,7 +73,7 @@ class OrderTestUtils(
         // cascade 정책에 의해 reservation도 함께 제거됩니다.
         orderRepository.deleteAll()
         cartRepository.deleteAll()
-        OrderTestDataGenerator.clear()
+        OrderFixture.clear()
     }
 
 }

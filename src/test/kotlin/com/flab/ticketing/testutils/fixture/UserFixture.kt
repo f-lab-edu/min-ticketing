@@ -1,8 +1,8 @@
-package com.flab.ticketing.testutils.generator
+package com.flab.ticketing.testutils.fixture
 
 import com.flab.ticketing.user.entity.User
 
-object UserTestDataGenerator {
+object UserFixture {
 
     fun createUser(
         uid: String = "uid1232",

@@ -1,6 +1,6 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.testutils.conditions.NonCiEnvironment
 import com.flab.ticketing.testutils.config.ElasticSearchConfiguration
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
@@ -42,7 +42,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
         "공연 정보를 조건 없이 조회할 수 있다." {
             // given
             val performanceDocuments =
-                PerformanceTestDataGenerator.createPerformanceGroupbyRegion(performanceCount = 5)
+                PerformanceFixture.createPerformanceGroupbyRegion(performanceCount = 5)
                     .map { PerformanceSearchSchema.of(it) }
 
             performanceSearchRepository.saveAll(performanceDocuments)
@@ -56,7 +56,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
         "DB에 Performance List가 limit 이상의 갯수를 저장하고 있다면, 올바르게 limit개 만큼의 데이터를 갖고 올 수 있다." {
 
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 10,
                 numShowtimes = 1,
                 seatPerPlace = 1
@@ -72,7 +72,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
         }
 
         "다음 커서 정보를 받아 다음 데이터들을 가져올 수 있다." {
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 10,
                 numShowtimes = 1,
                 seatPerPlace = 1
@@ -95,14 +95,14 @@ class PerformanceSearchRepositoryTest : StringSpec() {
         "Performance를 Region 이름으로 필터링하여 조회할 수 있다." {
 
             //given
-            val seoulRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val seoulRegionPerformances = PerformanceFixture.createPerformanceGroupbyRegion(
                 regionName = "서울",
                 performanceCount = 3
             ).map { PerformanceSearchSchema.of(it) }
 
             val gumiPerformanceCount = 3
 
-            val gumiRegionPerformances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val gumiRegionPerformances = PerformanceFixture.createPerformanceGroupbyRegion(
                 regionName = "구미",
                 performanceCount = gumiPerformanceCount
             ).map { PerformanceSearchSchema.of(it) }
@@ -127,7 +127,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
             // given
             val givenPriceRange = listOf(2000, 3000, 4000)
-            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+            val performances = PerformanceFixture.createPerformancesPriceIn(
                 priceIn = givenPriceRange
             ).map { PerformanceSearchSchema.of(it) }
 
@@ -149,7 +149,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
         "Performance를 최대 금액으로 필터링하여 조회할 수 있다." {
 
             val givenPriceRange = listOf(2000, 3000, 4000)
-            val performances = PerformanceTestDataGenerator.createPerformancesPriceIn(
+            val performances = PerformanceFixture.createPerformancesPriceIn(
                 priceIn = givenPriceRange
             ).map { PerformanceSearchSchema.of(it) }
 
@@ -173,7 +173,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             // 2024-1-1 10:00(Asia/Seoul) 공연 정보
             val performance1 =
                 PerformanceSearchSchema.of(
-                    PerformanceTestDataGenerator.createPerformance(
+                    PerformanceFixture.createPerformance(
                         showTimeStartDateTime = ZonedDateTime.of(
                             LocalDateTime.of(2024, 1, 1, 10, 0, 0),
                             ZoneId.of("Asia/Seoul")
@@ -185,7 +185,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             // 2023-1-1 10:00(Asia/Seoul) 공연 정보
             val performance2 =
                 PerformanceSearchSchema.of(
-                    PerformanceTestDataGenerator.createPerformance(
+                    PerformanceFixture.createPerformance(
                         showTimeStartDateTime = ZonedDateTime.of(
                             LocalDateTime.of(2023, 1, 1, 10, 0, 0),
                             ZoneId.of("Asia/Seoul")
@@ -217,7 +217,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             val givenNames = listOf("예쁜 공연", "멋진 공연", "아주 멋진 공연", "공연 멋진", "공연")
 
 
-            val performances = PerformanceTestDataGenerator.createPerformancesInNames(
+            val performances = PerformanceFixture.createPerformancesInNames(
                 nameIn = givenNames
             ).map { PerformanceSearchSchema.of(it) }
 
@@ -233,8 +233,8 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
         "Performance를 모든 조건을 넣어 검색할 수 있다." {
 
-            val region = PerformanceTestDataGenerator.createRegion()
-            val place = PerformanceTestDataGenerator.createPerformancePlace(region)
+            val region = PerformanceFixture.createRegion()
+            val place = PerformanceFixture.createPerformancePlace(region)
 
             val performance1DateTime = ZonedDateTime.of(
                 LocalDateTime.of(2024, 1, 1, 10, 0, 0),
@@ -243,21 +243,21 @@ class PerformanceSearchRepositoryTest : StringSpec() {
             val performance1Price = 50000
             val performance1Name = "공공 공연"
 
-            val performance1 = PerformanceTestDataGenerator.createPerformance(
+            val performance1 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = performance1Price,
                 name = performance1Name
             )
 
-            val performance2 = PerformanceTestDataGenerator.createPerformance(
+            val performance2 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = performance1DateTime,
                 price = 10000,
                 name = performance1Name
             )
 
-            val performance3 = PerformanceTestDataGenerator.createPerformance(
+            val performance3 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),
@@ -267,7 +267,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
                 name = performance1Name
             )
 
-            val performance4 = PerformanceTestDataGenerator.createPerformance(
+            val performance4 = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = ZonedDateTime.of(
                     LocalDateTime.of(2023, 1, 1, 10, 0, 0),

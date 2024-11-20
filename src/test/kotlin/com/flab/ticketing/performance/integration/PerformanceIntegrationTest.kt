@@ -10,7 +10,7 @@ import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
@@ -33,14 +33,14 @@ class PerformanceIntegrationTest : IntegrationTest() {
     init {
 
         given("공연 정보가 존재할 때 - 상세 조회 검색") {
-            val user = userTestUtils.saveNewUser()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = userPersistenceUtils.saveNewUser()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val placeSeatSize = performance.performancePlace.seats.size
 
 
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = performance.performancePlace.seats.subList(0, 3)
@@ -100,7 +100,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
         }
 
         given("공연 정보가 존재할 때") {
-            val place = PerformancePlace(PerformanceTestDataGenerator.createRegion(), "장소")
+            val place = PerformancePlace(PerformanceFixture.createRegion(), "장소")
             val seatRowColumn = listOf(
                 1 to 1,
                 1 to 2,
@@ -113,9 +113,9 @@ class PerformanceIntegrationTest : IntegrationTest() {
                 place.addSeat("seat$index", row, col)
             }
 
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 place = place,
                 numShowtimes = 2,
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
@@ -124,13 +124,13 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
 
             // dummy order와 dummy cart
-            orderTestUtils.createAndSaveOrder(
+            orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = performance.performancePlace.seats.subList(0, 3)
             )
 
-            orderTestUtils.createAndSaveCarts(
+            orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = performance.performancePlace.seats.subList(3, 4)
@@ -201,7 +201,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
         }
         given("공연 날짜 정보가 존재하지 않을 때") {
 
-            val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (_, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
             `when`("로그인한 유저가 잘못된 공연과, 공연 날짜 정보로 좌석 정보를 조회할 시") {
                 val invalidPerformanceId = "Per"
@@ -221,8 +221,8 @@ class PerformanceIntegrationTest : IntegrationTest() {
             }
         }
         given("공연 정보가 존재할 때 - 잘못된 날짜 고유 식별자") {
-            val performance = performanceTestUtils.createAndSavePerformance()
-            val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance()
+            val (_, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
             `when`("공연 UID는 올바르나, 공연 날짜 UID가 공연에 속하지 않은 경우") {
                 val performanceUid = performance.uid
@@ -245,14 +245,14 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
         given("이미 지난 공연 정보가 존재할 때") {
 
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.of(LocalDateTime.MIN, ZoneId.of("Asia/Seoul")),
                 numShowtimes = 1
             )
 
             val performanceDateTime = performance.performanceDateTime[0]
 
-            val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (_, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
             `when`("로그인한 사용자가 이미 지난 공연의 좌석 정보를 조회할 시") {
                 val uri = "/api/performances/${performance.uid}/dates/${performanceDateTime.uid}"
@@ -272,10 +272,10 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
 
         given("공연 정보가 6개 이상 존재할 때 - v2") {
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 6
             )
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
                 val uri = "/api/performances"
@@ -309,10 +309,10 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
         given("지역 정보가 존재할 때") {
             val regionsList = List(5) {
-                PerformanceTestDataGenerator.createRegion("region$it")
+                PerformanceFixture.createRegion("region$it")
             }
 
-            performanceTestUtils.saveRegions(regionsList)
+            performancePersistenceUtils.saveRegions(regionsList)
 
             `when`("지역을 조회할 시") {
                 val uri = "/api/performances/regions"
@@ -343,11 +343,11 @@ class PerformanceIntegrationTest : IntegrationTest() {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
 
-        PerformanceTestDataGenerator.reset()
+        PerformanceFixture.reset()
         withContext(Dispatchers.IO) {
-            orderTestUtils.clearContext()
-            userTestUtils.clearContext()
-            performanceTestUtils.clearContext()
+            orderPersistenceUtils.clearContext()
+            userPersistenceUtils.clearContext()
+            performancePersistenceUtils.clearContext()
         }
 
 

@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.entity.BaseEntity
@@ -43,7 +43,7 @@ class PerformanceServiceTest : UnitTest() {
     init {
         "Performance Detail 정보를 검색할 수 있다." {
 
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = PerformanceFixture.createPerformance(
                 numShowtimes = 2
             )
 
@@ -104,7 +104,7 @@ class PerformanceServiceTest : UnitTest() {
         }
 
         "Performance Date의 좌석 정보를 조회할 수 있다." {
-            val place = PerformancePlace(PerformanceTestDataGenerator.createRegion(), "장소")
+            val place = PerformancePlace(PerformanceFixture.createRegion(), "장소")
             val seatDataList = listOf(
                 1 to 1,
                 1 to 2,
@@ -118,7 +118,7 @@ class PerformanceServiceTest : UnitTest() {
             }
 
 
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = PerformanceFixture.createPerformance(
                 place = place,
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
@@ -189,7 +189,7 @@ class PerformanceServiceTest : UnitTest() {
         }
 
         "Performance의 목록을 조회하고, 각 Performance의 StartDate와 EndDate를 조회해 매핑 한 후 반환할 수 있다." {
-            var performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            var performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 6
             )
             performances.forEachIndexed { idx, it -> (it as BaseEntity).setIdUsingReflection(idx.toLong()) }
@@ -225,7 +225,7 @@ class PerformanceServiceTest : UnitTest() {
         "Region 객체를 조회하여 RegionInfoResponse로 변환할 수 있다." {
             // given
             val regions = MutableList(5) {
-                PerformanceTestDataGenerator.createRegion("region$it")
+                PerformanceFixture.createRegion("region$it")
             }
 
             every { performanceReader.getRegions() } returns regions

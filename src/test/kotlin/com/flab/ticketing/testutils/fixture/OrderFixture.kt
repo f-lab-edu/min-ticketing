@@ -1,4 +1,4 @@
-package com.flab.ticketing.testutils.generator
+package com.flab.ticketing.testutils.fixture
 
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.entity.Reservation
@@ -7,7 +7,7 @@ import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.user.entity.User
 import java.util.concurrent.atomic.AtomicInteger
 
-object OrderTestDataGenerator {
+object OrderFixture {
 
     private var orderCounter = AtomicInteger()
 

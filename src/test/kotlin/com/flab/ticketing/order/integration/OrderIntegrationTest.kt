@@ -20,7 +20,7 @@ import com.flab.ticketing.order.service.client.TossPaymentClient.Companion.TOSS_
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.user.entity.User
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -58,15 +58,15 @@ class OrderIntegrationTest : IntegrationTest() {
     init {
 
         given("사용자의 장바구니 정보가 존재할 때") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
 
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performanceDateTime,
                 seats = performancePlace.seats.subList(0, 5)
@@ -103,14 +103,14 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("사용자의 장바구니 정보가 존재할 때 - 잘못된 Cart UID 포함") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performanceDateTime,
                 seats = performancePlace.seats.subList(0, 5)
@@ -139,11 +139,11 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("주문 생성이 완료되었을 때") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = performance.performancePlace.seats.subList(0, 2)
@@ -191,12 +191,12 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("주문 생성이 완료 되었을 때 - 잘못된 유저 요청") {
-            val user = userTestUtils.saveNewUser()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = userPersistenceUtils.saveNewUser()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
 
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = performance.performancePlace.seats.subList(0, 2)
@@ -219,7 +219,7 @@ class OrderIntegrationTest : IntegrationTest() {
             )
 
             `when`("다른 유저로 Order 주문 확정 API 호출 시") {
-                val (_, jwt) = userTestUtils.saveUserAndCreateJwt(
+                val (_, jwt) = userPersistenceUtils.saveUserAndCreateJwt(
                     uid = "user002",
                     email = "email2@email.com"
                 )
@@ -242,11 +242,11 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("주문 생성이 완료 되었을 때 - 토스 페이 API 정상 응답이 아닌 경우") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = performanceTestUtils.createAndSavePerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
-            val carts = orderTestUtils.createAndSaveCarts(
+            val carts = orderPersistenceUtils.createAndSaveCarts(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = performance.performancePlace.seats.subList(0, 2)
@@ -296,25 +296,25 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("사용자의 주문 정보가 존재할 때") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 2,
                 seatPerPlace = 5
             )
-            performanceTestUtils.savePerformances(performances)
+            performancePersistenceUtils.savePerformances(performances)
 
-            
-            val order1 = orderTestUtils.createAndSaveOrder(
+
+            val order1 = orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performances[0].performanceDateTime[0],
                 seats = listOf(performances[0].performancePlace.seats[0])
             )
-            val order2 = orderTestUtils.createAndSaveOrder(
+            val order2 = orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performances[1].performanceDateTime[0],
                 seats = listOf(performances[1].performancePlace.seats[0])
             )
-            val order3 = orderTestUtils.createAndSaveOrder(
+            val order3 = orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performances[1].performanceDateTime[1],
                 seats = listOf(performances[1].performancePlace.seats[1])
@@ -373,12 +373,12 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
 
-            val order = orderTestUtils.createAndSaveOrder(
+            val order = orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = listOf(performance.performancePlace.seats[0]),
@@ -406,11 +406,11 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = performanceTestUtils.createAndSavePerformance(
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = orderTestUtils.createAndSaveOrder(
+            val order = orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = listOf(performance.performancePlace.seats[0]),
@@ -443,16 +443,16 @@ class OrderIntegrationTest : IntegrationTest() {
 
 
         given("주문의 상태가 CANCELED인 주문이 존재할 때") {
-            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = performanceTestUtils.createAndSavePerformance()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance()
 
-            orderTestUtils.createAndSaveOrder(
+            orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = listOf(performance.performancePlace.seats[0]),
             )
 
-            val canceledOrder = orderTestUtils.createAndSaveOrder(
+            val canceledOrder = orderPersistenceUtils.createAndSaveOrder(
                 user = user,
                 performanceDateTime = performance.performanceDateTime[0],
                 seats = listOf(performance.performancePlace.seats[0]),
@@ -493,11 +493,11 @@ class OrderIntegrationTest : IntegrationTest() {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
 
-        PerformanceTestDataGenerator.reset()
+        PerformanceFixture.reset()
         withContext(Dispatchers.IO) {
-            orderTestUtils.clearContext()
-            userTestUtils.clearContext()
-            performanceTestUtils.clearContext()
+            orderPersistenceUtils.clearContext()
+            userPersistenceUtils.clearContext()
+            performancePersistenceUtils.clearContext()
             orderMetaDataRepository.deleteAll()
             redisTemplate.connectionFactory?.connection?.flushAll()
         }

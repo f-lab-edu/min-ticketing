@@ -4,7 +4,7 @@ import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.common.exception.UnAuthorizedException
 import com.flab.ticketing.testutils.UnitTest
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
+import com.flab.ticketing.testutils.fixture.UserFixture
 import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.fail
 import io.kotest.assertions.throwables.shouldThrow
@@ -28,7 +28,7 @@ class CustomUserDetailServiceTest : UnitTest() {
             val uid = "uid"
             val nickname = "nickname"
 
-            every { userReader.findByEmail(email) } returns UserTestDataGenerator.createUser(
+            every { userReader.findByEmail(email) } returns UserFixture.createUser(
                 email = email,
                 encryptedPassword = userPW,
                 uid = uid,

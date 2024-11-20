@@ -31,7 +31,7 @@ class CommonIntegrationTest : IntegrationTest() {
 
 
         given("특정 URL이 존재하지 않을 때 - 인증된 사용자") {
-            val (_, token) = userTestUtils.saveUserAndCreateJwt()
+            val (_, token) = userPersistenceUtils.saveUserAndCreateJwt()
 
             `when`("사용자가 해당 URL에 접근하고자 하면") {
                 val uri = "/api/notused"
@@ -54,7 +54,7 @@ class CommonIntegrationTest : IntegrationTest() {
 
     override suspend fun beforeEach(testCase: TestCase) {
         withContext(Dispatchers.IO) {
-            userTestUtils.clearContext()
+            userPersistenceUtils.clearContext()
         }
     }
 }

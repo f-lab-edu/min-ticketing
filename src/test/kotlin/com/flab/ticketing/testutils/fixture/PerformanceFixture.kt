@@ -1,4 +1,4 @@
-package com.flab.ticketing.testutils.generator
+package com.flab.ticketing.testutils.fixture
 
 import com.flab.ticketing.common.entity.Region
 import com.flab.ticketing.performance.entity.Performance
@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
-object PerformanceTestDataGenerator {
+object PerformanceFixture {
 
     private var regionCounter = 0
     private var seatCounter = 0
