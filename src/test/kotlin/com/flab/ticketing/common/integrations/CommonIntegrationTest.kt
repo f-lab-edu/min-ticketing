@@ -3,7 +3,7 @@ package com.flab.ticketing.common.integrations
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.UserTestDataGenerator
+import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase

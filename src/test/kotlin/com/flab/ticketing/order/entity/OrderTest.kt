@@ -1,8 +1,8 @@
 package com.flab.ticketing.order.entity
 
-import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import com.flab.ticketing.testutils.UnitTest
-import com.flab.ticketing.testutils.UserTestDataGenerator
+import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import io.kotest.matchers.collections.shouldContainAnyOf
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe

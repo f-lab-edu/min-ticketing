@@ -1,8 +1,8 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.UserTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.repository.CartRepository

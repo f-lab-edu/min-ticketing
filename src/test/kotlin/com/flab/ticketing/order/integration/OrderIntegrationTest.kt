@@ -4,9 +4,9 @@ import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.OrderTestDataGenerator
-import com.flab.ticketing.testutils.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.UserTestDataGenerator
+import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest

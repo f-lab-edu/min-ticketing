@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.entity.BaseEntity

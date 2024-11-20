@@ -1,6 +1,6 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import com.flab.ticketing.testutils.RepositoryTest
 import com.flab.ticketing.performance.entity.PerformancePlace
 import io.kotest.core.test.TestCase

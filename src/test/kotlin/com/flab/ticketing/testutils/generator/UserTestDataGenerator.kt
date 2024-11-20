@@ -1,4 +1,4 @@
-package com.flab.ticketing.testutils
+package com.flab.ticketing.testutils.generator
 
 import com.flab.ticketing.user.entity.User
 

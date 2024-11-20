@@ -1,6 +1,6 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import com.flab.ticketing.testutils.conditions.NonCiEnvironment
 import com.flab.ticketing.testutils.config.ElasticSearchConfiguration
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
