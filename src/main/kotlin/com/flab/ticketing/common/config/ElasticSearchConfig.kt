@@ -3,7 +3,6 @@ package com.flab.ticketing.common.config
 import org.apache.http.ssl.SSLContextBuilder
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Profile
 import org.springframework.data.elasticsearch.client.ClientConfiguration
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfiguration
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories
@@ -16,8 +15,8 @@ import java.security.cert.X509Certificate
 class ElasticSearchConfig {
 
 
-    @Configuration
-    @Profile("dev")
+    //    @Configuration
+//    @Profile("dev")
     internal class LocalElasticSearchConfig(
         @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String
     ) : ElasticsearchConfiguration() {
@@ -32,7 +31,7 @@ class ElasticSearchConfig {
     }
 
     @Configuration
-    @Profile("prod")
+//    @Profile("prod")
     internal class ProductionElasticSearchConfig(
         @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String,
         @Value("\${spring.data.elasticsearch.api-key}") private val elasticApiKey: String

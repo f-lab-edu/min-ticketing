@@ -111,6 +111,7 @@ spring:
       repositories:
         enabled: true
       url: localhost:9200
+      api-key: bTdXRVBwTUJXSzA4WmViVDNuSkc6VF9tbEM4WTNSZ2U3NVM0allDTW44QQ==
   web:
     resources:
       add-mappings: false
