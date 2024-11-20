@@ -6,10 +6,6 @@ import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
-import com.flab.ticketing.performance.entity.Performance
-import com.flab.ticketing.performance.repository.PerformancePlaceRepository
-import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
 import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
@@ -32,15 +28,6 @@ import java.time.ZonedDateTime
 class CartIntegrationTest : IntegrationTest() {
 
     @Autowired
-    private lateinit var performanceRepository: PerformanceRepository
-
-    @Autowired
-    private lateinit var regionRepository: RegionRepository
-
-    @Autowired
-    private lateinit var placeRepository: PerformancePlaceRepository
-
-    @Autowired
     private lateinit var orderRepository: OrderRepository
 
     @Autowired
@@ -51,14 +38,14 @@ class CartIntegrationTest : IntegrationTest() {
 
     init {
 
-        given("공연 정보가 존재할 때") {
-            val performance = PerformanceTestDataGenerator.createPerformance(
+        given("시작하지 않은 공연 정보가 존재할 때") {
+            val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
+
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
 
-            savePerformance(listOf(performance))
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
 
@@ -88,15 +75,14 @@ class CartIntegrationTest : IntegrationTest() {
             }
         }
 
-        given("공연 정보가 존재할 때 - 카트 중복") {
-            val performance = PerformanceTestDataGenerator.createPerformance(
+        given("시작하지 않은 공연 정보가 존재할 때 - 카트 중복") {
+            val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
             val reservedSeat = place.seats[0]
 
-            savePerformance(listOf(performance))
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             cartRepository.save(Cart("cart001", reservedSeat, performanceDateTime, user))
@@ -117,8 +103,8 @@ class CartIntegrationTest : IntegrationTest() {
             }
         }
 
-        given("공연 정보가 존재할 때 - 예약 중복") {
-            val performance = PerformanceTestDataGenerator.createPerformance(
+        given("시작하지 않은 공연 정보가 존재할 때 - 예약 중복") {
+            val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
             )
             val performanceDateTime = performance.performanceDateTime[0]
@@ -132,7 +118,6 @@ class CartIntegrationTest : IntegrationTest() {
                 place.seats.subList(0, 1),
                 OrderTestDataGenerator.createOrder(user = user)
             )
-            savePerformance(listOf(performance))
             saveOrder(reservations[0].order)
 
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
@@ -154,7 +139,7 @@ class CartIntegrationTest : IntegrationTest() {
         given("장바구니의 요소가 존재할 때") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val performance = performanceTestUtils.createAndSavePerformance()
             val performanceDateTime = performance.performanceDateTime[0]
 
             val carts = listOf(
@@ -173,7 +158,6 @@ class CartIntegrationTest : IntegrationTest() {
                 )
             )
 
-            savePerformance(listOf(performance))
             cartRepository.saveAll(carts)
             `when`("장바구니를 조회할 시") {
                 val uri = "/api/orders/carts"
@@ -222,23 +206,12 @@ class CartIntegrationTest : IntegrationTest() {
         withContext(Dispatchers.IO) {
             cartRepository.deleteAll()
             orderRepository.deleteAll()
-            performanceRepository.deleteAll()
             userTestUtils.clearContext()
-            placeRepository.deleteAll()
-            regionRepository.deleteAll()
+            performanceTestUtils.clearContext()
             redisTemplate.connectionFactory?.connection?.flushAll()
         }
 
 
-    }
-
-    private fun savePerformance(performances: List<Performance>) {
-        regionRepository.save(performances[0].performancePlace.region)
-        placeRepository.save(performances[0].performancePlace)
-
-        performances.forEach {
-            performanceRepository.save(it)
-        }
     }
 
 

@@ -1,6 +1,10 @@
 package com.flab.ticketing.testutils.config
 
 import com.flab.ticketing.auth.utils.JwtTokenProvider
+import com.flab.ticketing.performance.repository.PerformancePlaceRepository
+import com.flab.ticketing.performance.repository.PerformanceRepository
+import com.flab.ticketing.performance.repository.RegionRepository
+import com.flab.ticketing.testutils.persistence.PerformanceTestUtils
 import com.flab.ticketing.testutils.persistence.UserTestUtils
 import com.flab.ticketing.user.repository.UserRepository
 import org.springframework.beans.factory.annotation.Value
@@ -39,5 +43,18 @@ class TestUtilConfig {
         return UserTestUtils(userRepository, jwtTokenProvider, passwordEncoder)
     }
 
+    @Bean
+    fun performanceTestUtils(
+        performanceRepository: PerformanceRepository,
+        performancePlaceRepository: PerformancePlaceRepository,
+        regionRepository: RegionRepository
+
+    ): PerformanceTestUtils {
+        return PerformanceTestUtils(
+            performanceRepository,
+            performancePlaceRepository,
+            regionRepository
+        )
+    }
 
 }

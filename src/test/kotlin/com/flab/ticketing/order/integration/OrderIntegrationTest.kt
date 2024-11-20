@@ -1,7 +1,5 @@
 package com.flab.ticketing.order.integration
 
-import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
@@ -20,16 +18,11 @@ import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.service.client.TossPaymentClient.Companion.TOSS_EXCEPTION_PREFIX
-import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
-import com.flab.ticketing.performance.repository.PerformancePlaceRepository
-import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
 import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.user.entity.User
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -59,20 +52,11 @@ class OrderIntegrationTest : IntegrationTest() {
     private lateinit var cartRepository: CartRepository
 
     @Autowired
-    private lateinit var performanceRepository: PerformanceRepository
-
-    @Autowired
-    private lateinit var regionRepository: RegionRepository
-
-    @Autowired
-    private lateinit var placeRepository: PerformancePlaceRepository
-
-    @Autowired
     private lateinit var orderRepository: OrderRepository
 
     @Autowired
     private lateinit var orderMetaDataRepository: OrderMetaDataRepository
-    
+
     @Autowired
     private lateinit var redisTemplate: RedisTemplate<String, String>
 
@@ -81,7 +65,7 @@ class OrderIntegrationTest : IntegrationTest() {
         given("사용자의 장바구니 정보가 존재할 때") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
@@ -90,7 +74,6 @@ class OrderIntegrationTest : IntegrationTest() {
 
             val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
 
-            savePerformance(listOf(performance))
             cartRepository.saveAll(carts)
 
 
@@ -126,16 +109,13 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("사용자의 장바구니 정보가 존재할 때 - 잘못된 Cart UID 포함") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-
             val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
-
-            savePerformance(listOf(performance))
 
             cartRepository.saveAll(carts)
 
@@ -163,10 +143,11 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("주문 생성이 완료되었을 때") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
+
             val seats = performance.performancePlace.seats
             val carts = listOf(
                 Cart("cart1", seats[0], performanceDateTime, user),
@@ -174,7 +155,6 @@ class OrderIntegrationTest : IntegrationTest() {
             )
 
 
-            savePerformance(listOf(performance))
             cartRepository.saveAll(carts)
             orderMetaDataRepository.save(
                 OrderMetaData(
@@ -219,7 +199,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("주문 생성이 완료 되었을 때 - 잘못된 유저 요청") {
             val user = userTestUtils.saveNewUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
@@ -229,7 +209,6 @@ class OrderIntegrationTest : IntegrationTest() {
                 Cart("cart2", seats[1], performanceDateTime, user)
             )
 
-            savePerformance(listOf(performance))
             cartRepository.saveAll(carts)
 
             orderMetaDataRepository.save(
@@ -273,7 +252,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("주문 생성이 완료 되었을 때 - 토스 페이 API 정상 응답이 아닌 경우") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
@@ -283,7 +262,6 @@ class OrderIntegrationTest : IntegrationTest() {
                 Cart("cart2", seats[1], performanceDateTime, user)
             )
 
-            savePerformance(listOf(performance))
             cartRepository.saveAll(carts)
 
             orderMetaDataRepository.save(
@@ -350,7 +328,7 @@ class OrderIntegrationTest : IntegrationTest() {
             order2.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[0])
             order3.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[1])
 
-            savePerformance(performances)
+            performanceTestUtils.savePerformances(performances)
             orderRepository.save(order1)
             orderRepository.save(order2)
             orderRepository.save(order3)
@@ -408,14 +386,13 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
             val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
             order.status = Order.OrderStatus.COMPLETED
 
-            savePerformance(listOf(performance))
             orderRepository.save(order)
 
             setUpTossPaymentCancelResponse()
@@ -441,14 +418,13 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
             val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
             order.status = Order.OrderStatus.COMPLETED
 
-            savePerformance(listOf(performance))
             orderRepository.save(order)
 
             val tossErrorResponse = setUpTossPaymentFailCancelResponse()
@@ -479,7 +455,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         given("주문의 상태가 CANCELED인 주문이 존재할 때") {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val performance = performanceTestUtils.createAndSavePerformance()
 
             val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
@@ -493,7 +469,6 @@ class OrderIntegrationTest : IntegrationTest() {
             canceledOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
             canceledOrder.status = Order.OrderStatus.CANCELED
 
-            savePerformance(listOf(performance))
             orderRepository.saveAll(listOf(order, canceledOrder))
 
             `when`("주문이 CANCELED 상태인 주문을 조회할 시") {
@@ -534,9 +509,7 @@ class OrderIntegrationTest : IntegrationTest() {
             cartRepository.deleteAll()
             orderRepository.deleteAll()
             userTestUtils.clearContext()
-            performanceRepository.deleteAll()
-            placeRepository.deleteAll()
-            regionRepository.deleteAll()
+            performanceTestUtils.clearContext()
             orderMetaDataRepository.deleteAll()
             redisTemplate.connectionFactory?.connection?.flushAll()
         }
@@ -680,15 +653,6 @@ class OrderIntegrationTest : IntegrationTest() {
     private fun setUpTossPaymentFailResponse(expectStatus: HttpStatus, resp: Map<String, String>) {
         val body = objectMapper.writeValueAsString(resp)
         mockServerUtils.addMockResponse(expectStatus, body)
-    }
-
-    private fun savePerformance(performances: List<Performance>) {
-        regionRepository.save(performances[0].performancePlace.region)
-        placeRepository.save(performances[0].performancePlace)
-
-        performances.forEach {
-            performanceRepository.save(it)
-        }
     }
 
     private fun createCarts(

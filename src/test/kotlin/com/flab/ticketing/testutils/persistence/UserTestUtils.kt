@@ -15,23 +15,7 @@ class UserTestUtils(
     private val passwordEncoder: PasswordEncoder
 ) {
 
-
-    /**
-     * 사용자 객체를 생성하고 반환합니다.
-     * @author minseok kim
-     */
-    fun createUser(
-        uid: String = "uid1232",
-        email: String = "email@email.com",
-        rawPassword: String = "enc123Rypt42ed",
-        nickname: String = "nickname"
-    ): User {
-        return UserTestDataGenerator.createUser(
-            uid, email, passwordEncoder.encode(rawPassword), nickname
-        )
-    }
-
-
+    
     /**
      * 사용자 객체를 생성하고 DB에 저장 합니다.
      * @author minseok kim

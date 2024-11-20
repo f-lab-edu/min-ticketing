@@ -13,7 +13,7 @@ object PerformanceTestDataGenerator {
     private var seatCounter = 0
     private var performanceCounter = 0
     private var datetimeCounter = 0
-    private val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
+    val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
 
     fun createRegion(name: String = "지역"): Region {
         return Region(generateUid("region"), name)

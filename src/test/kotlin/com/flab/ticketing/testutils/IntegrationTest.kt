@@ -6,6 +6,7 @@ import com.flab.ticketing.common.exception.ErrorInfo
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.flab.ticketing.testutils.config.IntegrationTestConfig
 import com.flab.ticketing.testutils.config.TestUtilConfig
+import com.flab.ticketing.testutils.persistence.PerformanceTestUtils
 import com.flab.ticketing.testutils.persistence.UserTestUtils
 import com.icegreen.greenmail.util.GreenMail
 import com.ninjasquad.springmockk.MockkBean
@@ -47,6 +48,9 @@ abstract class IntegrationTest : BehaviorSpec() {
 
     @Autowired
     protected lateinit var userTestUtils: UserTestUtils
+
+    @Autowired
+    protected lateinit var performanceTestUtils: PerformanceTestUtils
 
     @Autowired
     private lateinit var redisServer: RedisServer
