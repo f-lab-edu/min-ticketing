@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.service
 
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.exception.UnAuthorizedException
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader

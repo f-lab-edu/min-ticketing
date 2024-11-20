@@ -1,8 +1,8 @@
 package com.flab.ticketing.performance.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.entity.BaseEntity
 import com.flab.ticketing.common.exception.NotFoundException
@@ -206,7 +206,7 @@ class PerformanceServiceTest : UnitTest() {
             actual shouldContainExactly expected
         }
 
-        "performance Search 검색 cursor가 null일 시 cursor를 String으로 변환하지 않고 null을 반환한다."{
+        "performance Search 검색 cursor가 null일 시 cursor를 String으로 변환하지 않고 null을 반환한다." {
 
             //given
             val givenReturnData = PerformanceSearchResult(null, listOf())
@@ -219,10 +219,10 @@ class PerformanceServiceTest : UnitTest() {
 
             // then
             cursor shouldBe null
-            verify(exactly = 0){ objectMapper.writeValueAsString(any<List<Any>>()) }
+            verify(exactly = 0) { objectMapper.writeValueAsString(any<List<Any>>()) }
         }
 
-        "Region 객체를 조회하여 RegionInfoResponse로 변환할 수 있다."{
+        "Region 객체를 조회하여 RegionInfoResponse로 변환할 수 있다." {
             // given
             val regions = MutableList(5) {
                 PerformanceTestDataGenerator.createRegion("region$it")

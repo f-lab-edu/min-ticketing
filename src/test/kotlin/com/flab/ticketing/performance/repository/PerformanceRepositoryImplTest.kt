@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.RepositoryTest
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.RepositoryTest
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.performance.dto.service.PerformanceDateSummaryResult
 import com.flab.ticketing.performance.entity.Performance

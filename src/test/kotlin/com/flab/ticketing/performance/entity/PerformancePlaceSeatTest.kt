@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.entity
 
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.entity.Region
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos

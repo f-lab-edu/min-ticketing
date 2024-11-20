@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.exception.InvalidValueException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.equals.shouldBeEqual

@@ -6,7 +6,7 @@ import com.flab.ticketing.auth.dto.request.UserPasswordUpdateRequest
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
 import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.common.IntegrationTest
+import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository

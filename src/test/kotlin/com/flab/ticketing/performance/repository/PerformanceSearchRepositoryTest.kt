@@ -1,8 +1,8 @@
 package com.flab.ticketing.performance.repository
 
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.conditions.NonCiEnvironment
-import com.flab.ticketing.common.config.ElasticSearchConfiguration
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.conditions.NonCiEnvironment
+import com.flab.ticketing.testutils.config.ElasticSearchConfiguration
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import io.kotest.core.annotation.EnabledIf
@@ -301,7 +301,7 @@ class PerformanceSearchRepositoryTest : StringSpec() {
 
         }
 
-        "Performance 검색 결과가 존재하지 않을 시, 빈 data 배열과 null cursor를 반환한다."{
+        "Performance 검색 결과가 존재하지 않을 시, 빈 data 배열과 null cursor를 반환한다." {
             // given
 
             // when

@@ -3,10 +3,10 @@ package com.flab.ticketing.performance.integration
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.OrderTestDataGenerator
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.testutils.IntegrationTest
+import com.flab.ticketing.testutils.OrderTestDataGenerator
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.response.ListedResponse
 import com.flab.ticketing.order.entity.Cart
@@ -30,7 +30,6 @@ import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
@@ -380,14 +379,14 @@ class PerformanceIntegrationTest : IntegrationTest() {
         }
 
 
-        given("지역 정보가 존재할 때"){
-            val regionsList = List(5){
+        given("지역 정보가 존재할 때") {
+            val regionsList = List(5) {
                 PerformanceTestDataGenerator.createRegion("region$it")
             }
 
             regionRepository.saveAll(regionsList)
 
-            `when`("지역을 조회할 시"){
+            `when`("지역을 조회할 시") {
                 val uri = "/api/performances/regions"
 
                 val mvcResult = mockMvc.perform(
@@ -396,7 +395,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
                     .andDo(MockMvcResultHandlers.print())
                     .andReturn()
 
-                then("현재 존재하는 지역의 모든 리스트를 조회할 수 있다."){
+                then("현재 존재하는 지역의 모든 리스트를 조회할 수 있다.") {
                     val actual = objectMapper.readValue<ListedResponse<PerformanceSummarySearchResult>>(
                         mvcResult.response.contentAsString,
                         objectMapper.typeFactory.constructParametricType(

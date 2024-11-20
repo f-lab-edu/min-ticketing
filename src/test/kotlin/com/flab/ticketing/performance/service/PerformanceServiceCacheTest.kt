@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.service
 
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.IntegrationTest
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
 import com.flab.ticketing.common.config.CacheConfig
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.enums.CacheType

@@ -1,8 +1,8 @@
 package com.flab.ticketing.order.dto.response
 
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.UnitTest
+import com.flab.ticketing.testutils.UserTestDataGenerator
 import com.flab.ticketing.order.entity.Cart
 import io.kotest.matchers.collections.shouldContainAll
 

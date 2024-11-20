@@ -1,7 +1,7 @@
 package com.flab.ticketing.performance.integration
 
-import com.flab.ticketing.common.NonCiIntegrationTest
-import com.flab.ticketing.common.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.NonCiIntegrationTest
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.performance.dto.request.PerformanceSearchConditions

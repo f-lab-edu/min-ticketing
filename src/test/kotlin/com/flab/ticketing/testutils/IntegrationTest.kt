@@ -1,10 +1,10 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.common.config.IntegrationTestConfig
 import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.ErrorInfo
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
+import com.flab.ticketing.testutils.config.IntegrationTestConfig
 import com.icegreen.greenmail.util.GreenMail
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension

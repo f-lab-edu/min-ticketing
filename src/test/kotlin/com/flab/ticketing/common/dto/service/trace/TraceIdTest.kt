@@ -1,6 +1,6 @@
 package com.flab.ticketing.common.dto.service.trace
 
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import io.kotest.data.forAll
 import io.kotest.data.headers
 import io.kotest.data.row

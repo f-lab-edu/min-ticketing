@@ -1,4 +1,4 @@
-package com.flab.ticketing.common.config
+package com.flab.ticketing.testutils.config
 
 import com.icegreen.greenmail.configuration.GreenMailConfiguration
 import com.icegreen.greenmail.util.DummySSLSocketFactory

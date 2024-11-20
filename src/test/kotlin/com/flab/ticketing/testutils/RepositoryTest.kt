@@ -1,4 +1,4 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
@@ -31,4 +31,3 @@ abstract class RepositoryTest : StringSpec() {
     }
 
 }
-

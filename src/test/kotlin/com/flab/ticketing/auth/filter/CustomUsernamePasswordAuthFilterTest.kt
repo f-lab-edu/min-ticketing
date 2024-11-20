@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.auth.utils.UserLoginInfoConverter
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.exception.BadRequestException
 import io.kotest.assertions.throwables.shouldThrow
 import io.mockk.every

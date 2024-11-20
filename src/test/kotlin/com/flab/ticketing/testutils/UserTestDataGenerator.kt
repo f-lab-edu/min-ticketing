@@ -1,4 +1,4 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import com.flab.ticketing.user.entity.User
 
@@ -9,7 +9,7 @@ object UserTestDataGenerator {
         email: String = "email@email.com",
         encryptedPassword: String = "enc123Rypt42ed",
         nickname: String = "nickname"
-    ): User{
+    ): User {
         return User(
             uid,
             email,

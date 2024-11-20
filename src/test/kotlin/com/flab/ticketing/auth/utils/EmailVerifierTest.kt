@@ -4,7 +4,7 @@ import com.flab.ticketing.auth.entity.EmailVerifyInfo
 import com.flab.ticketing.auth.exception.AuthErrorInfos.EMAIL_NOT_VERIFIED
 import com.flab.ticketing.auth.exception.AuthErrorInfos.EMAIL_VERIFY_INFO_NOT_FOUND
 import com.flab.ticketing.auth.repository.EmailVerifyInfoRepository
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.exception.BusinessIllegalStateException
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.assertions.throwables.shouldThrow

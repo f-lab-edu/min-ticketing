@@ -1,4 +1,4 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import com.flab.ticketing.common.entity.BaseEntity
 import io.kotest.core.spec.style.StringSpec

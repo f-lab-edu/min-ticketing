@@ -2,10 +2,10 @@ package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.common.OrderTestDataGenerator
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.testutils.OrderTestDataGenerator
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.UnitTest
+import com.flab.ticketing.testutils.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.ForbiddenException

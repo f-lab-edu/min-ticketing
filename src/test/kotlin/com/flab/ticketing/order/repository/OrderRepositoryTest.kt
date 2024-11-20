@@ -1,9 +1,9 @@
 package com.flab.ticketing.order.repository
 
-import com.flab.ticketing.common.OrderTestDataGenerator
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.RepositoryTest
-import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.testutils.OrderTestDataGenerator
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.RepositoryTest
+import com.flab.ticketing.testutils.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.order.dto.request.OrderSearchConditions

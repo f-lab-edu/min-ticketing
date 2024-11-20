@@ -1,9 +1,9 @@
 package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.UserTestDataGenerator
+import com.flab.ticketing.testutils.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.UnitTest
+import com.flab.ticketing.testutils.UserTestDataGenerator
 import com.flab.ticketing.common.exception.DuplicatedException
 import com.flab.ticketing.common.exception.InvalidValueException
 import com.flab.ticketing.common.exception.NotFoundException

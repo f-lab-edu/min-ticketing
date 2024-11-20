@@ -4,7 +4,7 @@ import com.flab.ticketing.auth.dto.request.UserRegisterRequest
 import com.flab.ticketing.auth.utils.EmailCodeGenerator
 import com.flab.ticketing.auth.utils.EmailSender
 import com.flab.ticketing.auth.utils.EmailVerifier
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.reader.UserReader

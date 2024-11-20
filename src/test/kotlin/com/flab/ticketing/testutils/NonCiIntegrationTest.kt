@@ -1,9 +1,9 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.flab.ticketing.common.conditions.NonCiEnvironment
-import com.flab.ticketing.common.config.ElasticSearchConfiguration
-import com.flab.ticketing.common.config.IntegrationTestConfig
+import com.flab.ticketing.testutils.conditions.NonCiEnvironment
+import com.flab.ticketing.testutils.config.ElasticSearchConfiguration
+import com.flab.ticketing.testutils.config.IntegrationTestConfig
 import com.icegreen.greenmail.util.GreenMail
 import io.kotest.core.annotation.EnabledIf
 import io.kotest.core.extensions.Extension

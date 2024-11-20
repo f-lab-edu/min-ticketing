@@ -1,4 +1,4 @@
-package com.flab.ticketing.common
+package com.flab.ticketing.testutils
 
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.entity.Reservation
