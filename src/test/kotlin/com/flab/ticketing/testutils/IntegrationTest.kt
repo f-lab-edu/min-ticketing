@@ -5,6 +5,7 @@ import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.ErrorInfo
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.flab.ticketing.testutils.config.IntegrationTestConfig
+import com.flab.ticketing.testutils.config.TestUtilConfig
 import com.flab.ticketing.testutils.persistence.UserTestUtils
 import com.icegreen.greenmail.util.GreenMail
 import com.ninjasquad.springmockk.MockkBean
@@ -26,7 +27,7 @@ import redis.embedded.RedisServer
 
 
 @SpringBootTest
-@Import(IntegrationTestConfig::class, MockServerUtils::class, UserTestUtils::class)
+@Import(IntegrationTestConfig::class, MockServerUtils::class, TestUtilConfig::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 abstract class IntegrationTest : BehaviorSpec() {

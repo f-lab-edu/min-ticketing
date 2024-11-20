@@ -5,12 +5,10 @@ import com.flab.ticketing.auth.utils.JwtTokenProvider
 import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.user.entity.User
 import com.flab.ticketing.user.repository.UserRepository
-import org.springframework.boot.test.context.TestComponent
 import org.springframework.security.crypto.password.PasswordEncoder
 import java.util.*
 
 
-@TestComponent
 class UserTestUtils(
     private val userRepository: UserRepository,
     private val jwtTokenProvider: JwtTokenProvider,
