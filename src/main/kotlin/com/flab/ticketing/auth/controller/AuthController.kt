@@ -1,5 +1,6 @@
 package com.flab.ticketing.auth.controller
 
+import com.flab.ticketing.auth.dto.UserInfoResponse
 import com.flab.ticketing.auth.dto.request.*
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
@@ -131,6 +132,31 @@ class AuthController(
 
 
         authService.updatePassword(userInfo.email, passwordUpdateDto.currentPassword, passwordUpdateDto.newPassword)
+    }
+
+    @Operation(
+        summary = "사용자 정보 조회",
+        description = "인증된 사용자의 정보를 조회합니다",
+        responses = [
+            ApiResponse(
+                responseCode = "200", description = "비밀번호가 성공적으로 업데이트됨",
+                content = [Content(schema = Schema(implementation = UserInfoResponse::class))]
+            ),
+            ApiResponse(
+                responseCode = "401", description = "만료된 토큰 - AUTH-010",
+                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+            ),
+            ApiResponse(
+                responseCode = "401", description = "잘못된 토큰 - AUTH-009",
+                content = [Content(schema = Schema(implementation = ErrorResponse::class))]
+            )
+        ]
+    )
+    @GetMapping("/info")
+    fun getUserInfo(
+        @LoginUser userInfo: AuthenticatedUserDto
+    ): UserInfoResponse {
+        return UserInfoResponse.of(userInfo)
     }
 
 }
