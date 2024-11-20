@@ -76,7 +76,7 @@ class UserTestUtils(
 
 
     /**
-     * User Repository 데이터를 모두 제거합니다.
+     * User Repository 데이터를 모두 제거합니다. 사용할 때 Cart, Order 등 외부 의존이 존재한다면 오류가 발생할 수 있습니다.
      * @author minseok kim
      */
     fun clearContext() {

@@ -1,12 +1,5 @@
 package com.flab.ticketing.order.integration
 
-import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.order.dto.response.CartListResponse
 import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
@@ -17,8 +10,9 @@ import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
-import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.repository.UserRepository
+import com.flab.ticketing.testutils.IntegrationTest
+import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
@@ -41,9 +35,6 @@ class CartIntegrationTest : IntegrationTest() {
     private lateinit var performanceRepository: PerformanceRepository
 
     @Autowired
-    private lateinit var userRepository: UserRepository
-
-    @Autowired
     private lateinit var regionRepository: RegionRepository
 
     @Autowired
@@ -51,9 +42,6 @@ class CartIntegrationTest : IntegrationTest() {
 
     @Autowired
     private lateinit var orderRepository: OrderRepository
-
-    @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Autowired
     private lateinit var cartRepository: CartRepository
@@ -70,12 +58,10 @@ class CartIntegrationTest : IntegrationTest() {
             val performanceDateTime = performance.performanceDateTime[0]
             val place = performance.performancePlace
 
-            val user = UserTestDataGenerator.createUser()
-
             savePerformance(listOf(performance))
-            userRepository.save(user)
+            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
-            val jwt = createJwt(user)
+
             `when`("로그인된 사용자가 에약되지 않은 좌석에 예약을 시도할 시") {
                 val reserveSeat = place.seats[0]
 
@@ -110,14 +96,11 @@ class CartIntegrationTest : IntegrationTest() {
             val place = performance.performancePlace
             val reservedSeat = place.seats[0]
 
-            val user = UserTestDataGenerator.createUser()
-
             savePerformance(listOf(performance))
-            userRepository.save(user)
+            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
+
             cartRepository.save(Cart("cart001", reservedSeat, performanceDateTime, user))
 
-
-            val jwt = createJwt(user)
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
                 val uri =
                     "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservedSeat.uid}"
@@ -142,19 +125,16 @@ class CartIntegrationTest : IntegrationTest() {
             val place = performance.performancePlace
             val reservedSeat = place.seats[0]
 
-            val user = UserTestDataGenerator.createUser()
+            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             val reservations = OrderTestDataGenerator.createReservations(
                 performanceDateTime,
                 place.seats.subList(0, 1),
                 OrderTestDataGenerator.createOrder(user = user)
             )
-
             savePerformance(listOf(performance))
-            userRepository.save(user)
             saveOrder(reservations[0].order)
 
-            val jwt = createJwt(user)
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
                 val uri =
                     "/api/reservations/${performance.uid}/dates/${performanceDateTime.uid}/seats/${reservedSeat.uid}"
@@ -172,8 +152,7 @@ class CartIntegrationTest : IntegrationTest() {
         }
 
         given("장바구니의 요소가 존재할 때") {
-            val user = UserTestDataGenerator.createUser()
-            userRepository.save(user)
+            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             val performance = PerformanceTestDataGenerator.createPerformance()
             val performanceDateTime = performance.performanceDateTime[0]
@@ -196,7 +175,6 @@ class CartIntegrationTest : IntegrationTest() {
 
             savePerformance(listOf(performance))
             cartRepository.saveAll(carts)
-            val jwt = createJwt(user)
             `when`("장바구니를 조회할 시") {
                 val uri = "/api/orders/carts"
 
@@ -244,8 +222,8 @@ class CartIntegrationTest : IntegrationTest() {
         withContext(Dispatchers.IO) {
             cartRepository.deleteAll()
             orderRepository.deleteAll()
-            userRepository.deleteAll()
             performanceRepository.deleteAll()
+            userTestUtils.clearContext()
             placeRepository.deleteAll()
             regionRepository.deleteAll()
             redisTemplate.connectionFactory?.connection?.flushAll()
@@ -263,20 +241,6 @@ class CartIntegrationTest : IntegrationTest() {
         }
     }
 
-
-    private fun createJwt(user: User): String {
-        return jwtTokenProvider.sign(
-            AuthenticatedUserDto.of(
-                CustomUserDetailsDto(
-                    user.uid,
-                    user.email,
-                    user.password,
-                    user.nickname
-                )
-            ),
-            mutableListOf()
-        )
-    }
 
     private fun saveOrder(order: Order) {
         orderRepository.save(order)
