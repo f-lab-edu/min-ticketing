@@ -3,12 +3,9 @@ package com.flab.ticketing.auth.integration
 import com.flab.ticketing.auth.dto.UserInfoResponse
 import com.flab.ticketing.auth.dto.request.UserLoginRequest
 import com.flab.ticketing.auth.dto.request.UserPasswordUpdateRequest
-import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.exception.AuthErrorInfos
-import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.common.exception.CommonErrorInfos
-import com.flab.ticketing.user.entity.User
+import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeExactly
@@ -26,20 +23,20 @@ import java.util.regex.Pattern
 class UserLoginIntegrationTest : IntegrationTest() {
 
     @Autowired
-    private lateinit var passwordEncoder: PasswordEncoder
-
-    @Autowired
     private lateinit var userRepository: UserRepository
 
     @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
+    private lateinit var passwordEncoder: PasswordEncoder
 
     init {
 
         given("유저 정보가 DB에 저장되어 있을 때 - 정상 처리") {
             val email = "email@email.com"
             val userPW = "abc1234!"
-            userRepository.save(createUser(email, userPW))
+            userTestUtils.saveNewUser(
+                email = email,
+                rawPassword = userPW
+            )
 
             `when`("알맞은 Email과 Password를 입력하여 로그인을 시도할 시") {
                 val uri = "/api/user/login"
@@ -92,7 +89,11 @@ class UserLoginIntegrationTest : IntegrationTest() {
         given("유저 정보가 DB에 저장되어 있을 때 - 비밀번호 입력 오류") {
             val email = "email@email.com"
             val userPW = "abc1234!"
-            userRepository.save(createUser(email, userPW))
+
+            userTestUtils.saveNewUser(
+                email = email,
+                rawPassword = userPW
+            )
 
             `when`("비밀번호를 잘못 입력한 경우") {
                 val uri = "/api/user/login"
@@ -139,7 +140,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -199,7 +200,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("인증 권한이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
@@ -222,7 +223,12 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW, date = Date(0))
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(
+                email = email,
+                rawPassword = userPW,
+                createDate = Date(0)
+            )
+
             `when`("인증이 필요한 API 접근 시") {
                 val uri = "/api/health-check"
 
@@ -243,7 +249,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("올바른 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
                 val uri = "/api/user/password"
@@ -275,7 +281,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("잘못된 현재 비밀번호, 올바른 새 비밀번호, 새 비밀번호 확인을 입력해 비밀번호 업데이트를 시도할 시") {
                 val uri = "/api/user/password"
@@ -307,7 +313,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("영문, 숫자, 특수문자를 포함한 8글자 조건을 만족하지 못한 새 비밀번호로 변경을 시도할 시") {
                 val uri = "/api/user/password"
@@ -340,7 +346,7 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val email = "email@email.com"
             val userPW = "abc1234!"
 
-            val givenToken = saveUserAndCreateJwt(email, userPW)
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(email = email, rawPassword = userPW)
 
             `when`("서로 다른 newPassword와 newPasswordConfirm 입력시") {
                 val uri = "/api/user/password"
@@ -372,10 +378,10 @@ class UserLoginIntegrationTest : IntegrationTest() {
             val userUid = "userUid"
             val userNickname = "nickname"
 
-            val givenToken = saveUserAndCreateJwt(
-                email = userEmail,
-                password = userPW,
+            val (_, givenToken) = userTestUtils.saveUserAndCreateJwt(
                 uid = userUid,
+                email = userEmail,
+                rawPassword = userPW,
                 nickname = userNickname
             )
 
@@ -404,32 +410,8 @@ class UserLoginIntegrationTest : IntegrationTest() {
         }
 
         afterEach {
-            userRepository.deleteAll()
+            userTestUtils.clearContext()
         }
-    }
-
-
-    private fun createUser(
-        email: String,
-        password: String,
-        nickname: String = "Notused",
-        uid: String = "NotUsed"
-    ): User {
-        return User(uid, email, passwordEncoder.encode(password), nickname)
-    }
-
-    private fun saveUserAndCreateJwt(
-        email: String,
-        password: String,
-        nickname: String = "Notused",
-        uid: String = "NotUsed",
-        date: Date = Date()
-    ): String {
-
-        userRepository.save(createUser(email, password, nickname, uid))
-
-
-        return jwtTokenProvider.sign(AuthenticatedUserDto(uid, email, nickname), mutableListOf(), date)
     }
 
     private fun isJwt(token: String): Boolean {

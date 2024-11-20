@@ -5,6 +5,7 @@ import com.flab.ticketing.common.dto.response.ErrorResponse
 import com.flab.ticketing.common.exception.ErrorInfo
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.flab.ticketing.testutils.config.IntegrationTestConfig
+import com.flab.ticketing.testutils.persistence.UserTestUtils
 import com.icegreen.greenmail.util.GreenMail
 import com.ninjasquad.springmockk.MockkBean
 import io.kotest.core.extensions.Extension
@@ -25,27 +26,29 @@ import redis.embedded.RedisServer
 
 
 @SpringBootTest
-@Import(IntegrationTestConfig::class, MockServerUtils::class)
+@Import(IntegrationTestConfig::class, MockServerUtils::class, UserTestUtils::class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 abstract class IntegrationTest : BehaviorSpec() {
     override fun extensions(): List<Extension> = listOf(SpringExtension)
 
     @Autowired
-    lateinit var mockMvc: MockMvc
+    protected lateinit var mockMvc: MockMvc
 
     @Autowired
-    lateinit var objectMapper: ObjectMapper
+    protected lateinit var objectMapper: ObjectMapper
 
     @Autowired
-    lateinit var mockServerUtils: MockServerUtils
+    protected lateinit var mockServerUtils: MockServerUtils
 
     @Autowired
-    lateinit var greenMail: GreenMail
+    protected lateinit var greenMail: GreenMail
+
+    @Autowired
+    protected lateinit var userTestUtils: UserTestUtils
 
     @Autowired
     private lateinit var redisServer: RedisServer
-
 
     @MockkBean
     private lateinit var performanceSearchRepository: PerformanceSearchRepository
