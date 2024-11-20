@@ -6,6 +6,7 @@ import com.flab.ticketing.common.exception.ErrorInfo
 import com.flab.ticketing.performance.repository.PerformanceSearchRepository
 import com.flab.ticketing.testutils.config.IntegrationTestConfig
 import com.flab.ticketing.testutils.config.TestUtilConfig
+import com.flab.ticketing.testutils.persistence.OrderTestUtils
 import com.flab.ticketing.testutils.persistence.PerformanceTestUtils
 import com.flab.ticketing.testutils.persistence.UserTestUtils
 import com.icegreen.greenmail.util.GreenMail
@@ -51,6 +52,9 @@ abstract class IntegrationTest : BehaviorSpec() {
 
     @Autowired
     protected lateinit var performanceTestUtils: PerformanceTestUtils
+
+    @Autowired
+    protected lateinit var orderTestUtils: OrderTestUtils
 
     @Autowired
     private lateinit var redisServer: RedisServer

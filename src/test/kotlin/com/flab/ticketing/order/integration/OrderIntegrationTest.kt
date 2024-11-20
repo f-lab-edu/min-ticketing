@@ -14,14 +14,12 @@ import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.enums.TossPayCancelErrorCode
 import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
-import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.service.client.TossPaymentClient.Companion.TOSS_EXCEPTION_PREFIX
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
 import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import com.flab.ticketing.user.entity.User
 import io.kotest.core.test.TestCase
@@ -49,9 +47,6 @@ import java.time.temporal.ChronoUnit
 class OrderIntegrationTest : IntegrationTest() {
 
     @Autowired
-    private lateinit var cartRepository: CartRepository
-
-    @Autowired
     private lateinit var orderRepository: OrderRepository
 
     @Autowired
@@ -71,11 +66,11 @@ class OrderIntegrationTest : IntegrationTest() {
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-
-            val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
-
-            cartRepository.saveAll(carts)
-
+            val carts = orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = performancePlace.seats.subList(0, 5)
+            )
 
             `when`("장바구니를 선택하여 주문 정보를 생성할 시") {
                 val uri = "/api/orders/toss/info"
@@ -115,9 +110,11 @@ class OrderIntegrationTest : IntegrationTest() {
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-            val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
-
-            cartRepository.saveAll(carts)
+            val carts = orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = performancePlace.seats.subList(0, 5)
+            )
 
             `when`("존재하지 않는 Cart UID로 주문 정보 생성 API 호출 시") {
                 val uri = "/api/orders/toss/info"
@@ -146,16 +143,12 @@ class OrderIntegrationTest : IntegrationTest() {
             val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
-            val performanceDateTime = performance.performanceDateTime[0]
-
-            val seats = performance.performancePlace.seats
-            val carts = listOf(
-                Cart("cart1", seats[0], performanceDateTime, user),
-                Cart("cart2", seats[1], performanceDateTime, user)
+            val carts = orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 2)
             )
 
-
-            cartRepository.saveAll(carts)
             orderMetaDataRepository.save(
                 OrderMetaData(
                     "order-001",
@@ -202,14 +195,12 @@ class OrderIntegrationTest : IntegrationTest() {
             val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
-            val performanceDateTime = performance.performanceDateTime[0]
-            val seats = performance.performancePlace.seats
-            val carts = listOf(
-                Cart("cart1", seats[0], performanceDateTime, user),
-                Cart("cart2", seats[1], performanceDateTime, user)
-            )
 
-            cartRepository.saveAll(carts)
+            val carts = orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 2)
+            )
 
             orderMetaDataRepository.save(
                 OrderMetaData(
@@ -255,14 +246,11 @@ class OrderIntegrationTest : IntegrationTest() {
             val performance = performanceTestUtils.createAndSavePerformance(
                 place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
-            val performanceDateTime = performance.performanceDateTime[0]
-            val seats = performance.performancePlace.seats
-            val carts = listOf(
-                Cart("cart1", seats[0], performanceDateTime, user),
-                Cart("cart2", seats[1], performanceDateTime, user)
+            val carts = orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 2)
             )
-
-            cartRepository.saveAll(carts)
 
             orderMetaDataRepository.save(
                 OrderMetaData(
@@ -313,25 +301,25 @@ class OrderIntegrationTest : IntegrationTest() {
                 performanceCount = 2,
                 seatPerPlace = 5
             )
-            val order1 = OrderTestDataGenerator.createOrder(
-                user = user
-            )
-            val order2 = OrderTestDataGenerator.createOrder(
-                uid = "order-002",
-                user = user
-            )
-            val order3 = OrderTestDataGenerator.createOrder(
-                uid = "order-003",
-                user = user
-            )
-            order1.addReservation(performances[0].performanceDateTime[0], performances[0].performancePlace.seats[0])
-            order2.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[0])
-            order3.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[1])
-
             performanceTestUtils.savePerformances(performances)
-            orderRepository.save(order1)
-            orderRepository.save(order2)
-            orderRepository.save(order3)
+
+            
+            val order1 = orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performances[0].performanceDateTime[0],
+                seats = listOf(performances[0].performancePlace.seats[0])
+            )
+            val order2 = orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performances[1].performanceDateTime[0],
+                seats = listOf(performances[1].performancePlace.seats[0])
+            )
+            val order3 = orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performances[1].performanceDateTime[1],
+                seats = listOf(performances[1].performancePlace.seats[1])
+            )
+
 
             `when`("주문 정보 리스트 조회시") {
                 val uri = "/api/orders"
@@ -389,11 +377,12 @@ class OrderIntegrationTest : IntegrationTest() {
             val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
-            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
-            order.status = Order.OrderStatus.COMPLETED
 
-            orderRepository.save(order)
+            val order = orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
+            )
 
             setUpTossPaymentCancelResponse()
 
@@ -421,11 +410,11 @@ class OrderIntegrationTest : IntegrationTest() {
             val performance = performanceTestUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
-            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
-            order.status = Order.OrderStatus.COMPLETED
-
-            orderRepository.save(order)
+            val order = orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
+            )
 
             val tossErrorResponse = setUpTossPaymentFailCancelResponse()
 
@@ -457,19 +446,19 @@ class OrderIntegrationTest : IntegrationTest() {
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
             val performance = performanceTestUtils.createAndSavePerformance()
 
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
-            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
-            order.status = Order.OrderStatus.COMPLETED
-
-            val canceledOrder = OrderTestDataGenerator.createOrder(
-                uid = "order-002",
+            orderTestUtils.createAndSaveOrder(
                 user = user,
-                payment = Order.Payment(1000, "카드", "abc123")
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
             )
-            canceledOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
-            canceledOrder.status = Order.OrderStatus.CANCELED
 
-            orderRepository.saveAll(listOf(order, canceledOrder))
+            val canceledOrder = orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
+                orderStatus = Order.OrderStatus.CANCELED
+            )
+
 
             `when`("주문이 CANCELED 상태인 주문을 조회할 시") {
                 val uri = "/api/orders"
@@ -506,8 +495,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
         PerformanceTestDataGenerator.reset()
         withContext(Dispatchers.IO) {
-            cartRepository.deleteAll()
-            orderRepository.deleteAll()
+            orderTestUtils.clearContext()
             userTestUtils.clearContext()
             performanceTestUtils.clearContext()
             orderMetaDataRepository.deleteAll()

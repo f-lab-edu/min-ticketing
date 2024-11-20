@@ -2,10 +2,6 @@ package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.UnitTest
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.ForbiddenException
@@ -28,6 +24,10 @@ import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
+import com.flab.ticketing.testutils.UnitTest
+import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
+import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
@@ -177,7 +177,6 @@ class OrderServiceTest : UnitTest() {
 
             val orders = List(2) {
                 OrderTestDataGenerator.createOrder(
-                    uid = "order-00${it + 1}",
                     user = user,
                     payment = Order.Payment((it + 1) * 1000, "카드", "paymentkey")
                 )
@@ -218,7 +217,6 @@ class OrderServiceTest : UnitTest() {
 
             val orders = List(3) {
                 OrderTestDataGenerator.createOrder(
-                    uid = "order-00${it + 1}",
                     user = user,
                     payment = Order.Payment((it + 1) * 1000, "카드", "paymentkey")
                 )

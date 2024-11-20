@@ -1,9 +1,12 @@
 package com.flab.ticketing.testutils.config
 
 import com.flab.ticketing.auth.utils.JwtTokenProvider
+import com.flab.ticketing.order.repository.CartRepository
+import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
+import com.flab.ticketing.testutils.persistence.OrderTestUtils
 import com.flab.ticketing.testutils.persistence.PerformanceTestUtils
 import com.flab.ticketing.testutils.persistence.UserTestUtils
 import com.flab.ticketing.user.repository.UserRepository
@@ -54,6 +57,17 @@ class TestUtilConfig {
             performanceRepository,
             performancePlaceRepository,
             regionRepository
+        )
+    }
+
+    @Bean
+    fun orderTestUtils(
+        cartRepository: CartRepository,
+        orderRepository: OrderRepository
+    ): OrderTestUtils {
+        return OrderTestUtils(
+            cartRepository,
+            orderRepository
         )
     }
 

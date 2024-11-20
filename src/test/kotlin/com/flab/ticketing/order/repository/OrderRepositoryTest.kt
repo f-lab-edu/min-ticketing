@@ -34,7 +34,6 @@ class OrderRepositoryTest : RepositoryTest() {
 
             val orders = List(5) {
                 OrderTestDataGenerator.createOrder(
-                    uid = "order-00$it",
                     user = user
                 )
             }
@@ -63,7 +62,6 @@ class OrderRepositoryTest : RepositoryTest() {
 
             val orders = List(5) {
                 OrderTestDataGenerator.createOrder(
-                    uid = "order-00$it",
                     user = user
                 )
             }
@@ -112,7 +110,6 @@ class OrderRepositoryTest : RepositoryTest() {
 
             val orders = List(5) {
                 OrderTestDataGenerator.createOrder(
-                    uid = "order-00$it",
                     user = user
                 )
             }

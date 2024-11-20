@@ -1,13 +1,11 @@
 package com.flab.ticketing.order.integration
 
 import com.flab.ticketing.order.dto.response.CartListResponse
-import com.flab.ticketing.order.entity.Cart
 import com.flab.ticketing.order.entity.Order
 import com.flab.ticketing.order.exception.OrderErrorInfos
 import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
 import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
@@ -26,10 +24,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
 class CartIntegrationTest : IntegrationTest() {
-
-    @Autowired
-    private lateinit var orderRepository: OrderRepository
-
+    
     @Autowired
     private lateinit var cartRepository: CartRepository
 
@@ -85,7 +80,11 @@ class CartIntegrationTest : IntegrationTest() {
 
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
-            cartRepository.save(Cart("cart001", reservedSeat, performanceDateTime, user))
+            orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = listOf(reservedSeat)
+            )
 
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
                 val uri =
@@ -113,12 +112,12 @@ class CartIntegrationTest : IntegrationTest() {
 
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
-            val reservations = OrderTestDataGenerator.createReservations(
-                performanceDateTime,
-                place.seats.subList(0, 1),
-                OrderTestDataGenerator.createOrder(user = user)
+            // 이미 존재하는 예약
+            orderTestUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = place.seats.subList(0, 1)
             )
-            saveOrder(reservations[0].order)
 
             `when`("이미 카트에 존재하는 좌석을 예매할 시") {
                 val uri =
@@ -142,23 +141,12 @@ class CartIntegrationTest : IntegrationTest() {
             val performance = performanceTestUtils.createAndSavePerformance()
             val performanceDateTime = performance.performanceDateTime[0]
 
-            val carts = listOf(
-                Cart(
-                    uid = "cart001",
-                    user = user,
-                    seat = performance.performancePlace.seats[0],
-                    performanceDateTime = performanceDateTime
-                ),
-
-                Cart(
-                    uid = "cart002",
-                    user = user,
-                    seat = performance.performancePlace.seats[1],
-                    performanceDateTime = performanceDateTime
-                )
+            val carts = orderTestUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = performance.performancePlace.seats.subList(0, 2)
             )
 
-            cartRepository.saveAll(carts)
             `when`("장바구니를 조회할 시") {
                 val uri = "/api/orders/carts"
 
@@ -173,22 +161,15 @@ class CartIntegrationTest : IntegrationTest() {
                     val actual =
                         objectMapper.readValue(mvcResult.response.contentAsString, CartListResponse::class.java)
                     val expected = CartListResponse(
-                        listOf(
+                        carts.map {
                             CartListResponse.CartInfo(
-                                "cart001",
+                                it.uid,
                                 performanceDateTime.showTime.withZoneSameInstant(ZoneOffset.UTC),
                                 performance.name,
                                 performance.price,
-                                performance.performancePlace.seats[0].name
-                            ),
-                            CartListResponse.CartInfo(
-                                "cart002",
-                                performanceDateTime.showTime.withZoneSameInstant(ZoneOffset.UTC),
-                                performance.name,
-                                performance.price,
-                                performance.performancePlace.seats[1].name
-                            ),
-                        )
+                                it.seat.name
+                            )
+                        }
                     )
 
                     mvcResult.response.status shouldBe HttpStatus.OK.value()
@@ -204,8 +185,7 @@ class CartIntegrationTest : IntegrationTest() {
 
         PerformanceTestDataGenerator.reset()
         withContext(Dispatchers.IO) {
-            cartRepository.deleteAll()
-            orderRepository.deleteAll()
+            orderTestUtils.clearContext()
             userTestUtils.clearContext()
             performanceTestUtils.clearContext()
             redisTemplate.connectionFactory?.connection?.flushAll()
@@ -214,9 +194,5 @@ class CartIntegrationTest : IntegrationTest() {
 
     }
 
-
-    private fun saveOrder(order: Order) {
-        orderRepository.save(order)
-    }
 
 }
