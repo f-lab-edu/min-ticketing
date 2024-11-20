@@ -13,8 +13,9 @@ object PerformanceTestDataGenerator {
     private var seatCounter = 0
     private var performanceCounter = 0
     private var datetimeCounter = 0
-    val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
 
+    val INIT_PERFORMANCE_DATE = ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 0, 0), ZoneId.of("Asia/Seoul"))
+    val INIT_PERFORMANCE_PLACE_SEAT_COUNT = 2
     fun createRegion(name: String = "지역"): Region {
         return Region(generateUid("region"), name)
     }
@@ -22,7 +23,7 @@ object PerformanceTestDataGenerator {
     fun createPerformancePlace(
         region: Region = createRegion(),
         name: String = " 공연장",
-        numSeats: Int = 2
+        numSeats: Int = INIT_PERFORMANCE_PLACE_SEAT_COUNT
     ): PerformancePlace {
         val place = PerformancePlace(region, name)
         repeat(numSeats) {

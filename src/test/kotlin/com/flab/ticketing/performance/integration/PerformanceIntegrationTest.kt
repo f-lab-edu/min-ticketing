@@ -1,7 +1,5 @@
 package com.flab.ticketing.performance.integration
 
-import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.response.ListedResponse
 import com.flab.ticketing.order.entity.Cart
@@ -18,9 +16,6 @@ import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlace
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
-import com.flab.ticketing.performance.repository.PerformancePlaceRepository
-import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.performance.repository.RegionRepository
 import com.flab.ticketing.testutils.IntegrationTest
 import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
 import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
@@ -45,15 +40,6 @@ import java.time.ZonedDateTime
 class PerformanceIntegrationTest : IntegrationTest() {
 
     @Autowired
-    private lateinit var regionRepository: RegionRepository
-
-    @Autowired
-    private lateinit var placeRepository: PerformancePlaceRepository
-
-    @Autowired
-    private lateinit var performanceRepository: PerformanceRepository
-
-    @Autowired
     private lateinit var orderRepository: OrderRepository
 
     @Autowired
@@ -66,23 +52,10 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
         given("공연 정보가 존재할 때 - 상세 조회 검색") {
             val user = userTestUtils.saveNewUser()
-
-            val placeSeatCnt = 10
-
-            val place = PerformanceTestDataGenerator.createPerformancePlace(
-                numSeats = placeSeatCnt
+            val performance = performanceTestUtils.createAndSavePerformance(
+                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
             )
-
-            val showTimes = listOf(
-                ZonedDateTime.of(LocalDateTime.of(2024, 1, 1, 10, 0, 0), ZoneId.of("Asia/Seoul")),
-            )
-
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = place,
-                showTimes = showTimes
-            )
-
-            savePerformance(listOf(performance))
+            val place = performance.performancePlace
 
             val carts = createCarts(
                 user,
@@ -110,8 +83,8 @@ class PerformanceIntegrationTest : IntegrationTest() {
                         PerformanceDetailResponse.DateInfo(
                             uid = it.uid,
                             dateTime = it.showTime.toLocalDateTime(),
-                            total = placeSeatCnt.toLong(),
-                            remaining = placeSeatCnt.toLong() - carts.size
+                            total = place.seats.size.toLong(),
+                            remaining = place.seats.size.toLong() - carts.size
                         )
                     }
 
@@ -160,7 +133,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
             val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val performance = performanceTestUtils.createAndSavePerformance(
                 place = place,
                 numShowtimes = 2,
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(1)
@@ -179,8 +152,6 @@ class PerformanceIntegrationTest : IntegrationTest() {
             )
             val carts = createCarts(user, performanceDate, performance.performancePlace.seats.subList(3, 4))
 
-
-            savePerformance(listOf(performance))
             saveOrder(order)
             cartRepository.saveAll(carts)
 
@@ -270,9 +241,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
             }
         }
         given("공연 정보가 존재할 때 - 잘못된 날짜 고유 식별자") {
-            val performance = PerformanceTestDataGenerator.createPerformance(numShowtimes = 1)
-            savePerformance(listOf(performance))
-
+            val performance = performanceTestUtils.createAndSavePerformance()
             val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             `when`("공연 UID는 올바르나, 공연 날짜 UID가 공연에 속하지 않은 경우") {
@@ -296,13 +265,12 @@ class PerformanceIntegrationTest : IntegrationTest() {
 
         given("이미 지난 공연 정보가 존재할 때") {
 
-            val performances = PerformanceTestDataGenerator.createPerformancesDatesIn(
-                dateIn = listOf(ZonedDateTime.of(LocalDateTime.MIN, ZoneId.of("Asia/Seoul"))),
+            val performance = performanceTestUtils.createAndSavePerformance(
+                showTimeStartDateTime = ZonedDateTime.of(LocalDateTime.MIN, ZoneId.of("Asia/Seoul")),
                 numShowtimes = 1
             )
-            val performance = performances[0]
+
             val performanceDateTime = performance.performanceDateTime[0]
-            savePerformance(performances)
 
             val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
 
@@ -327,8 +295,8 @@ class PerformanceIntegrationTest : IntegrationTest() {
             val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
                 performanceCount = 6
             )
+            performanceTestUtils.savePerformances(performances)
 
-            savePerformance(performances)
             `when`("사용자가 5개의 공연 정보를 조회할 시") {
                 val uri = "/api/performances"
                 val limit = 5
@@ -364,7 +332,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
                 PerformanceTestDataGenerator.createRegion("region$it")
             }
 
-            regionRepository.saveAll(regionsList)
+            performanceTestUtils.saveRegions(regionsList)
 
             `when`("지역을 조회할 시") {
                 val uri = "/api/performances/regions"
@@ -401,21 +369,10 @@ class PerformanceIntegrationTest : IntegrationTest() {
             reservationRepository.deleteAll()
             orderRepository.deleteAll()
             userTestUtils.clearContext()
-            performanceRepository.deleteAll()
-            placeRepository.deleteAll()
-            regionRepository.deleteAll()
+            performanceTestUtils.clearContext()
         }
 
 
-    }
-
-    private fun savePerformance(performances: List<Performance>) {
-        regionRepository.save(performances[0].performancePlace.region)
-        placeRepository.save(performances[0].performancePlace)
-
-        performances.forEach {
-            performanceRepository.save(it)
-        }
     }
 
     private fun saveOrder(order: Order) {
@@ -464,5 +421,5 @@ class PerformanceIntegrationTest : IntegrationTest() {
             dateInfo = dateInfos
         )
     }
-    
+
 }

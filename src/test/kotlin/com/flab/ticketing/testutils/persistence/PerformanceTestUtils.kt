@@ -60,10 +60,12 @@ class PerformanceTestUtils(
         performanceRepository.save(performance)
     }
 
-
-    private fun savePlaceAndRegion(place: PerformancePlace, region: Region) {
-        regionRepository.save(region)
-        performancePlaceRepository.save(place)
+    /**
+     * region 객체들을 저장합니다.
+     * @author minseok kim
+     */
+    fun saveRegions(regions: List<Region>) {
+        regionRepository.saveAll(regions)
     }
 
     fun clearContext() {
@@ -71,6 +73,12 @@ class PerformanceTestUtils(
         performanceRepository.deleteAll()
         performancePlaceRepository.deleteAll()
         regionRepository.deleteAll()
+    }
+
+
+    private fun savePlaceAndRegion(place: PerformancePlace, region: Region) {
+        regionRepository.save(region)
+        performancePlaceRepository.save(place)
     }
 
 }
