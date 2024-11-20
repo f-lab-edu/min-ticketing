@@ -2,11 +2,6 @@ package com.flab.ticketing.performance.integration
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.testutils.IntegrationTest
-import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
-import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
-import com.flab.ticketing.testutils.generator.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.dto.response.ListedResponse
 import com.flab.ticketing.order.entity.Cart
@@ -26,8 +21,10 @@ import com.flab.ticketing.performance.exception.PerformanceErrorInfos
 import com.flab.ticketing.performance.repository.PerformancePlaceRepository
 import com.flab.ticketing.performance.repository.PerformanceRepository
 import com.flab.ticketing.performance.repository.RegionRepository
+import com.flab.ticketing.testutils.IntegrationTest
+import com.flab.ticketing.testutils.generator.OrderTestDataGenerator
+import com.flab.ticketing.testutils.generator.PerformanceTestDataGenerator
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.collections.shouldContainAll
@@ -57,16 +54,10 @@ class PerformanceIntegrationTest : IntegrationTest() {
     private lateinit var performanceRepository: PerformanceRepository
 
     @Autowired
-    private lateinit var userRepository: UserRepository
-
-    @Autowired
     private lateinit var orderRepository: OrderRepository
 
     @Autowired
     private lateinit var reservationRepository: ReservationRepository
-
-    @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @Autowired
     private lateinit var cartRepository: CartRepository
@@ -74,11 +65,9 @@ class PerformanceIntegrationTest : IntegrationTest() {
     init {
 
         given("공연 정보가 존재할 때 - 상세 조회 검색") {
-            val user = UserTestDataGenerator.createUser()
-
+            val user = userTestUtils.saveNewUser()
 
             val placeSeatCnt = 10
-
 
             val place = PerformanceTestDataGenerator.createPerformancePlace(
                 numSeats = placeSeatCnt
@@ -94,7 +83,6 @@ class PerformanceIntegrationTest : IntegrationTest() {
             )
 
             savePerformance(listOf(performance))
-            userRepository.save(user)
 
             val carts = createCarts(
                 user,
@@ -170,7 +158,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
                 place.addSeat("seat$index", row, col)
             }
 
-            val user = UserTestDataGenerator.createUser()
+            val (user, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             val performance = PerformanceTestDataGenerator.createPerformance(
                 place = place,
@@ -184,7 +172,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
                 user = user
             )
 
-            val reservations = OrderTestDataGenerator.createReservations(
+            OrderTestDataGenerator.createReservations(
                 performanceDate,
                 performance.performancePlace.seats.subList(0, 3),
                 order
@@ -192,12 +180,10 @@ class PerformanceIntegrationTest : IntegrationTest() {
             val carts = createCarts(user, performanceDate, performance.performancePlace.seats.subList(3, 4))
 
 
-            userRepository.save(user)
             savePerformance(listOf(performance))
             saveOrder(order)
             cartRepository.saveAll(carts)
 
-            val jwt = createJwt(user)
 
             `when`("로그인한 유저가 공연 날짜의 좌석 정보를 조회할 시") {
                 val uri = "/api/performances/${performance.uid}/dates/${performanceDate.uid}"
@@ -264,9 +250,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
         }
         given("공연 날짜 정보가 존재하지 않을 때") {
 
-            val user = UserTestDataGenerator.createUser()
-            userRepository.save(user)
-            val jwt = createJwt(user)
+            val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             `when`("로그인한 유저가 잘못된 공연과, 공연 날짜 정보로 좌석 정보를 조회할 시") {
                 val invalidPerformanceId = "Per"
@@ -289,9 +273,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
             val performance = PerformanceTestDataGenerator.createPerformance(numShowtimes = 1)
             savePerformance(listOf(performance))
 
-            val user = UserTestDataGenerator.createUser()
-            userRepository.save(user)
-            val jwt = createJwt(user)
+            val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             `when`("공연 UID는 올바르나, 공연 날짜 UID가 공연에 속하지 않은 경우") {
                 val performanceUid = performance.uid
@@ -322,9 +304,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
             val performanceDateTime = performance.performanceDateTime[0]
             savePerformance(performances)
 
-            val user = UserTestDataGenerator.createUser()
-            userRepository.save(user)
-            val jwt = createJwt(user)
+            val (_, jwt) = userTestUtils.saveUserAndCreateJwt()
 
             `when`("로그인한 사용자가 이미 지난 공연의 좌석 정보를 조회할 시") {
                 val uri = "/api/performances/${performance.uid}/dates/${performanceDateTime.uid}"
@@ -420,7 +400,7 @@ class PerformanceIntegrationTest : IntegrationTest() {
             cartRepository.deleteAll()
             reservationRepository.deleteAll()
             orderRepository.deleteAll()
-            userRepository.deleteAll()
+            userTestUtils.clearContext()
             performanceRepository.deleteAll()
             placeRepository.deleteAll()
             regionRepository.deleteAll()
@@ -484,19 +464,5 @@ class PerformanceIntegrationTest : IntegrationTest() {
             dateInfo = dateInfos
         )
     }
-
-
-    private fun createJwt(user: User): String {
-        return jwtTokenProvider.sign(
-            AuthenticatedUserDto.of(
-                CustomUserDetailsDto(
-                    user.uid,
-                    user.email,
-                    user.password,
-                    user.nickname
-                )
-            ),
-            mutableListOf()
-        )
-    }
+    
 }
