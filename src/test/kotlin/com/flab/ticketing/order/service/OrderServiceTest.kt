@@ -34,7 +34,6 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
-import java.awt.image.BufferedImage
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -155,7 +154,7 @@ class OrderServiceTest : UnitTest() {
             every { tossPaymentClient.confirm(orderConfirmRequest) } returns createConfirmResponse()
             every { orderWriter.save(any<Order>()) } just Runs
             every { orderWriter.deleteMetaData(orderMetaData) } just Runs
-            every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
+            every { fileService.uploadImage(any()) } returns qrImageUrl
             every { cartWriter.deleteAll(carts) } just Runs
 
             orderService.confirmOrder(user.uid, orderConfirmRequest)
@@ -163,7 +162,7 @@ class OrderServiceTest : UnitTest() {
             verify(exactly = 1) { tossPaymentClient.confirm(orderConfirmRequest) }
             verify(exactly = 1) { orderWriter.save(any<Order>()) }
             verify(exactly = 1) { orderWriter.deleteMetaData(orderMetaData) }
-            verify(exactly = carts.size) { fileService.uploadImage(any<BufferedImage>()) }
+            verify(exactly = carts.size) { fileService.uploadImage(any()) }
             verify(exactly = 1) { cartWriter.deleteAll(carts) }
         }
 

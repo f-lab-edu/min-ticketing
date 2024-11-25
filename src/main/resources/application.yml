@@ -83,6 +83,13 @@ springdoc:
 cors:
   origins: ${CORS_ORIGINS}
 
+oci:
+  config-file:
+    path: ${OCI_CONFIG_FILE_PATH}
+  region-name: ${OCI_REGION_NAME}
+  namespace-name: ${OCI_NAMESPACE_NAME}
+  bucket-name: ${OCI_BUCKET_NAME}
+
 ---
 
 spring:
@@ -115,6 +122,8 @@ spring:
   web:
     resources:
       add-mappings: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
 server:
   servlet:
     encoding:
@@ -159,3 +168,11 @@ springdoc:
 
 cors:
   origins: http://localhost:3000
+
+
+oci:
+  config-file:
+    path: ${OCI_CONFIG_FILE_PATH}
+  region-name: ap-chuncheon-1
+  namespace-name: axyjyn3hmq8s
+  bucket-name: bucket-20241116-1706
