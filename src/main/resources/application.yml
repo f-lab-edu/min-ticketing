@@ -115,6 +115,8 @@ spring:
   web:
     resources:
       add-mappings: false
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
 server:
   servlet:
     encoding:
@@ -159,3 +161,8 @@ springdoc:
 
 cors:
   origins: http://localhost:3000
+
+
+oci:
+  config-file:
+    path: C:\\Users\a0104\Desktop\projects\min-ticketing\oci\config
