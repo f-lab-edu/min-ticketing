@@ -70,8 +70,10 @@ dependencies {
     implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-
-
+    implementation platform('com.oracle.oci.sdk:oci-java-sdk-bom:3.54.0')
+    implementation 'com.oracle.oci.sdk:oci-java-sdk-objectstorage'
+    implementation 'com.oracle.oci.sdk:oci-java-sdk-common'
+    implementation 'com.oracle.oci.sdk:oci-java-sdk-common-httpclient-jersey3'
 //    implementation 'io.micrometer:micrometer-tracing-bridge-brave'
 //    implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 //    implementation 'com.github.gavlyukovskiy:datasource-proxy-spring-boot-starter:1.9.2'

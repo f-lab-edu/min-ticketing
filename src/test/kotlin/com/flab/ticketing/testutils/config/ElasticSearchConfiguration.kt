@@ -1,4 +1,4 @@
-package com.flab.ticketing.common.config
+package com.flab.ticketing.testutils.config
 
 import com.flab.ticketing.performance.entity.PerformanceSearchSchema
 import org.springframework.boot.context.event.ApplicationReadyEvent

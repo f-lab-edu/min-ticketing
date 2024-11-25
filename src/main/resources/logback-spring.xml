@@ -15,6 +15,18 @@
         </encoder>
     </appender>
 
+
+    <appender name="PROD_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger{36}] - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
     <appender name="AMQP" class="org.springframework.amqp.rabbit.logback.AmqpAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <timestampPattern>yyyy-MM-dd HH:mm:ss.SSS</timestampPattern>
@@ -49,7 +61,7 @@
     <springProfile name="prod">
         <root level="INFO">
             <appender-ref ref="AMQP"/>
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="PROD_CONSOLE"/>
         </root>
     </springProfile>
 </configuration>

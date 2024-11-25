@@ -2,10 +2,6 @@ package com.flab.ticketing.order.service
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.common.OrderTestDataGenerator
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UnitTest
-import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.service.CursorInfoDto
 import com.flab.ticketing.common.exception.BadRequestException
 import com.flab.ticketing.common.exception.ForbiddenException
@@ -28,13 +24,16 @@ import com.flab.ticketing.order.repository.writer.CartWriter
 import com.flab.ticketing.order.repository.writer.OrderWriter
 import com.flab.ticketing.order.service.client.TossPaymentClient
 import com.flab.ticketing.performance.exception.PerformanceErrorInfos
+import com.flab.ticketing.testutils.UnitTest
+import com.flab.ticketing.testutils.fixture.OrderFixture
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
+import com.flab.ticketing.testutils.fixture.UserFixture
 import com.flab.ticketing.user.repository.reader.UserReader
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
-import java.awt.image.BufferedImage
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -63,9 +62,9 @@ class OrderServiceTest : UnitTest() {
     init {
         "주문 생성 API 호출 시 주문 임시 데이터를 생성하고 Redis에 저장할 수 있다." {
             mockkObject(NanoIdGenerator)
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
 
@@ -104,7 +103,7 @@ class OrderServiceTest : UnitTest() {
         "Parameter Cart UID의 갯수와 Repository에서 조회한 Cart의 갯수가 다르면 InvalidValueException을 throw한다." {
             mockkObject(NanoIdGenerator)
 
-            val user = UserTestDataGenerator.createUser()
+            val user = UserFixture.createUser()
 
             every { userReader.findByUid(user.uid) } returns user
             every { cartReader.findByUidList(listOf("cart001", "cart002"), user) } returns Collections.emptyList()
@@ -122,9 +121,9 @@ class OrderServiceTest : UnitTest() {
 
 
         "생성된 주문(OrderMetaData)이 존재 할때 Toss 결제 승인 API를 호출하고 Order 정보를 DB에 저장한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val carts =
                 listOf(
@@ -155,7 +154,7 @@ class OrderServiceTest : UnitTest() {
             every { tossPaymentClient.confirm(orderConfirmRequest) } returns createConfirmResponse()
             every { orderWriter.save(any<Order>()) } just Runs
             every { orderWriter.deleteMetaData(orderMetaData) } just Runs
-            every { fileService.uploadImage(any<BufferedImage>()) } returns qrImageUrl
+            every { fileService.uploadImage(any()) } returns qrImageUrl
             every { cartWriter.deleteAll(carts) } just Runs
 
             orderService.confirmOrder(user.uid, orderConfirmRequest)
@@ -163,23 +162,22 @@ class OrderServiceTest : UnitTest() {
             verify(exactly = 1) { tossPaymentClient.confirm(orderConfirmRequest) }
             verify(exactly = 1) { orderWriter.save(any<Order>()) }
             verify(exactly = 1) { orderWriter.deleteMetaData(orderMetaData) }
-            verify(exactly = carts.size) { fileService.uploadImage(any<BufferedImage>()) }
+            verify(exactly = carts.size) { fileService.uploadImage(any()) }
             verify(exactly = 1) { cartWriter.deleteAll(carts) }
         }
 
         "Order 객체를 조회하고 이를 OrderSummarySearchResult 객체로 변환해 반환할 수 있다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val seats = performance.performancePlace.seats
 
             val orders = List(2) {
-                OrderTestDataGenerator.createOrder(
-                    uid = "order-00${it + 1}",
+                OrderFixture.createOrder(
                     user = user,
-                    payment = Order.Payment((it + 1) * 1000, "카드", "paymentkey")
+                    payment = Order.Payment(1000, "카드", "paymentkey")
                 )
             }
 
@@ -188,37 +186,30 @@ class OrderServiceTest : UnitTest() {
             every { orderReader.findOrderByUser(user.uid, any(), any()) } returns orders
 
             val actual = orderService.getOrderList(user.uid, OrderSearchConditions(), CursorInfoDto())
-            val expected = listOf(
+            val expected = orders.map {
                 OrderSummarySearchResult(
-                    "order-001",
-                    orders[0].name,
+                    it.uid,
+                    it.name,
                     performance.image,
                     1000,
-                    orders[0].createdAt
-                ),
-                OrderSummarySearchResult(
-                    "order-002",
-                    orders[1].name,
-                    performance.image,
-                    2000,
-                    orders[1].createdAt
-                ),
-            )
+                    it.createdAt
+                )
+
+            }
 
             actual shouldContainExactly expected
         }
 
         "주문을 OrderSummarySearchResult 객체로 변환할 때 Order 객체에 Reservation 객체가 연관되어 있지 않은 경우 해당 Order 객체는 제외한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val seats = performance.performancePlace.seats
 
             val orders = List(3) {
-                OrderTestDataGenerator.createOrder(
-                    uid = "order-00${it + 1}",
+                OrderFixture.createOrder(
                     user = user,
                     payment = Order.Payment((it + 1) * 1000, "카드", "paymentkey")
                 )
@@ -237,11 +228,11 @@ class OrderServiceTest : UnitTest() {
 
 
         "아직 시작되지 않은 공연의 취소 요청이 들어왔을 시 토스 취소 API를 호출하고 공연을 취소한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            val order = OrderFixture.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
             order.status = Order.OrderStatus.COMPLETED
 
@@ -259,11 +250,11 @@ class OrderServiceTest : UnitTest() {
         }
 
         "공연날짜가 지난 공연의 추소 요청이 들어왔을 시 BadRequestException과 적절한 오류 코드를 반환한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
                 showTimeStartDateTime = ZonedDateTime.now().minusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            val order = OrderFixture.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
 
             every { orderReader.findByUid(order.uid) } returns order
@@ -279,13 +270,13 @@ class OrderServiceTest : UnitTest() {
         }
 
         "주문자와 취소 요청자가 다르다면 ForbiddenException과 적절한 오류 코드를 반환한다." {
-            val orderUser = UserTestDataGenerator.createUser()
-            val cancelUser = UserTestDataGenerator.createUser(uid = "user-002")
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val orderUser = UserFixture.createUser()
+            val cancelUser = UserFixture.createUser(uid = "user-002")
+            val performance = PerformanceFixture.createPerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
             val order =
-                OrderTestDataGenerator.createOrder(user = orderUser, payment = Order.Payment(1000, "카드", "abc123"))
+                OrderFixture.createOrder(user = orderUser, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
 
             every { orderReader.findByUid(order.uid) } returns order
@@ -299,11 +290,11 @@ class OrderServiceTest : UnitTest() {
         }
 
         "주문 취소시 Reservation 중 사용이 완료된 주문이 있다면 ForbiddenException과 적절한 오류 코드를 반환한다." {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
+            val order = OrderFixture.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
             order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
             order.status = Order.OrderStatus.COMPLETED
             order.reservations[0].isUsed = true

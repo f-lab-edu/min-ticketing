@@ -1,6 +1,6 @@
 package com.flab.ticketing.auth.utils
 
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import io.kotest.matchers.string.shouldMatch
 
 class EmailCodeGeneratorTest : UnitTest() {

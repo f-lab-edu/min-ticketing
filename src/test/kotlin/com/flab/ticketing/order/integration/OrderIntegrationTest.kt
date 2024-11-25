@@ -1,12 +1,5 @@
 package com.flab.ticketing.order.integration
 
-import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
-import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.auth.utils.JwtTokenProvider
-import com.flab.ticketing.common.IntegrationTest
-import com.flab.ticketing.common.OrderTestDataGenerator
-import com.flab.ticketing.common.PerformanceTestDataGenerator
-import com.flab.ticketing.common.UserTestDataGenerator
 import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
@@ -21,18 +14,14 @@ import com.flab.ticketing.order.entity.OrderMetaData
 import com.flab.ticketing.order.enums.TossPayCancelErrorCode
 import com.flab.ticketing.order.enums.TossPayConfirmErrorCode
 import com.flab.ticketing.order.exception.OrderErrorInfos
-import com.flab.ticketing.order.repository.CartRepository
 import com.flab.ticketing.order.repository.OrderMetaDataRepository
 import com.flab.ticketing.order.repository.OrderRepository
 import com.flab.ticketing.order.service.client.TossPaymentClient.Companion.TOSS_EXCEPTION_PREFIX
-import com.flab.ticketing.performance.entity.Performance
 import com.flab.ticketing.performance.entity.PerformanceDateTime
 import com.flab.ticketing.performance.entity.PerformancePlaceSeat
-import com.flab.ticketing.performance.repository.PerformancePlaceRepository
-import com.flab.ticketing.performance.repository.PerformanceRepository
-import com.flab.ticketing.performance.repository.RegionRepository
+import com.flab.ticketing.testutils.IntegrationTest
+import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.user.entity.User
-import com.flab.ticketing.user.repository.UserRepository
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
 import io.kotest.matchers.equals.shouldBeEqual
@@ -58,29 +47,10 @@ import java.time.temporal.ChronoUnit
 class OrderIntegrationTest : IntegrationTest() {
 
     @Autowired
-    private lateinit var cartRepository: CartRepository
-
-    @Autowired
-    private lateinit var performanceRepository: PerformanceRepository
-
-    @Autowired
-    private lateinit var userRepository: UserRepository
-
-    @Autowired
-    private lateinit var regionRepository: RegionRepository
-
-    @Autowired
-    private lateinit var placeRepository: PerformancePlaceRepository
-
-    @Autowired
     private lateinit var orderRepository: OrderRepository
 
     @Autowired
-    private lateinit var jwtTokenProvider: JwtTokenProvider
-
-    @Autowired
     private lateinit var orderMetaDataRepository: OrderMetaDataRepository
-
 
     @Autowired
     private lateinit var redisTemplate: RedisTemplate<String, String>
@@ -88,26 +58,24 @@ class OrderIntegrationTest : IntegrationTest() {
     init {
 
         given("사용자의 장바구니 정보가 존재할 때") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-
-            val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
-
-            savePerformance(listOf(performance))
-            userRepository.save(user)
-            cartRepository.saveAll(carts)
-
+            val carts = orderPersistenceUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = performancePlace.seats.subList(0, 5)
+            )
 
             `when`("장바구니를 선택하여 주문 정보를 생성할 시") {
                 val uri = "/api/orders/toss/info"
                 val orderCartUidList = carts.subList(0, 3).map { it.uid }
                 val orderRequest = OrderInfoRequest(orderCartUidList)
-                val jwt = createJwt(user)
 
 
                 val mvcResult = mockMvc.perform(
@@ -135,19 +103,18 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("사용자의 장바구니 정보가 존재할 때 - 잘못된 Cart UID 포함") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
             val performanceDateTime = performance.performanceDateTime[0]
             val performancePlace = performance.performancePlace
 
-
-            val carts = createCarts(user, performanceDateTime, performancePlace.seats.subList(0, 5))
-
-            savePerformance(listOf(performance))
-            userRepository.save(user)
-            cartRepository.saveAll(carts)
+            val carts = orderPersistenceUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performanceDateTime,
+                seats = performancePlace.seats.subList(0, 5)
+            )
 
             `when`("존재하지 않는 Cart UID로 주문 정보 생성 API 호출 시") {
                 val uri = "/api/orders/toss/info"
@@ -155,8 +122,6 @@ class OrderIntegrationTest : IntegrationTest() {
                 orderCartUidList.add("invalidCart001")
 
                 val orderRequest = OrderInfoRequest(orderCartUidList)
-                val jwt = createJwt(user)
-
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -174,20 +139,16 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("주문 생성이 완료되었을 때") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
-            val performanceDateTime = performance.performanceDateTime[0]
-            val seats = performance.performancePlace.seats
-            val carts = listOf(
-                Cart("cart1", seats[0], performanceDateTime, user),
-                Cart("cart2", seats[1], performanceDateTime, user)
+            val carts = orderPersistenceUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 2)
             )
 
-            userRepository.save(user)
-            savePerformance(listOf(performance))
-            cartRepository.saveAll(carts)
             orderMetaDataRepository.save(
                 OrderMetaData(
                     "order-001",
@@ -207,7 +168,6 @@ class OrderIntegrationTest : IntegrationTest() {
             val tossPayApiConfirmResp = setUpTossPaymentConfirmResponse(orderConfirmRequest)
             `when`("결제 승인을 요청할 시") {
                 val uri = "/api/orders/toss/confirm"
-                val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -231,20 +191,16 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("주문 생성이 완료 되었을 때 - 잘못된 유저 요청") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
-            )
-            val performanceDateTime = performance.performanceDateTime[0]
-            val seats = performance.performancePlace.seats
-            val carts = listOf(
-                Cart("cart1", seats[0], performanceDateTime, user),
-                Cart("cart2", seats[1], performanceDateTime, user)
+            val user = userPersistenceUtils.saveNewUser()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
 
-            userRepository.save(user)
-            savePerformance(listOf(performance))
-            cartRepository.saveAll(carts)
+            val carts = orderPersistenceUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 2)
+            )
 
             orderMetaDataRepository.save(
                 OrderMetaData(
@@ -263,12 +219,10 @@ class OrderIntegrationTest : IntegrationTest() {
             )
 
             `when`("다른 유저로 Order 주문 확정 API 호출 시") {
-                val user2 = UserTestDataGenerator.createUser(
+                val (_, jwt) = userPersistenceUtils.saveUserAndCreateJwt(
                     uid = "user002",
                     email = "email2@email.com"
                 )
-                userRepository.save(user2)
-                val jwt = createJwt(user2)
 
                 val uri = "/api/orders/toss/confirm"
 
@@ -288,20 +242,15 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("주문 생성이 완료 되었을 때 - 토스 페이 API 정상 응답이 아닌 경우") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
-                place = PerformanceTestDataGenerator.createPerformancePlace(numSeats = 10)
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 10)
             )
-            val performanceDateTime = performance.performanceDateTime[0]
-            val seats = performance.performancePlace.seats
-            val carts = listOf(
-                Cart("cart1", seats[0], performanceDateTime, user),
-                Cart("cart2", seats[1], performanceDateTime, user)
+            val carts = orderPersistenceUtils.createAndSaveCarts(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 2)
             )
-
-            userRepository.save(user)
-            savePerformance(listOf(performance))
-            cartRepository.saveAll(carts)
 
             orderMetaDataRepository.save(
                 OrderMetaData(
@@ -323,7 +272,6 @@ class OrderIntegrationTest : IntegrationTest() {
 
             `when`("결제 승인 API를 호출 시") {
                 val uri = "/api/orders/toss/confirm"
-                val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -348,35 +296,33 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("사용자의 주문 정보가 존재할 때") {
-            val user = UserTestDataGenerator.createUser()
-            val performances = PerformanceTestDataGenerator.createPerformanceGroupbyRegion(
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performances = PerformanceFixture.createPerformanceGroupbyRegion(
                 performanceCount = 2,
                 seatPerPlace = 5
             )
-            val order1 = OrderTestDataGenerator.createOrder(
-                user = user
-            )
-            val order2 = OrderTestDataGenerator.createOrder(
-                uid = "order-002",
-                user = user
-            )
-            val order3 = OrderTestDataGenerator.createOrder(
-                uid = "order-003",
-                user = user
-            )
-            order1.addReservation(performances[0].performanceDateTime[0], performances[0].performancePlace.seats[0])
-            order2.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[0])
-            order3.addReservation(performances[1].performanceDateTime[0], performances[1].performancePlace.seats[1])
+            performancePersistenceUtils.savePerformances(performances)
 
 
-            userRepository.save(user)
-            savePerformance(performances)
-            orderRepository.save(order1)
-            orderRepository.save(order2)
-            orderRepository.save(order3)
+            val order1 = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performances[0].performanceDateTime[0],
+                seats = listOf(performances[0].performancePlace.seats[0])
+            )
+            val order2 = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performances[1].performanceDateTime[0],
+                seats = listOf(performances[1].performancePlace.seats[0])
+            )
+            val order3 = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performances[1].performanceDateTime[1],
+                seats = listOf(performances[1].performancePlace.seats[1])
+            )
+
+
             `when`("주문 정보 리스트 조회시") {
                 val uri = "/api/orders"
-                val jwt = createJwt(user)
                 val mvcResult = mockMvc.perform(
                     get(uri)
                         .param("limit", "2")
@@ -427,22 +373,21 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
-            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
-            order.status = Order.OrderStatus.COMPLETED
 
-            userRepository.save(user)
-            savePerformance(listOf(performance))
-            orderRepository.save(order)
+            val order = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
+            )
 
             setUpTossPaymentCancelResponse()
+
             `when`("주문 취소를 시도할 시") {
                 val uri = "/api/orders/${order.uid}/cancel"
-                val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -461,23 +406,20 @@ class OrderIntegrationTest : IntegrationTest() {
         }
 
         given("아직 공연이 시작되지 않은 사용자의 확정된 주문 정보가 존재할 때 - Toss API 오류") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance(
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
                 showTimeStartDateTime = ZonedDateTime.now().plusDays(10)
             )
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
-            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
-            order.status = Order.OrderStatus.COMPLETED
-
-            userRepository.save(user)
-            savePerformance(listOf(performance))
-            orderRepository.save(order)
+            val order = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
+            )
 
             val tossErrorResponse = setUpTossPaymentFailCancelResponse()
 
             `when`("주문 취소를 시도할 시") {
                 val uri = "/api/orders/${order.uid}/cancel"
-                val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
                     post(uri)
@@ -501,28 +443,25 @@ class OrderIntegrationTest : IntegrationTest() {
 
 
         given("주문의 상태가 CANCELED인 주문이 존재할 때") {
-            val user = UserTestDataGenerator.createUser()
-            val performance = PerformanceTestDataGenerator.createPerformance()
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance()
 
-            val order = OrderTestDataGenerator.createOrder(user = user, payment = Order.Payment(1000, "카드", "abc123"))
-            order.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[0])
-            order.status = Order.OrderStatus.COMPLETED
-
-            val canceledOrder = OrderTestDataGenerator.createOrder(
-                uid = "order-002",
+            orderPersistenceUtils.createAndSaveOrder(
                 user = user,
-                payment = Order.Payment(1000, "카드", "abc123")
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
             )
-            canceledOrder.addReservation(performance.performanceDateTime[0], performance.performancePlace.seats[1])
-            canceledOrder.status = Order.OrderStatus.CANCELED
 
-            userRepository.save(user)
-            savePerformance(listOf(performance))
-            orderRepository.saveAll(listOf(order, canceledOrder))
+            val canceledOrder = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(performance.performancePlace.seats[0]),
+                orderStatus = Order.OrderStatus.CANCELED
+            )
+
 
             `when`("주문이 CANCELED 상태인 주문을 조회할 시") {
                 val uri = "/api/orders"
-                val jwt = createJwt(user)
 
                 val mvcResult = mockMvc.perform(
                     get(uri)
@@ -554,14 +493,11 @@ class OrderIntegrationTest : IntegrationTest() {
     override suspend fun afterEach(testCase: TestCase, result: TestResult) {
         super.afterEach(testCase, result)
 
-        PerformanceTestDataGenerator.reset()
+        PerformanceFixture.reset()
         withContext(Dispatchers.IO) {
-            cartRepository.deleteAll()
-            orderRepository.deleteAll()
-            userRepository.deleteAll()
-            performanceRepository.deleteAll()
-            placeRepository.deleteAll()
-            regionRepository.deleteAll()
+            orderPersistenceUtils.clearContext()
+            userPersistenceUtils.clearContext()
+            performancePersistenceUtils.clearContext()
             orderMetaDataRepository.deleteAll()
             redisTemplate.connectionFactory?.connection?.flushAll()
         }
@@ -705,29 +641,6 @@ class OrderIntegrationTest : IntegrationTest() {
     private fun setUpTossPaymentFailResponse(expectStatus: HttpStatus, resp: Map<String, String>) {
         val body = objectMapper.writeValueAsString(resp)
         mockServerUtils.addMockResponse(expectStatus, body)
-    }
-
-    private fun savePerformance(performances: List<Performance>) {
-        regionRepository.save(performances[0].performancePlace.region)
-        placeRepository.save(performances[0].performancePlace)
-
-        performances.forEach {
-            performanceRepository.save(it)
-        }
-    }
-
-    private fun createJwt(user: User): String {
-        return jwtTokenProvider.sign(
-            AuthenticatedUserDto.of(
-                CustomUserDetailsDto(
-                    user.uid,
-                    user.email,
-                    user.password,
-                    user.nickname
-                )
-            ),
-            mutableListOf()
-        )
     }
 
     private fun createCarts(

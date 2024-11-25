@@ -16,24 +16,24 @@ import java.security.cert.X509Certificate
 class ElasticSearchConfig {
 
 
+    //    @Configuration
+//    @Profile("dev")
+//    internal class LocalElasticSearchConfig(
+//        @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String
+//    ) : ElasticsearchConfiguration() {
+//
+//        // 로컬 개발 용 ElasticSearch 설정으로, HTTPS를 Disabled 하였습니다.
+//        override fun clientConfiguration(): ClientConfiguration {
+//            return ClientConfiguration.builder()
+//                .connectedTo(elasticHost)
+//                .build()
+//        }
+//
+//    }
+
     @Configuration
-    @Profile("dev")
-    internal class LocalElasticSearchConfig(
-        @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String
-    ) : ElasticsearchConfiguration() {
-
-        // 로컬 개발 용 ElasticSearch 설정으로, HTTPS를 Disabled 하였습니다.
-        override fun clientConfiguration(): ClientConfiguration {
-            return ClientConfiguration.builder()
-                .connectedTo(elasticHost)
-                .build()
-        }
-
-    }
-
-    @Configuration
-    @Profile("prod")
-    internal class ProductionElasticSearchConfig(
+    @Profile("!test")
+    internal class ElasticSearchConfig(
         @Value("\${spring.data.elasticsearch.url}") private val elasticHost: String,
         @Value("\${spring.data.elasticsearch.api-key}") private val elasticApiKey: String
     ) : ElasticsearchConfiguration() {

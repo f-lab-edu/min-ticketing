@@ -2,7 +2,7 @@ package com.flab.ticketing.auth.dto
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
 import com.flab.ticketing.auth.dto.service.CustomUserDetailsDto
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import io.kotest.matchers.equals.shouldBeEqual
 
 class AuthenticatedUserDtoTest : UnitTest() {

@@ -1,7 +1,7 @@
 package com.flab.ticketing.auth.utils
 
 import com.flab.ticketing.auth.dto.service.AuthenticatedUserDto
-import com.flab.ticketing.common.UnitTest
+import com.flab.ticketing.testutils.UnitTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
@@ -21,6 +21,7 @@ class JwtTokenProviderTest : UnitTest() {
 
     init {
         "JWT 토큰을 생성할 수 있다." {
+            // given
             val uid = "uid"
             val email = "email@email.com"
             val nickname = "nickname"
@@ -28,25 +29,28 @@ class JwtTokenProviderTest : UnitTest() {
             val authenticatedUserDto = AuthenticatedUserDto(uid, email, nickname)
             val authorities = mutableListOf<GrantedAuthority>()
 
-
+            // when
             val jwt = jwtTokenProvider.sign(authenticatedUserDto, authorities)
 
-
+            // then
             isJwt(jwt) shouldBe true
 
         }
 
         "생성한 JWT 토큰을 resolve해 Authentication 객체로 생성할 수 있다." {
+            // given
             val uid = "uid"
             val email = "email@email.com"
             val nickname = "nickname"
-
             val authenticatedUserDto = AuthenticatedUserDto(uid, email, nickname)
 
             val role = SimpleGrantedAuthority("ROLE_USER")
             val authorities = mutableListOf<GrantedAuthority>(role)
+
+            // when
             val jwt = jwtTokenProvider.sign(authenticatedUserDto, authorities)
 
+            // then
             val authentication = jwtTokenProvider.getAuthentication(jwt)
 
             val principal = authentication.principal
