@@ -9,13 +9,13 @@ import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.request.OrderSearchConditions
 import com.flab.ticketing.order.dto.response.CartListResponse
+import com.flab.ticketing.order.dto.response.OrderDetailInfoResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.enums.OrderCancelReasons
 import com.flab.ticketing.order.service.OrderService
 import com.flab.ticketing.order.service.ReservationService
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -98,7 +98,7 @@ class OrderController(
     )
     @GetMapping("")
     fun getOrderList(
-        @Parameter(hidden = true) @LoginUser userInfo: AuthenticatedUserDto,
+        @LoginUser userInfo: AuthenticatedUserDto,
         @ParameterObject @ModelAttribute cursorInfo: CursorInfoDto,
         @ParameterObject @ModelAttribute searchConditions: OrderSearchConditions
     ): CursoredResponse<OrderSummarySearchResult> {
@@ -114,6 +114,23 @@ class OrderController(
         return CursoredResponse(orderList[orderList.size - 1].uid, orderList.dropLast(1))
     }
 
+    @Operation(
+        summary = "주문 상세 조회",
+        description = "사용자의 주문 상세 정보를 조회합니다.",
+        responses = [
+            ApiResponse(responseCode = "200", description = "주문 목록 조회 성공")
+        ]
+    )
+    @GetMapping("/{orderUid}")
+    fun getOrder(
+        @LoginUser userInfo: AuthenticatedUserDto,
+        @PathVariable orderUid: String
+    ): OrderDetailInfoResponse {
+        return orderService.getOrderDetail(
+            orderUid = orderUid,
+            userUid = userInfo.uid
+        )
+    }
 
     @Operation(
         summary = "주문 취소",

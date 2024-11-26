@@ -10,6 +10,27 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "orders")
+@NamedEntityGraph(
+    name = "Order.withDetails",
+    attributeNodes = [
+        NamedAttributeNode("user"),
+        NamedAttributeNode(value = "reservations", subgraph = "reservations")
+    ],
+    subgraphs = [
+        NamedSubgraph(
+            name = "reservations",
+            attributeNodes = [
+                NamedAttributeNode("performanceDateTime", subgraph = "performanceDateTime")
+            ]
+        ),
+        NamedSubgraph(
+            name = "performanceDateTime",
+            attributeNodes = [
+                NamedAttributeNode("performance")
+            ]
+        )
+    ]
+)
 class Order(
     @Column(unique = true, updatable = false)
     val uid: String,
