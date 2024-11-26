@@ -11,6 +11,7 @@ import com.flab.ticketing.common.utils.NanoIdGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.request.OrderSearchConditions
+import com.flab.ticketing.order.dto.response.OrderDetailInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
 import com.flab.ticketing.order.entity.Cart
@@ -307,6 +308,43 @@ class OrderServiceTest : UnitTest() {
             }
 
             e.info shouldBe OrderErrorInfos.RESERVATION_ALREADY_USED
+
+        }
+
+        "사용자는 자신의 주문 상세 정보를 조회할 수 있다." {
+            val user = UserFixture.createUser()
+            val performance = PerformanceFixture.createPerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 1),
+                price = 1000
+            )
+
+            val order = OrderFixture.createOrder(
+                user = user,
+                payment = Order.Payment(1000, "카드", "paymentkey"),
+            )
+            OrderFixture.createReservations(
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = performance.performancePlace.seats.subList(0, 1),
+                order
+            )
+
+
+            every { orderReader.findByUid(order.uid) } returns order
+
+            val actual = orderService.getOrderDetail(order.uid, user.uid)
+
+            actual.orderUid shouldBeEqual order.uid
+            actual.orderedAt shouldBeEqual order.createdAt
+            actual.orderStatus shouldBeEqual order.status
+            actual.totalPrice shouldBe order.payment.totalPrice
+            actual.reservations shouldBe listOf(
+                OrderDetailInfoResponse.ReservationDetailInfo(
+                    performance.name,
+                    performance.price,
+                    order.reservations[0].qrImageUrl!!,
+                    false
+                )
+            )
 
         }
     }
