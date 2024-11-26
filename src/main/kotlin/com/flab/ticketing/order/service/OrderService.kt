@@ -114,7 +114,11 @@ class OrderService(
     @Transactional(readOnly = true)
     fun getOrderDetail(orderUid: String, userUid: String): OrderDetailInfoResponse {
         val order = orderReader.findByUid(orderUid)
-        
+
+        if (order.user.uid != userUid) {
+            throw ForbiddenException(OrderErrorInfos.INVALID_USER)
+        }
+
         return OrderDetailInfoResponse.of(order)
     }
 
