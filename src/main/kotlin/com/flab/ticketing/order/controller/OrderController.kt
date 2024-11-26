@@ -114,6 +114,13 @@ class OrderController(
         return CursoredResponse(orderList[orderList.size - 1].uid, orderList.dropLast(1))
     }
 
+    @Operation(
+        summary = "주문 상세 조회",
+        description = "사용자의 주문 상세 정보를 조회합니다.",
+        responses = [
+            ApiResponse(responseCode = "200", description = "주문 목록 조회 성공")
+        ]
+    )
     @GetMapping("/{orderUid}")
     fun getOrder(
         @LoginUser userInfo: AuthenticatedUserDto,
