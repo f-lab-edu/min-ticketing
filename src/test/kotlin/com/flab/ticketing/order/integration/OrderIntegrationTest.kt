@@ -514,7 +514,7 @@ class OrderIntegrationTest : IntegrationTest() {
 
                 then("상세 주문 정보를 반환한다.") {
                     mvcResult.response.status shouldBe 200
-                    val (orderUid, totalPrice, orderStatus, orderedAt, paymentMethod, reservations) = objectMapper.readValue(
+                    val (orderUid, totalPrice, orderName, orderStatus, orderedAt, paymentMethod, reservations) = objectMapper.readValue(
                         mvcResult.response.contentAsString,
                         OrderDetailInfoResponse::class.java
                     )
@@ -522,7 +522,7 @@ class OrderIntegrationTest : IntegrationTest() {
                     orderUid shouldBe order.uid
                     totalPrice shouldBe order.payment.totalPrice
                     orderStatus shouldBe order.status
-
+                    orderName shouldBeEqual order.name
                     orderedAt.truncatedTo(ChronoUnit.MILLIS) shouldBeEqual
                             order.createdAt.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
 

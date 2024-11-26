@@ -340,6 +340,7 @@ class OrderServiceTest : UnitTest() {
             actual.orderedAt shouldBeEqual order.createdAt
             actual.orderStatus shouldBeEqual order.status
             actual.totalPrice shouldBe order.payment.totalPrice
+            actual.orderName shouldBeEqual order.name
             actual.reservations shouldBe listOf(
                 OrderDetailInfoResponse.ReservationDetailInfo(
                     performance.name,

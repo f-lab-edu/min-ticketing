@@ -7,6 +7,7 @@ import java.time.ZonedDateTime
 data class OrderDetailInfoResponse(
     val orderUid: String,
     val totalPrice: Int,
+    val orderName: String,
     val orderStatus: Order.OrderStatus,
     val orderedAt: ZonedDateTime,
     val paymentMethod: String,
@@ -23,6 +24,7 @@ data class OrderDetailInfoResponse(
         fun of(order: Order): OrderDetailInfoResponse {
             return OrderDetailInfoResponse(
                 orderUid = order.uid,
+                orderName = order.name,
                 totalPrice = order.payment.totalPrice,
                 orderStatus = order.status,
                 orderedAt = order.createdAt,
