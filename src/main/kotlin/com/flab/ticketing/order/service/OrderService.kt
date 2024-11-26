@@ -12,6 +12,7 @@ import com.flab.ticketing.common.utils.QRCodeGenerator
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
 import com.flab.ticketing.order.dto.request.OrderSearchConditions
+import com.flab.ticketing.order.dto.response.OrderDetailInfoResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.entity.Cart
@@ -110,6 +111,18 @@ class OrderService(
         }
     }
 
+    @Transactional(readOnly = true)
+    fun getOrderDetail(orderUid: String, userUid: String): OrderDetailInfoResponse {
+        val order = orderReader.findByUid(orderUid)
+
+        if (order.user.uid != userUid) {
+            throw ForbiddenException(OrderErrorInfos.INVALID_USER)
+        }
+
+        return OrderDetailInfoResponse.of(order)
+    }
+
+
     fun cancelOrder(
         userUid: String,
         orderUid: String,
@@ -183,5 +196,6 @@ class OrderService(
     private fun List<Cart>.calculatePrice(): Int {
         return this.map { it.performanceDateTime.performance.price }.sum()
     }
+
 
 }

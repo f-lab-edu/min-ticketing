@@ -35,7 +35,8 @@ object OrderFixture {
             val reservation = Reservation(
                 performanceDateTime,
                 seat,
-                order
+                order,
+                qrImageUrl = "testQrImage/${seat.uid}"
             )
             order.addReservation(reservation)
             result.add(reservation)

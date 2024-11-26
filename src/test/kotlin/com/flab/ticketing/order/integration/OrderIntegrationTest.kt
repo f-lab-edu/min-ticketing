@@ -4,6 +4,7 @@ import com.flab.ticketing.common.dto.response.CursoredResponse
 import com.flab.ticketing.common.exception.CommonErrorInfos
 import com.flab.ticketing.order.dto.request.OrderConfirmRequest
 import com.flab.ticketing.order.dto.request.OrderInfoRequest
+import com.flab.ticketing.order.dto.response.OrderDetailInfoResponse
 import com.flab.ticketing.order.dto.response.OrderInfoResponse
 import com.flab.ticketing.order.dto.response.OrderSummarySearchResult
 import com.flab.ticketing.order.dto.service.TossPayConfirmResponse
@@ -24,6 +25,7 @@ import com.flab.ticketing.testutils.fixture.PerformanceFixture
 import com.flab.ticketing.user.entity.User
 import io.kotest.core.test.TestCase
 import io.kotest.core.test.TestResult
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -487,6 +489,56 @@ class OrderIntegrationTest : IntegrationTest() {
 
         }
 
+
+        given("사용자의 주문 정보가 존재할 때 - 상세 조회") {
+            val (user, jwt) = userPersistenceUtils.saveUserAndCreateJwt()
+            val performance = performancePersistenceUtils.createAndSavePerformance(
+                place = PerformanceFixture.createPerformancePlace(numSeats = 5)
+            )
+
+            val seats = performance.performancePlace.seats
+            val order = orderPersistenceUtils.createAndSaveOrder(
+                user = user,
+                performanceDateTime = performance.performanceDateTime[0],
+                seats = listOf(seats[0], seats[1])
+            )
+
+            `when`("사용자가 주문 상세 조회 시도시") {
+                val url = "/api/orders/${order.uid}"
+
+                val mvcResult = mockMvc.perform(
+                    get(url).header(HttpHeaders.AUTHORIZATION, "Bearer $jwt")
+                ).andDo(
+                    print()
+                ).andReturn()
+
+                then("상세 주문 정보를 반환한다.") {
+                    mvcResult.response.status shouldBe 200
+                    val (orderUid, totalPrice, orderStatus, orderedAt, paymentMethod, reservations) = objectMapper.readValue(
+                        mvcResult.response.contentAsString,
+                        OrderDetailInfoResponse::class.java
+                    )
+
+                    orderUid shouldBe order.uid
+                    totalPrice shouldBe order.payment.totalPrice
+                    orderStatus shouldBe order.status
+
+                    orderedAt.truncatedTo(ChronoUnit.MILLIS) shouldBeEqual
+                            order.createdAt.withZoneSameInstant(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS)
+
+                    paymentMethod shouldBe order.payment.paymentMethod
+                    reservations shouldContainAll List(size = 2) {
+                        OrderDetailInfoResponse.ReservationDetailInfo(
+                            performance.name,
+                            performance.price,
+                            order.reservations[it].qrImageUrl!!,
+                            false
+                        )
+                    }
+
+                }
+            }
+        }
     }
 
 
